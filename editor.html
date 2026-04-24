@@ -7,70 +7,95 @@
 <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Maru+Gothic:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Zen Maru Gothic",sans-serif;background:#f5efe6;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 16px}
+body{font-family:"Zen Maru Gothic",sans-serif;background:#f5efe6;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px}
 h1{font-family:"Klee One",cursive;font-size:22px;color:#5a3e2b;margin-bottom:4px;letter-spacing:1px}
-.sub{font-size:12px;color:#a8907a;margin-bottom:24px}
-.bar{width:100%;max-width:640px;height:4px;background:#e2d8cc;border-radius:4px;margin-bottom:6px;overflow:hidden}
+.sub{font-size:12px;color:#a8907a;margin-bottom:20px}
+.topbar{width:100%;max-width:680px;display:flex;gap:10px;margin-bottom:14px;align-items:center}
+.search-wrap{position:relative;flex:1}
+.search-box{width:100%;background:#fdf8f2;border:1px solid #e2d8cc;border-radius:24px;padding:9px 16px;font-family:"Klee One",cursive;font-size:14px;color:#3d2c1e;outline:none}
+.search-box:focus{border-color:#9b6e52}
+.btn-add{font-family:"Klee One",cursive;font-size:13px;padding:9px 18px;border-radius:24px;border:1.5px dashed #6e8c72;color:#6e8c72;background:transparent;cursor:pointer;white-space:nowrap}
+.btn-add:hover{background:#f0f7f2}
+.search-results{position:absolute;top:100%;left:0;right:0;background:#fdf8f2;border:1px solid #e2d8cc;border-radius:12px;box-shadow:0 4px 16px rgba(90,62,43,.1);z-index:10;max-height:240px;overflow-y:auto;margin-top:4px}
+.sr-item{padding:10px 16px;cursor:pointer;font-family:"Klee One",cursive;font-size:14px;color:#3d2c1e;border-bottom:.5px solid #f0e8dc}
+.sr-item:last-child{border-bottom:none}
+.sr-item:hover{background:#f5efe6}
+.sr-city{font-size:11px;color:#a8907a;margin-top:2px}
+.token-bar{width:100%;max-width:680px;background:#fdf8f2;border:1px solid #e2d8cc;border-radius:12px;padding:10px 16px;margin-bottom:14px;display:flex;gap:10px;align-items:center}
+.token-bar label{font-size:11px;color:#b89f8a;white-space:nowrap;letter-spacing:.5px}
+.token-bar input{flex:1;background:#f7f2ea;border:1px solid #e2d8cc;border-radius:8px;padding:7px 12px;font-family:"Klee One",cursive;font-size:13px;color:#3d2c1e;outline:none}
+.bar{width:100%;max-width:680px;height:4px;background:#e2d8cc;border-radius:4px;margin-bottom:6px;overflow:hidden}
 .fill{height:100%;background:linear-gradient(90deg,#9b6e52,#b87aa0);transition:width .4s}
-.pl{font-size:12px;color:#a8907a;text-align:right;max-width:640px;width:100%;margin-bottom:18px}
-.card{width:100%;max-width:640px;background:#fdf8f2;border-radius:18px;border:1px solid #e2d8cc;padding:28px;box-shadow:0 2px 20px rgba(90,62,43,.07);position:relative}
+.pl{font-size:12px;color:#a8907a;text-align:right;max-width:680px;width:100%;margin-bottom:16px}
+.card{width:100%;max-width:680px;background:#fdf8f2;border-radius:18px;border:1px solid #e2d8cc;padding:28px;box-shadow:0 2px 20px rgba(90,62,43,.07);position:relative}
 .card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:18px 18px 0 0;background:linear-gradient(90deg,#9b6e52,#c17a5e,#b87aa0,#6e8c72)}
-.hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
-.sn{font-family:"Klee One",cursive;font-size:22px;color:#3d2c1e;line-height:1.3;flex:1;padding-right:12px}
-.tb{font-family:"Klee One",cursive;font-size:12px;padding:3px 10px;border-radius:12px;white-space:nowrap}
+.hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.sn{font-family:"Klee One",cursive;flex:1;padding-right:12px}
+.sn input{width:100%;background:#f7f2ea;border:1px solid #e2d8cc;border-radius:10px;padding:8px 12px;font-family:"Klee One",cursive;font-size:18px;color:#3d2c1e;outline:none}
+.sn input:focus{border-color:#9b6e52}
+.badge-row{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.tb{font-family:"Klee One",cursive;font-size:12px;padding:3px 10px;border-radius:12px;white-space:nowrap;cursor:pointer;user-select:none}
 .t1{background:#f5ebe6;color:#9b5e42;border:.5px solid #dbbba8}
 .t2{background:#eceaf5;color:#6a5a8a;border:.5px solid #c8c0dc}
-.city{font-size:12px;color:#a8907a;margin-bottom:20px}
+.delete-btn{font-size:12px;color:#c17a5e;background:none;border:none;cursor:pointer;text-decoration:underline;font-family:"Zen Maru Gothic",sans-serif}
+.city-row{display:flex;gap:8px;margin-bottom:18px;align-items:center}
+.city-row input{flex:1;background:#f7f2ea;border:1px solid #e2d8cc;border-radius:8px;padding:7px 12px;font-family:"Klee One",cursive;font-size:13px;color:#3d2c1e;outline:none}
+.city-row input:focus{border-color:#9b6e52}
+.city-label{font-size:11px;color:#b89f8a;white-space:nowrap}
+.gmaps-link{font-size:12px;color:#7a9e87;text-decoration:none;white-space:nowrap}
+.gmaps-link:hover{text-decoration:underline}
 .fg{margin-bottom:16px}
 label{display:block;font-size:11px;color:#b89f8a;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px}
 input[type=text],textarea{width:100%;background:#f7f2ea;border:1px solid #e2d8cc;border-radius:10px;padding:10px 14px;font-family:"Klee One",cursive;font-size:15px;color:#3d2c1e;outline:none;transition:border-color .2s}
 input[type=text]:focus,textarea:focus{border-color:#9b6e52;background:#fdf8f2}
-textarea{resize:vertical;min-height:88px;line-height:1.7}
+textarea{resize:vertical;min-height:80px;line-height:1.7}
 .r2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.pg{display:flex;gap:6px;padding:8px 0;align-items:center}
+.pg{display:flex;gap:6px;padding:6px 0;align-items:center}
 .sb{background:none;border:none;font-size:22px;cursor:pointer;color:#e2d8cc;transition:color .15s,transform .1s;padding:0 2px}
 .sb.on{color:#b87aa0}
 .sb:hover{transform:scale(1.2)}
 .rv{font-family:"Klee One",cursive;font-size:13px;color:#9b6e52;margin-left:8px}
 .pills{display:flex;gap:7px;flex-wrap:wrap;padding:4px 0}
-.pill{font-family:"Klee One",cursive;font-size:13px;padding:5px 14px;border-radius:20px;border:1px solid #d6c8b8;color:#7a6352;background:transparent;cursor:pointer;transition:all .18s}
+.pill{font-family:"Klee One",cursive;font-size:13px;padding:4px 13px;border-radius:20px;border:1px solid #d6c8b8;color:#7a6352;background:transparent;cursor:pointer;transition:all .18s}
 .pill:hover{background:#ede4d8}
 .pill.ob{background:#9b6e52;border-color:#9b6e52;color:#fdf8f2}
 .pill.og{background:#6e8c72;border-color:#6e8c72;color:#f2f7f3}
 .ci{margin-top:8px}
-.nav{display:flex;align-items:center;justify-content:space-between;margin-top:24px;gap:12px}
+.nav{display:flex;align-items:center;justify-content:space-between;margin-top:22px;gap:12px}
 .btn{font-family:"Klee One",cursive;font-size:14px;padding:10px 24px;border-radius:24px;border:none;cursor:pointer;transition:all .18s}
 .bp{background:transparent;border:1px solid #d6c8b8;color:#9b6e52}
 .bp:hover{background:#f0e8dc}
 .bn{background:#9b6e52;color:#fdf8f2;box-shadow:0 2px 8px rgba(155,110,82,.25)}
 .bn:hover{background:#8a5e44}
 .skip{font-size:12px;color:#b89f8a;background:none;border:none;cursor:pointer;text-decoration:underline;font-family:"Zen Maru Gothic",sans-serif}
-.exp{width:100%;max-width:640px;margin-top:16px;display:flex;gap:8px;justify-content:flex-end}
+.exp{width:100%;max-width:680px;margin-top:14px;display:flex;gap:8px;justify-content:flex-end}
 .be{font-family:"Klee One",cursive;font-size:13px;padding:8px 20px;border-radius:20px;border:1.5px dashed #b89f8a;color:#9b6e52;background:transparent;cursor:pointer;transition:all .18s}
 .be:hover{background:#f0e8dc}
 .bpush{border-color:#6e8c72;color:#6e8c72}
 .bpush:hover{background:#f0f7f2}
-.toast{position:fixed;bottom:24px;right:24px;background:#3d2c1e;color:#fdf8f2;font-family:"Klee One",cursive;font-size:13px;padding:10px 20px;border-radius:20px;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none}
+.toast{position:fixed;bottom:24px;right:24px;background:#3d2c1e;color:#fdf8f2;font-family:"Klee One",cursive;font-size:13px;padding:10px 20px;border-radius:20px;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;z-index:99}
 .toast.show{opacity:1;transform:translateY(0)}
 .hint{font-size:11px;color:#c8b9a8;margin-top:4px;font-style:italic}
 .loading{text-align:center;padding:40px;font-family:"Klee One",cursive;color:#9b6e52;font-size:16px}
-.token-bar{width:100%;max-width:640px;background:#fdf8f2;border:1px solid #e2d8cc;border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;gap:10px;align-items:center}
-.token-bar input{flex:1;background:#f7f2ea;border:1px solid #e2d8cc;border-radius:8px;padding:8px 12px;font-family:"Klee One",cursive;font-size:13px;color:#3d2c1e;outline:none}
-.token-bar label{font-size:11px;color:#b89f8a;white-space:nowrap}
-.saved-dot{width:8px;height:8px;border-radius:50%;background:#6e8c72;display:inline-block;margin-left:6px;opacity:0;transition:opacity .3s}
-.saved-dot.show{opacity:1}
+.new-badge{background:#6e8c72;color:#fff;font-size:10px;padding:2px 6px;border-radius:8px;margin-left:6px;vertical-align:middle}
 </style>
 </head>
 <body>
 
 <h1>&#9670; Food Map 批注工具 &#9670;</h1>
-<p class="sub">重新填写你的美食笔记 · 自动保存到浏览器 · 可推送到 GitHub</p>
+<p class="sub">填写批注 · 添加新店 · 推送到 GitHub 即时更新地图</p>
 
-<!-- GitHub Token 输入 -->
 <div class="token-bar">
   <label>GitHub Token</label>
-  <input type="password" id="tokenInput" placeholder="ghp_xxxx (用于推送到 GitHub，本地填写不需要)">
-  <span class="saved-dot" id="tokenDot"></span>
+  <input type="password" id="tokenInput" placeholder="ghp_xxxx（推送时需要）">
+</div>
+
+<div class="topbar">
+  <div class="search-wrap">
+    <input class="search-box" id="searchBox" placeholder="🔍 搜索餐厅名字快速跳转..." oninput="onSearch()" onblur="hideResults()">
+    <div class="search-results" id="searchResults" style="display:none"></div>
+  </div>
+  <button class="btn-add" onclick="addNew()">+ 添加新店</button>
 </div>
 
 <div class="bar"><div class="fill" id="pf"></div></div>
@@ -80,10 +105,18 @@ textarea{resize:vertical;min-height:88px;line-height:1.7}
   <div class="loading" id="loading">数据加载中...</div>
   <div id="main" style="display:none">
     <div class="hd">
-      <div class="sn" id="sn"></div>
-      <div class="tb" id="tb"></div>
+      <div class="sn" id="snWrap"></div>
+      <div class="badge-row">
+        <div class="tb" id="tb" onclick="toggleTier()" title="点击切换精选/去过"></div>
+        <button class="delete-btn" id="deleteBtn" onclick="deleteEntry()" style="display:none">删除</button>
+      </div>
     </div>
-    <div class="city" id="cr"></div>
+
+    <div class="city-row">
+      <span class="city-label">📍 城市</span>
+      <input type="text" id="cityInput" placeholder="如 Los Angeles, Tokyo...">
+      <a class="gmaps-link" id="gmapsLink" href="#" target="_blank">Google Maps →</a>
+    </div>
 
     <div class="fg">
       <label>菜系类型</label>
@@ -156,13 +189,9 @@ const OWNER = "lilywmh";
 const REPO  = "food_map";
 const PATH  = "foodmap.json";
 const RAW   = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/${PATH}`;
-const SK    = "fm_edits_v3";
 
-let DATA = [], edits = {}, cur = 0, curR = 0, curB = "", curC = "";
+let DATA = [], cur = 0, curR = 0, curB = "", curC = "", curTier = 1;
 
-try { edits = JSON.parse(localStorage.getItem(SK) || "{}"); } catch(e) {}
-
-// Save token in sessionStorage only (not persisted)
 function getToken() { return document.getElementById("tokenInput").value.trim(); }
 
 async function loadData() {
@@ -173,33 +202,63 @@ async function loadData() {
     document.getElementById("main").style.display = "block";
     render(0);
   } catch(e) {
-    document.getElementById("loading").textContent = "加载失败，请刷新页面。";
+    document.getElementById("loading").textContent = "加载失败。请确认已通过 GitHub Pages 链接打开（不能直接双击本地文件）。";
   }
 }
 
-function get(i) { return Object.assign({}, DATA[i], edits[i] || {}); }
+function escH(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 
 function render(i) {
-  const e = get(i);
-  document.getElementById("sn").textContent = e.name;
+  if (!DATA[i]) return;
+  cur = i;
+  const e = DATA[i];
+  curTier = e.tier || 1;
+  curR    = parseFloat(e.rating) || 0;
+  curB    = String(e.budget || "");
+  curC    = e.cuisine || "";
+
+  // Name input
+  document.getElementById("snWrap").innerHTML =
+    `<input type="text" id="nameInput" value="${escH(e.name)}" placeholder="餐厅名字...">`
+    + (e._isNew ? '<span class="new-badge">NEW</span>' : '');
+
+  // Tier badge
   const tb = document.getElementById("tb");
-  tb.textContent = e.tier === 1 ? "⭐ 精选" : "✓ 去过";
-  tb.className = "tb " + (e.tier === 1 ? "t1" : "t2");
-  document.getElementById("cr").textContent = (e.city ? "📍 " + e.city : "📍 城市未知");
+  tb.textContent = curTier === 1 ? "⭐ 精选" : "✓ 去过";
+  tb.className   = "tb " + (curTier === 1 ? "t1" : "t2");
+
+  // Delete button only for new entries
+  document.getElementById("deleteBtn").style.display = e._isNew ? "inline" : "none";
+
+  // City
+  document.getElementById("cityInput").value = e.city || "";
+
+  // Google Maps link — use saved URL or generate search URL
+  const gmLink = document.getElementById("gmapsLink");
+  const q = encodeURIComponent((e.name||'') + (e.city ? ' '+e.city : ''));
+  gmLink.href = e.google_maps_url || `https://www.google.com/maps/search/${q}`;
+
+  // Fields
   document.getElementById("di").value = e.dish || "";
   document.getElementById("ni").value = e.note || "";
-  curR = parseFloat(e.rating) || 0;
-  renderStars(curR);
-  curB = e.budget || "";
-  document.querySelectorAll("#bg .pill").forEach(p => p.classList.toggle("ob", p.dataset.v === curB));
-  curC = e.cuisine || "";
-  document.querySelectorAll("#cg .pill").forEach(p => {
-    p.classList.toggle("og", p.textContent.replace(/^.\s/, "").trim() === curC);
-  });
   document.getElementById("ci").value = "";
-  const pct = ((i + 1) / DATA.length * 100).toFixed(0);
-  document.getElementById("pf").style.width = pct + "%";
-  document.getElementById("pl").textContent = (i+1) + " / " + DATA.length + "  ·  已填写 " + Object.keys(edits).length + " 家";
+
+  renderStars(curR);
+  document.querySelectorAll("#bg .pill").forEach(p => p.classList.toggle("ob", p.dataset.v === curB));
+  document.querySelectorAll("#cg .pill").forEach(p => {
+    // Extract text after emoji+space
+    const label = p.textContent.replace(/^\S+\s/, "").trim();
+    p.classList.toggle("og", label === curC);
+  });
+
+  const annotated = DATA.filter(d => d.note || d.cuisine || d.dish).length;
+  const newCount  = DATA.filter(d => d._isNew).length;
+  document.getElementById("pf").style.width = ((i+1)/DATA.length*100).toFixed(0)+"%";
+  document.getElementById("pl").textContent =
+    `${i+1} / ${DATA.length}  ·  ${annotated} 家已批注` +
+    (newCount ? `  ·  ${newCount} 家新店待推送` : "");
 }
 
 function renderStars(v) {
@@ -208,6 +267,13 @@ function renderStars(v) {
 }
 
 function setR(v) { curR = v; renderStars(v); }
+
+function toggleTier() {
+  curTier = curTier === 1 ? 2 : 1;
+  const tb = document.getElementById("tb");
+  tb.textContent = curTier === 1 ? "⭐ 精选" : "✓ 去过";
+  tb.className   = "tb " + (curTier === 1 ? "t1" : "t2");
+}
 
 function selB(el) {
   curB = el.dataset.v;
@@ -227,107 +293,147 @@ function onCI() {
   document.querySelectorAll("#cg .pill").forEach(p => p.classList.remove("og"));
 }
 
-function saveLocal() {
-  edits[cur] = {
+function saveCurrent() {
+  if (!DATA[cur]) return;
+  const nameEl = document.getElementById("nameInput");
+  DATA[cur] = Object.assign({}, DATA[cur], {
+    name:    nameEl ? nameEl.value.trim() : DATA[cur].name,
+    city:    document.getElementById("cityInput").value.trim(),
     dish:    document.getElementById("di").value.trim(),
     note:    document.getElementById("ni").value.trim(),
     rating:  curR,
     budget:  curB,
-    cuisine: curC
-  };
-  localStorage.setItem(SK, JSON.stringify(edits));
+    cuisine: curC,
+    tier:    curTier
+  });
 }
 
 function go(d) {
-  saveLocal();
+  saveCurrent();
   const next = cur + d;
   if (next >= 0 && next < DATA.length) {
-    cur = next;
-    render(cur);
+    render(next);
     window.scrollTo({top:0, behavior:"smooth"});
   } else if (next >= DATA.length) {
-    toast("全部完成！记得推送到 GitHub ↑");
+    toast("已到最后一家！记得推送到 GitHub ↑");
   }
 }
 
 function skip() {
-  if (cur < DATA.length - 1) { cur++; render(cur); window.scrollTo({top:0,behavior:"smooth"}); }
+  saveCurrent();
+  if (cur < DATA.length-1) { render(cur+1); window.scrollTo({top:0,behavior:"smooth"}); }
 }
 
+// ── Add new restaurant ──────────────────────────────────────────────────────
+function addNew() {
+  saveCurrent();
+  DATA.push({
+    name:"", city:"", area:"", cuisine:"",
+    budget:"", rating:0, dish:"", note:"",
+    tier:1, lat:null, lng:null, google_maps_url:"",
+    _isNew: true
+  });
+  render(DATA.length - 1);
+  window.scrollTo({top:0, behavior:"smooth"});
+  setTimeout(() => { const n = document.getElementById("nameInput"); if(n) n.focus(); }, 120);
+  toast("新店已添加，填好信息后推送到 GitHub");
+}
+
+function deleteEntry() {
+  if (!DATA[cur] || !DATA[cur]._isNew) return;
+  DATA.splice(cur, 1);
+  render(Math.min(cur, DATA.length-1));
+  toast("已删除");
+}
+
+// ── Search ──────────────────────────────────────────────────────────────────
+function onSearch() {
+  const q = document.getElementById("searchBox").value.trim().toLowerCase();
+  const res = document.getElementById("searchResults");
+  if (!q) { res.style.display="none"; return; }
+  const matches = DATA.map((d,i)=>({d,i})).filter(({d})=>(d.name||"").toLowerCase().includes(q)).slice(0,8);
+  if (!matches.length) { res.style.display="none"; return; }
+  res.innerHTML = matches.map(({d,i})=>
+    `<div class="sr-item" onmousedown="jumpTo(${i})">
+      ${escH(d.name)}${d._isNew?'<span class="new-badge">NEW</span>':''}
+      <div class="sr-city">${escH(d.city||'城市未知')}</div>
+    </div>`
+  ).join("");
+  res.style.display = "block";
+}
+
+function jumpTo(i) {
+  saveCurrent();
+  document.getElementById("searchBox").value = "";
+  document.getElementById("searchResults").style.display = "none";
+  render(i);
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function hideResults() {
+  setTimeout(()=>{ document.getElementById("searchResults").style.display="none"; }, 150);
+}
+
+// ── Export / Push ───────────────────────────────────────────────────────────
 function getMerged() {
-  return DATA.map((r, i) => Object.assign({}, r, edits[i] || {}));
+  saveCurrent();
+  return DATA.map(d => { const r = Object.assign({},d); delete r._isNew; return r; });
 }
 
 function exportJ() {
-  saveLocal();
   const blob = new Blob([JSON.stringify(getMerged(), null, 2)], {type:"application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "foodmap_final.json";
+  a.download = "foodmap_updated.json";
   a.click();
   toast("导出成功 ↓");
 }
 
 async function pushGH() {
-  saveLocal();
   const token = getToken();
-  if (!token) {
-    toast("请先填写 GitHub Token");
-    document.getElementById("tokenInput").focus();
-    return;
-  }
-
+  if (!token) { toast("请先填写 GitHub Token"); document.getElementById("tokenInput").focus(); return; }
   toast("推送中...");
   const merged = getMerged();
   const content = btoa(unescape(encodeURIComponent(JSON.stringify(merged, null, 2))));
-
   try {
-    // Get current file SHA
     const infoR = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
-      headers: {"Authorization": "token " + token, "Accept": "application/vnd.github.v3+json"}
+      headers: {"Authorization":"token "+token, "Accept":"application/vnd.github.v3+json"}
     });
     const info = await infoR.json();
-    if (!info.sha) { toast("获取文件信息失败，检查 Token"); return; }
-
-    // Push update
+    if (!info.sha) { toast("获取文件失败，检查 Token 是否有 repo 权限"); return; }
     const putR = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
       method: "PUT",
-      headers: {
-        "Authorization": "token " + token,
-        "Content-Type": "application/json",
-        "Accept": "application/vnd.github.v3+json"
-      },
+      headers: {"Authorization":"token "+token, "Content-Type":"application/json", "Accept":"application/vnd.github.v3+json"},
       body: JSON.stringify({
-        message: "Update food map annotations " + new Date().toISOString().slice(0,10),
+        message: "Update food map " + new Date().toISOString().slice(0,10),
         content,
         sha: info.sha
       })
     });
-
     if (putR.ok) {
-      toast("推送成功 ✓ GitHub 已更新");
-      // Reload data
-      setTimeout(() => { DATA = getMerged(); edits = {}; localStorage.removeItem(SK); }, 2000);
+      DATA.forEach(d => delete d._isNew);
+      render(cur);
+      toast(`推送成功 ✓  共 ${merged.length} 家餐厅`);
     } else {
       const err = await putR.json();
       toast("推送失败: " + (err.message || putR.status));
     }
-  } catch(e) {
-    toast("推送失败: " + e.message);
-  }
+  } catch(e) { toast("推送失败: " + e.message); }
 }
 
 function toast(msg) {
   const t = document.getElementById("toast");
   t.textContent = msg;
   t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2500);
+  setTimeout(()=>t.classList.remove("show"), 2500);
 }
 
+// Keyboard shortcuts
 document.addEventListener("keydown", e => {
-  if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return;
-  if (e.key === "ArrowRight") go(1);
-  if (e.key === "ArrowLeft") go(-1);
+  if (e.target.tagName==="TEXTAREA"||e.target.tagName==="INPUT") return;
+  if (e.key==="ArrowRight") go(1);
+  if (e.key==="ArrowLeft")  go(-1);
+  if (e.key==="n"||e.key==="N") addNew();
 });
 
 loadData();
