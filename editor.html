@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food Map 批注工具</title>
+<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Maru+Gothic:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Zen Maru Gothic",sans-serif;background:#f5efe6;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:32px 16px}
+h1{font-family:"Klee One",cursive;font-size:22px;color:#5a3e2b;margin-bottom:4px;letter-spacing:1px}
+.sub{font-size:12px;color:#a8907a;margin-bottom:24px}
+.bar{width:100%;max-width:640px;height:4px;background:#e2d8cc;border-radius:4px;margin-bottom:6px;overflow:hidden}
+.fill{height:100%;background:linear-gradient(90deg,#9b6e52,#b87aa0);transition:width .4s}
+.pl{font-size:12px;color:#a8907a;text-align:right;max-width:640px;width:100%;margin-bottom:18px}
+.card{width:100%;max-width:640px;background:#fdf8f2;border-radius:18px;border:1px solid #e2d8cc;padding:28px;box-shadow:0 2px 20px rgba(90,62,43,.07);position:relative}
+.card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:18px 18px 0 0;background:linear-gradient(90deg,#9b6e52,#c17a5e,#b87aa0,#6e8c72)}
+.hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.sn{font-family:"Klee One",cursive;font-size:22px;color:#3d2c1e;line-height:1.3;flex:1;padding-right:12px}
+.tb{font-family:"Klee One",cursive;font-size:12px;padding:3px 10px;border-radius:12px;white-space:nowrap}
+.t1{background:#f5ebe6;color:#9b5e42;border:.5px solid #dbbba8}
+.t2{background:#eceaf5;color:#6a5a8a;border:.5px solid #c8c0dc}
+.city{font-size:12px;color:#a8907a;margin-bottom:20px}
+.fg{margin-bottom:16px}
+label{display:block;font-size:11px;color:#b89f8a;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px}
+input[type=text],textarea{width:100%;background:#f7f2ea;border:1px solid #e2d8cc;border-radius:10px;padding:10px 14px;font-family:"Klee One",cursive;font-size:15px;color:#3d2c1e;outline:none;transition:border-color .2s}
+input[type=text]:focus,textarea:focus{border-color:#9b6e52;background:#fdf8f2}
+textarea{resize:vertical;min-height:88px;line-height:1.7}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pg{display:flex;gap:6px;padding:8px 0;align-items:center}
+.sb{background:none;border:none;font-size:22px;cursor:pointer;color:#e2d8cc;transition:color .15s,transform .1s;padding:0 2px}
+.sb.on{color:#b87aa0}
+.sb:hover{transform:scale(1.2)}
+.rv{font-family:"Klee One",cursive;font-size:13px;color:#9b6e52;margin-left:8px}
+.pills{display:flex;gap:7px;flex-wrap:wrap;padding:4px 0}
+.pill{font-family:"Klee One",cursive;font-size:13px;padding:5px 14px;border-radius:20px;border:1px solid #d6c8b8;color:#7a6352;background:transparent;cursor:pointer;transition:all .18s}
+.pill:hover{background:#ede4d8}
+.pill.ob{background:#9b6e52;border-color:#9b6e52;color:#fdf8f2}
+.pill.og{background:#6e8c72;border-color:#6e8c72;color:#f2f7f3}
+.ci{margin-top:8px}
+.nav{display:flex;align-items:center;justify-content:space-between;margin-top:24px;gap:12px}
+.btn{font-family:"Klee One",cursive;font-size:14px;padding:10px 24px;border-radius:24px;border:none;cursor:pointer;transition:all .18s}
+.bp{background:transparent;border:1px solid #d6c8b8;color:#9b6e52}
+.bp:hover{background:#f0e8dc}
+.bn{background:#9b6e52;color:#fdf8f2;box-shadow:0 2px 8px rgba(155,110,82,.25)}
+.bn:hover{background:#8a5e44}
+.skip{font-size:12px;color:#b89f8a;background:none;border:none;cursor:pointer;text-decoration:underline;font-family:"Zen Maru Gothic",sans-serif}
+.exp{width:100%;max-width:640px;margin-top:16px;display:flex;gap:8px;justify-content:flex-end}
+.be{font-family:"Klee One",cursive;font-size:13px;padding:8px 20px;border-radius:20px;border:1.5px dashed #b89f8a;color:#9b6e52;background:transparent;cursor:pointer;transition:all .18s}
+.be:hover{background:#f0e8dc}
+.bpush{border-color:#6e8c72;color:#6e8c72}
+.bpush:hover{background:#f0f7f2}
+.toast{position:fixed;bottom:24px;right:24px;background:#3d2c1e;color:#fdf8f2;font-family:"Klee One",cursive;font-size:13px;padding:10px 20px;border-radius:20px;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.hint{font-size:11px;color:#c8b9a8;margin-top:4px;font-style:italic}
+.loading{text-align:center;padding:40px;font-family:"Klee One",cursive;color:#9b6e52;font-size:16px}
+.token-bar{width:100%;max-width:640px;background:#fdf8f2;border:1px solid #e2d8cc;border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;gap:10px;align-items:center}
+.token-bar input{flex:1;background:#f7f2ea;border:1px solid #e2d8cc;border-radius:8px;padding:8px 12px;font-family:"Klee One",cursive;font-size:13px;color:#3d2c1e;outline:none}
+.token-bar label{font-size:11px;color:#b89f8a;white-space:nowrap}
+.saved-dot{width:8px;height:8px;border-radius:50%;background:#6e8c72;display:inline-block;margin-left:6px;opacity:0;transition:opacity .3s}
+.saved-dot.show{opacity:1}
+</style>
+</head>
+<body>
+
+<h1>&#9670; Food Map 批注工具 &#9670;</h1>
+<p class="sub">重新填写你的美食笔记 · 自动保存到浏览器 · 可推送到 GitHub</p>
+
+<!-- GitHub Token 输入 -->
+<div class="token-bar">
+  <label>GitHub Token</label>
+  <input type="password" id="tokenInput" placeholder="ghp_xxxx (用于推送到 GitHub，本地填写不需要)">
+  <span class="saved-dot" id="tokenDot"></span>
+</div>
+
+<div class="bar"><div class="fill" id="pf"></div></div>
+<div class="pl" id="pl"></div>
+
+<div class="card">
+  <div class="loading" id="loading">数据加载中...</div>
+  <div id="main" style="display:none">
+    <div class="hd">
+      <div class="sn" id="sn"></div>
+      <div class="tb" id="tb"></div>
+    </div>
+    <div class="city" id="cr"></div>
+
+    <div class="fg">
+      <label>菜系类型</label>
+      <div class="pills" id="cg">
+        <button class="pill" onclick="selC(this,'日料')">🍣 日料</button>
+        <button class="pill" onclick="selC(this,'韩料')">🥩 韩料</button>
+        <button class="pill" onclick="selC(this,'中餐')">🥢 中餐</button>
+        <button class="pill" onclick="selC(this,'泰餐')">🌿 泰餐</button>
+        <button class="pill" onclick="selC(this,'越南')">🍜 越南</button>
+        <button class="pill" onclick="selC(this,'西餐')">🍽 西餐</button>
+        <button class="pill" onclick="selC(this,'咖啡')">☕ 咖啡</button>
+        <button class="pill" onclick="selC(this,'甜点')">🍰 甜点</button>
+        <button class="pill" onclick="selC(this,'海鲜')">🦞 海鲜</button>
+        <button class="pill" onclick="selC(this,'墨西哥')">🌮 墨西哥</button>
+      </div>
+      <input type="text" id="ci" placeholder="或直接输入..." class="ci" oninput="onCI()">
+    </div>
+
+    <div class="r2">
+      <div class="fg">
+        <label>推荐一道菜</label>
+        <input type="text" id="di" placeholder="最值得点的那道...">
+      </div>
+      <div class="fg">
+        <label>预算 / 人</label>
+        <div class="pills" id="bg">
+          <button class="pill" data-v="1" onclick="selB(this)">$ 便饭</button>
+          <button class="pill" data-v="2" onclick="selB(this)">$$ 犒劳</button>
+          <button class="pill" data-v="3" onclick="selB(this)">$$$ 庆祝</button>
+          <button class="pill" data-v="4" onclick="selB(this)">$$$$ 奢侈</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="fg">
+      <label>评分</label>
+      <div class="pg">
+        <button class="sb" onclick="setR(1)">&#9829;</button>
+        <button class="sb" onclick="setR(2)">&#9829;</button>
+        <button class="sb" onclick="setR(3)">&#9829;</button>
+        <button class="sb" onclick="setR(4)">&#9829;</button>
+        <button class="sb" onclick="setR(5)">&#9829;</button>
+        <span class="rv" id="rv"></span>
+      </div>
+    </div>
+
+    <div class="fg">
+      <label>你的笔记</label>
+      <textarea id="ni" placeholder="写下最想告诉朋友的那句话..."></textarea>
+      <div class="hint">一句话就够，说你最想说的。</div>
+    </div>
+
+    <div class="nav">
+      <button class="btn bp" onclick="go(-1)">&#8592; 上一家</button>
+      <button class="skip" onclick="skip()">跳过</button>
+      <button class="btn bn" onclick="go(1)">下一家 &#8594;</button>
+    </div>
+  </div>
+</div>
+
+<div class="exp">
+  <button class="be" onclick="exportJ()">&#8595; 导出 JSON</button>
+  <button class="be bpush" onclick="pushGH()">&#8593; 推送到 GitHub</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const OWNER = "lilywmh";
+const REPO  = "food_map";
+const PATH  = "foodmap.json";
+const RAW   = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/${PATH}`;
+const SK    = "fm_edits_v3";
+
+let DATA = [], edits = {}, cur = 0, curR = 0, curB = "", curC = "";
+
+try { edits = JSON.parse(localStorage.getItem(SK) || "{}"); } catch(e) {}
+
+// Save token in sessionStorage only (not persisted)
+function getToken() { return document.getElementById("tokenInput").value.trim(); }
+
+async function loadData() {
+  try {
+    const r = await fetch(RAW + "?t=" + Date.now());
+    DATA = await r.json();
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("main").style.display = "block";
+    render(0);
+  } catch(e) {
+    document.getElementById("loading").textContent = "加载失败，请刷新页面。";
+  }
+}
+
+function get(i) { return Object.assign({}, DATA[i], edits[i] || {}); }
+
+function render(i) {
+  const e = get(i);
+  document.getElementById("sn").textContent = e.name;
+  const tb = document.getElementById("tb");
+  tb.textContent = e.tier === 1 ? "⭐ 精选" : "✓ 去过";
+  tb.className = "tb " + (e.tier === 1 ? "t1" : "t2");
+  document.getElementById("cr").textContent = (e.city ? "📍 " + e.city : "📍 城市未知");
+  document.getElementById("di").value = e.dish || "";
+  document.getElementById("ni").value = e.note || "";
+  curR = parseFloat(e.rating) || 0;
+  renderStars(curR);
+  curB = e.budget || "";
+  document.querySelectorAll("#bg .pill").forEach(p => p.classList.toggle("ob", p.dataset.v === curB));
+  curC = e.cuisine || "";
+  document.querySelectorAll("#cg .pill").forEach(p => {
+    p.classList.toggle("og", p.textContent.replace(/^.\s/, "").trim() === curC);
+  });
+  document.getElementById("ci").value = "";
+  const pct = ((i + 1) / DATA.length * 100).toFixed(0);
+  document.getElementById("pf").style.width = pct + "%";
+  document.getElementById("pl").textContent = (i+1) + " / " + DATA.length + "  ·  已填写 " + Object.keys(edits).length + " 家";
+}
+
+function renderStars(v) {
+  document.querySelectorAll(".sb").forEach((b,i) => b.classList.toggle("on", i < v));
+  document.getElementById("rv").textContent = v > 0 ? v + " / 5" : "";
+}
+
+function setR(v) { curR = v; renderStars(v); }
+
+function selB(el) {
+  curB = el.dataset.v;
+  document.querySelectorAll("#bg .pill").forEach(p => p.classList.remove("ob"));
+  el.classList.add("ob");
+}
+
+function selC(el, v) {
+  curC = v;
+  document.querySelectorAll("#cg .pill").forEach(p => p.classList.remove("og"));
+  el.classList.add("og");
+  document.getElementById("ci").value = "";
+}
+
+function onCI() {
+  curC = document.getElementById("ci").value;
+  document.querySelectorAll("#cg .pill").forEach(p => p.classList.remove("og"));
+}
+
+function saveLocal() {
+  edits[cur] = {
+    dish:    document.getElementById("di").value.trim(),
+    note:    document.getElementById("ni").value.trim(),
+    rating:  curR,
+    budget:  curB,
+    cuisine: curC
+  };
+  localStorage.setItem(SK, JSON.stringify(edits));
+}
+
+function go(d) {
+  saveLocal();
+  const next = cur + d;
+  if (next >= 0 && next < DATA.length) {
+    cur = next;
+    render(cur);
+    window.scrollTo({top:0, behavior:"smooth"});
+  } else if (next >= DATA.length) {
+    toast("全部完成！记得推送到 GitHub ↑");
+  }
+}
+
+function skip() {
+  if (cur < DATA.length - 1) { cur++; render(cur); window.scrollTo({top:0,behavior:"smooth"}); }
+}
+
+function getMerged() {
+  return DATA.map((r, i) => Object.assign({}, r, edits[i] || {}));
+}
+
+function exportJ() {
+  saveLocal();
+  const blob = new Blob([JSON.stringify(getMerged(), null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "foodmap_final.json";
+  a.click();
+  toast("导出成功 ↓");
+}
+
+async function pushGH() {
+  saveLocal();
+  const token = getToken();
+  if (!token) {
+    toast("请先填写 GitHub Token");
+    document.getElementById("tokenInput").focus();
+    return;
+  }
+
+  toast("推送中...");
+  const merged = getMerged();
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(merged, null, 2))));
+
+  try {
+    // Get current file SHA
+    const infoR = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
+      headers: {"Authorization": "token " + token, "Accept": "application/vnd.github.v3+json"}
+    });
+    const info = await infoR.json();
+    if (!info.sha) { toast("获取文件信息失败，检查 Token"); return; }
+
+    // Push update
+    const putR = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
+      method: "PUT",
+      headers: {
+        "Authorization": "token " + token,
+        "Content-Type": "application/json",
+        "Accept": "application/vnd.github.v3+json"
+      },
+      body: JSON.stringify({
+        message: "Update food map annotations " + new Date().toISOString().slice(0,10),
+        content,
+        sha: info.sha
+      })
+    });
+
+    if (putR.ok) {
+      toast("推送成功 ✓ GitHub 已更新");
+      // Reload data
+      setTimeout(() => { DATA = getMerged(); edits = {}; localStorage.removeItem(SK); }, 2000);
+    } else {
+      const err = await putR.json();
+      toast("推送失败: " + (err.message || putR.status));
+    }
+  } catch(e) {
+    toast("推送失败: " + e.message);
+  }
+}
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return;
+  if (e.key === "ArrowRight") go(1);
+  if (e.key === "ArrowLeft") go(-1);
+});
+
+loadData();
+</script>
+</body>
+</html>
