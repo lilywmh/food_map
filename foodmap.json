@@ -3,11 +3,11 @@
     "name": "Gamja Gol",
     "city": "Los Angeles",
     "area": "",
-    "cuisine": "",
+    "cuisine": "韩料",
     "budget": "2",
-    "rating": "5",
-    "dish": "",
-    "note": "",
+    "rating": 5,
+    "dish": "韩式猪脊骨汤",
+    "note": "猪骨头太美味了，五花肉也不错，份量很大。",
     "tier": 1,
     "lat": null,
     "lng": null,
@@ -19,7 +19,7 @@
     "area": "",
     "cuisine": "",
     "budget": "3",
-    "rating": "5",
+    "rating": 5,
     "dish": "",
     "note": "",
     "tier": 1,
@@ -33,7 +33,7 @@
     "area": "",
     "cuisine": "",
     "budget": "1",
-    "rating": "5",
+    "rating": 5,
     "dish": "lion",
     "note": "LA  plaza",
     "tier": 1,
@@ -252,7 +252,7 @@
     "google_maps_url": ""
   },
   {
-    "name": "WOCCA ROCCA curry and...\u200b\u200bUJI",
+    "name": "WOCCA ROCCA curry and...​​UJI",
     "city": "Kyoto",
     "area": "",
     "cuisine": "",
@@ -770,7 +770,7 @@
     "google_maps_url": ""
   },
   {
-    "name": "Red Rock-Torrance\uff0f\u30ec\u30c3\u30c9\u30ed\u30c3\u30af \u30c8\u30fc\u30e9\u30f3\u30b9",
+    "name": "Red Rock-Torrance／レッドロック トーランス",
     "city": "Los Angeles",
     "area": "",
     "cuisine": "",
@@ -840,7 +840,7 @@
     "google_maps_url": ""
   },
   {
-    "name": "Formosa Aroma \u5cf6\u5dbc\u8336\u9109 - Alhambra, CA",
+    "name": "Formosa Aroma 島嶼茶鄉 - Alhambra, CA",
     "city": "Los Angeles",
     "area": "",
     "cuisine": "",
