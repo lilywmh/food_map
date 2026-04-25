@@ -196,11 +196,6 @@
 const JSON_URL = 'https://raw.githubusercontent.com/lilywmh/food_map/main/foodmap.json';
 
 let DATA = [];
-fetch(JSON_URL)
-  .then(res => res.json())
-  .then(data => {
-    DATA = data;
-  });
 
 const BUDGET_MAP = {"1":"$ 便饭","2":"$$ 犒劳自己","3":"$$$ 值得庆祝","4":"$$$$ 奢侈一下"};
 const EMOJI = {"日料":"🍱","韩料":"🥩","中餐":"🍜","泰餐":"🍛","越南":"🍲","咖啡":"☕","甜点":"🍨","西餐":"🍽️","墨西哥":"🌮","":"🍴"};
@@ -227,29 +222,43 @@ let activeTiers = new Set([1,2]);
 let activeCuisine = 'all';
 const layer = L.layerGroup().addTo(map);
 
-// Build cuisine pills
-const cuisineSet = [...new Set(DATA.map(d=>d.cuisine||'').filter(Boolean))].sort();
 const cf = document.getElementById('cuisineFilter');
-cuisineSet.forEach(c=>{
-  const b=document.createElement('button');
-  b.className='pill'; b.dataset.cuisine=c;
-  b.textContent=(EMOJI[c]||'🍴')+' '+c;
-  cf.appendChild(b);
-});
+const cj = document.getElementById('cityJump');
 
-// Build city jump
-const cj=document.getElementById('cityJump');
-Object.entries(CITY_CENTERS).forEach(([city,coord])=>{
-  const n=DATA.filter(d=>d.city===city).length;
-  if(!n)return;
-  const o=document.createElement('option');
-  o.value=city; o.textContent=city+' ('+n+')'; cj.appendChild(o);
-});
 cj.addEventListener('change',()=>{
   const c=cj.value;
   if(c&&CITY_CENTERS[c]) map.flyTo(CITY_CENTERS[c],c==='Los Angeles'?12:11,{duration:1.4});
   setTimeout(()=>{cj.value='';},600);
 });
+
+fetch(JSON_URL)
+  .then(res => res.json())
+  .then(data => {
+    DATA = data;
+
+    // Build cuisine pills
+    const cuisineSet = [...new Set(DATA.map(d=>d.cuisine||'').filter(Boolean))].sort();
+    cuisineSet.forEach(c=>{
+      const b=document.createElement('button');
+      b.className='pill'; b.dataset.cuisine=c;
+      b.textContent=(EMOJI[c]||'🍴')+' '+c;
+      cf.appendChild(b);
+    });
+
+    // Build city jump
+    Object.entries(CITY_CENTERS).forEach(([city,coord])=>{
+      const n=DATA.filter(d=>d.city===city).length;
+      const o=document.createElement('option');
+      o.value=city; o.textContent=n ? city+' ('+n+')' : city;
+      cj.appendChild(o);
+    });
+
+    render();
+  })
+  .catch(err=>{
+    console.error('加载数据失败:', err);
+    document.getElementById('countBadge').textContent='加载失败';
+  });
 
 // Render
 function render(){
@@ -268,7 +277,7 @@ function render(){
       html:`<div class="m-wrap ${tc}"><div class="m-pin"><span>${em}</span></div><div class="m-stem"></div></div>`,
       iconSize:[30,38],iconAnchor:[15,38],popupAnchor:[0,-40]
     });
-    const gmUrl=`https://www.google.com/maps/search/${encodeURIComponent(item.name)}/@${item.lat},${item.lng},17z`;
+    const gmUrl=item.url||`https://www.google.com/maps/search/${encodeURIComponent(item.name)}/@${item.lat},${item.lng},17z`;
     const gm=`<a class="pop-gmap" href="${gmUrl}" target="_blank">📍 Maps</a>`;
     const pop=`<div class="pop">
       <span class="pop-badge ${item.tier===2?'t2':''}">${item.tier===1?'⭐ 精选':'· 去过'}</span>
@@ -282,7 +291,6 @@ function render(){
   });
   document.getElementById('countBadge').textContent=visible.length+' 家';
 }
-render();
 
 // Tier filter
 document.getElementById('tierFilter').addEventListener('click',e=>{
