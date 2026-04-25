@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lily 的美食地图 · Notebook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Kalam:wght@300;400;700&family=Patrick+Hand&family=Klee+One:wght@400;600&family=Noto+Serif+SC:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root {
+    --paper: #f4ecdb;
+    --paper-deep: #ebe0c8;
+    --paper-edge: #d9c8a4;
+    --ink: #3a322a;
+    --ink-light: #7d6f60;
+    --ink-faded: #a99a86;
+    --rule: #c9b894;
+    --tape-yellow: #f3df7e;
+    --tape-pink: #efb4c2;
+    --tape-blue: #a9c8d8;
+    --tape-mint: #b6d3b1;
+    --stamp-red: #c25a48;
+    --stamp-blue: #4a6c8f;
+    --hl-yellow: #f6d96f;
+    --moss: #6b8c6b;
+    --tier1: #c25a48;
+    --tier2: #97a283;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Klee One', 'Noto Serif SC', serif;
+    background: var(--paper);
+    color: var(--ink);
+    overflow: hidden;
+    /* Paper grain */
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(160,130,90,0.06) 0, transparent 60%),
+      radial-gradient(circle at 80% 70%, rgba(120,90,60,0.05) 0, transparent 50%),
+      repeating-linear-gradient(0deg, transparent 0 2px, rgba(180,150,110,0.025) 2px 3px);
+  }
+  button { font-family: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+  input, select { font-family: inherit; color: inherit; }
+
+  /* ─── LAYOUT ─── */
+  .app { display: grid; grid-template-rows: auto auto 1fr; height: 100vh; }
+
+  /* ─── TITLE BAR (row 1) ─── */
+  .titlebar {
+    padding: 14px 28px 10px;
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    border-bottom: 1px dashed var(--rule);
+    background: linear-gradient(to bottom, rgba(255,250,240,0.5), transparent);
+    position: relative;
+  }
+  .titlebar::before {
+    /* Red ribbon bookmark */
+    content: '';
+    position: absolute;
+    top: 0; right: 50px;
+    width: 22px; height: 32px;
+    background: var(--stamp-red);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+  .title-main {
+    font-family: 'Caveat', cursive;
+    font-size: 2.4rem;
+    line-height: 1;
+    color: var(--ink);
+    font-weight: 700;
+    transform: rotate(-1.2deg);
+    letter-spacing: 0.5px;
+  }
+  .title-main .ch { font-family: 'Klee One', serif; font-weight: 600; font-size: 1.6rem; vertical-align: 2px; margin-left: 4px; color: var(--stamp-red);}
+  .title-sub {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.85rem;
+    color: var(--ink-light);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding-bottom: 4px;
+    margin-left: 6px;
+  }
+  .title-sub .vol { color: var(--stamp-red); font-weight: bold; }
+  .title-spacer { flex: 1; }
+
+  .title-stat {
+    font-family: 'Caveat', cursive;
+    font-size: 1.05rem;
+    color: var(--ink-light);
+    line-height: 1.1;
+    text-align: right;
+    padding-bottom: 3px;
+  }
+  .title-stat strong { color: var(--stamp-red); font-size: 1.4rem; font-weight: 700; }
+
+  .signature {
+    font-family: 'Caveat', cursive;
+    font-size: 0.95rem;
+    color: var(--stamp-blue);
+    transform: rotate(-3deg);
+    padding-bottom: 4px;
+    border-bottom: 1.5px solid var(--stamp-blue);
+    line-height: 0.9;
+  }
+
+  /* ─── TOOLBAR (row 2) ─── */
+  .toolbar {
+    padding: 10px 24px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    background: rgba(245,238,222,0.6);
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+    z-index: 500;
+  }
+  .tb-group { display: flex; gap: 5px; align-items: center; }
+  .tb-sep { width: 1px; height: 22px; background: var(--rule); margin: 0 4px; }
+  .tb-label {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.72rem;
+    color: var(--ink-faded);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-right: 2px;
+  }
+
+  .chip {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.85rem;
+    padding: 4px 11px;
+    border: 1.5px solid var(--rule);
+    border-radius: 14px;
+    background: rgba(255,250,240,0.5);
+    color: var(--ink-light);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .chip:hover { border-color: var(--ink); color: var(--ink); transform: translateY(-1px); }
+  .chip.on {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .chip.tier2.on { background: var(--tier2); border-color: var(--tier2); }
+  .chip.star.on { background: var(--hl-yellow); color: var(--ink); border-color: #c4a830; }
+  .chip.budget.on { background: var(--moss); color: var(--paper); border-color: var(--moss); }
+
+  .search-wrap { position: relative; }
+  .search-wrap::before {
+    content: '🔍';
+    position: absolute;
+    left: 9px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .search {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.88rem;
+    padding: 5px 11px 5px 28px;
+    border: 1.5px solid var(--rule);
+    border-radius: 14px;
+    background: rgba(255,250,240,0.7);
+    color: var(--ink);
+    width: 175px;
+    outline: none;
+    transition: all 0.15s;
+  }
+  .search:focus { border-color: var(--ink); width: 220px; background: white; }
+
+  .icon-btn {
+    width: 30px; height: 30px;
+    border: 1.5px solid var(--rule);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,250,240,0.5);
+    transition: all 0.15s;
+    font-size: 0.95rem;
+  }
+  .icon-btn:hover { border-color: var(--ink); transform: rotate(-5deg) scale(1.05); }
+
+  .random-btn {
+    font-family: 'Caveat', cursive;
+    font-size: 1.05rem;
+    font-weight: 600;
+    padding: 4px 14px;
+    background: var(--stamp-red);
+    color: white;
+    border-radius: 14px;
+    transition: all 0.15s;
+    box-shadow: 0 2px 0 #8b3e30;
+    transform: rotate(-1deg);
+  }
+  .random-btn:hover { transform: rotate(0deg) translateY(-1px); box-shadow: 0 3px 0 #8b3e30; }
+  .random-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #8b3e30; }
+
+  /* ─── MAP (row 3) ─── */
+  .map-wrap {
+    position: relative;
+    overflow: hidden;
+  }
+  #map { width: 100%; height: 100%; background: var(--paper-deep); }
+  /* Tone the carto tiles to feel papery */
+  .leaflet-tile-pane { filter: sepia(0.25) saturate(0.65) hue-rotate(-5deg) brightness(1.02); }
+  .leaflet-control-attribution {
+    font-family: 'Patrick Hand', cursive !important;
+    font-size: 9px !important;
+    background: rgba(244,236,219,0.9) !important;
+    color: var(--ink-light) !important;
+  }
+  .leaflet-control-zoom { display: none; }
+
+  /* ─── DRAWER (sidebar) ─── */
+  .drawer-toggle {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 600;
+    width: 42px; height: 42px;
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: 8px;
+    box-shadow: 2px 3px 0 rgba(58,50,42,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: all 0.15s;
+  }
+  .drawer-toggle:hover { transform: translate(-1px, -1px); box-shadow: 3px 4px 0 rgba(58,50,42,0.25); }
+  .drawer-toggle::before {
+    content: '';
+    position: absolute;
+    top: -6px; left: 8px;
+    width: 22px; height: 8px;
+    background: var(--tape-yellow);
+    opacity: 0.85;
+    transform: rotate(-3deg);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+
+  .drawer {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 360px;
+    max-width: 90vw;
+    background: var(--paper);
+    border-right: 2px solid var(--paper-edge);
+    box-shadow: 6px 0 20px rgba(58,50,42,0.18);
+    z-index: 700;
+    transform: translateX(-105%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    background-image:
+      repeating-linear-gradient(0deg, transparent 0 26px, rgba(150,120,80,0.12) 26px 27px);
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer::before {
+    /* Spiral binding */
+    content: '';
+    position: absolute;
+    top: 0; right: -2px; bottom: 0;
+    width: 4px;
+    background:
+      repeating-linear-gradient(0deg,
+        transparent 0 8px,
+        rgba(58,50,42,0.4) 8px 12px,
+        transparent 12px 18px);
+  }
+
+  .drawer-head {
+    padding: 18px 22px 12px;
+    border-bottom: 1px dashed var(--rule);
+    position: relative;
+    flex-shrink: 0;
+  }
+  .drawer-head .close {
+    position: absolute; top: 10px; right: 12px;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    color: var(--ink-light);
+    transition: all 0.12s;
+  }
+  .drawer-head .close:hover { background: rgba(58,50,42,0.08); color: var(--ink); }
+  .drawer-head h2 {
+    font-family: 'Caveat', cursive;
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+  .drawer-head .sub {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.78rem;
+    color: var(--ink-light);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .drawer-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 8px 18px 0;
+    border-bottom: 1px solid var(--rule);
+    flex-shrink: 0;
+  }
+  .drawer-tab {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.88rem;
+    padding: 6px 12px 7px;
+    color: var(--ink-light);
+    border-bottom: 3px solid transparent;
+    transition: all 0.15s;
+    margin-bottom: -1px;
+  }
+  .drawer-tab:hover { color: var(--ink); }
+  .drawer-tab.on { color: var(--ink); border-color: var(--stamp-red); font-weight: bold; }
+
+  .drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 18px 28px;
+  }
+  .drawer-body::-webkit-scrollbar { width: 6px; }
+  .drawer-body::-webkit-scrollbar-thumb { background: var(--paper-edge); border-radius: 3px; }
+
+  .city-group { margin-bottom: 18px; }
+  .city-head {
+    font-family: 'Caveat', cursive;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 0 4px;
+  }
+  .city-head .count {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.7rem;
+    color: var(--ink-faded);
+    font-weight: normal;
+    letter-spacing: 0.08em;
+  }
+
+  .place-card {
+    padding: 9px 12px 10px;
+    margin-bottom: 7px;
+    background: rgba(255,250,240,0.55);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s;
+  }
+  .place-card:hover {
+    background: rgba(255,250,240,0.95);
+    border-color: var(--rule);
+    transform: translateX(2px);
+  }
+  .place-card .name {
+    font-family: 'Klee One', serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.25;
+    margin-bottom: 3px;
+    padding-right: 28px;
+  }
+  .place-card .meta {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.78rem;
+    color: var(--ink-light);
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .place-card .hearts { color: var(--stamp-red); }
+  .place-card .tier-mark {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 0.65rem;
+    padding: 1px 7px;
+    border-radius: 8px;
+    font-family: 'Patrick Hand', cursive;
+    letter-spacing: 0.05em;
+  }
+  .place-card .tier-mark.t1 { background: var(--tier1); color: white; }
+  .place-card .tier-mark.t2 { background: rgba(151,162,131,0.25); color: var(--tier2); }
+
+  /* Timeline tab */
+  .timeline {
+    padding: 4px;
+  }
+  .tl-month {
+    font-family: 'Caveat', cursive;
+    font-size: 1.15rem;
+    color: var(--ink-light);
+    margin: 16px 0 6px;
+    padding-left: 18px;
+    position: relative;
+  }
+  .tl-month::before { content: '◆'; position: absolute; left: 0; color: var(--stamp-red); }
+  .tl-item {
+    padding-left: 18px;
+    border-left: 2px dashed var(--rule);
+    margin-left: 6px;
+    padding-bottom: 10px;
+    cursor: pointer;
+    position: relative;
+  }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -5px; top: 4px;
+    width: 8px; height: 8px;
+    background: var(--paper);
+    border: 1.5px solid var(--ink-light);
+    border-radius: 50%;
+  }
+  .tl-item:hover::before { background: var(--stamp-red); border-color: var(--stamp-red); }
+  .tl-item .date {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.72rem;
+    color: var(--ink-faded);
+    letter-spacing: 0.06em;
+  }
+  .tl-item .name {
+    font-family: 'Klee One', serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .tl-item .city {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.75rem;
+    color: var(--ink-light);
+  }
+
+  /* ─── MARKERS (pin + icon) ─── */
+  .pin-wrap {
+    cursor: pointer;
+    transform-origin: center bottom;
+    transition: transform 0.18s cubic-bezier(0.3, 1.5, 0.5, 1);
+    filter: drop-shadow(2px 4px 5px rgba(58,50,42,0.32));
+  }
+  .pin-wrap:hover { transform: scale(1.18) translateY(-4px) !important; z-index: 1000; }
+
+  .pin {
+    width: 34px; height: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .pin-head {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    position: relative;
+    box-shadow: inset 0 -3px 5px rgba(0,0,0,0.18);
+  }
+  .pin-head::before {
+    content: '';
+    position: absolute;
+    top: 5px; left: 7px;
+    width: 9px; height: 6px;
+    background: rgba(255,255,255,0.38);
+    border-radius: 50%;
+    transform: rotate(-30deg);
+  }
+  .pin.t1 .pin-head { background: var(--stamp-red); }
+  .pin.t2 .pin-head { background: var(--stamp-blue); }
+  .pin-tail {
+    width: 0; height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    margin-top: -1px;
+  }
+  .pin.t1 .pin-tail { border-top: 10px solid var(--stamp-red); }
+  .pin.t2 .pin-tail { border-top: 10px solid var(--stamp-blue); }
+
+  /* ─── POPUP ─── */
+  .leaflet-popup-content-wrapper {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    box-shadow: 4px 5px 0 rgba(58,50,42,0.18), 0 14px 36px rgba(58,50,42,0.18);
+    padding: 0;
+    overflow: visible;
+    max-width: 290px;
+  }
+  .leaflet-popup-tip-container { display: none; }
+  .leaflet-popup-content { margin: 0 !important; width: 280px !important; }
+  .leaflet-popup-close-button {
+    color: var(--ink-light) !important;
+    font-size: 18px !important;
+    top: 6px !important;
+    right: 8px !important;
+    z-index: 10;
+    font-family: 'Patrick Hand', cursive !important;
+  }
+
+  .pop {
+    padding: 14px 16px 12px;
+    background-image: repeating-linear-gradient(0deg, transparent 0 24px, rgba(150,120,80,0.12) 24px 25px);
+    background-position: 0 22px;
+    position: relative;
+  }
+  .pop::before {
+    /* Tape on top */
+    content: '';
+    position: absolute;
+    top: -6px; left: 50%;
+    transform: translateX(-50%) rotate(-2deg);
+    width: 70px; height: 14px;
+    background: var(--tape-yellow);
+    opacity: 0.85;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+  }
+  .pop-photo {
+    height: 100px;
+    background: var(--paper-deep);
+    border: 1.5px solid var(--rule);
+    border-radius: 2px;
+    margin-bottom: 10px;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.78rem;
+    color: var(--ink-faded);
+    background-image:
+      linear-gradient(135deg, transparent 48%, rgba(150,120,80,0.15) 49%, rgba(150,120,80,0.15) 51%, transparent 52%),
+      linear-gradient(45deg, transparent 48%, rgba(150,120,80,0.15) 49%, rgba(150,120,80,0.15) 51%, transparent 52%);
+    box-shadow: 2px 2px 0 rgba(58,50,42,0.08);
+    position: relative;
+  }
+  .pop-photo .stamp {
+    position: absolute;
+    top: 6px; right: 6px;
+    font-family: 'Caveat', cursive;
+    font-size: 0.7rem;
+    color: var(--stamp-red);
+    border: 1.5px solid var(--stamp-red);
+    border-radius: 50%;
+    width: 32px; height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-12deg);
+    background: rgba(244,236,219,0.7);
+    line-height: 1;
+    text-align: center;
+  }
+  .pop-name {
+    font-family: 'Klee One', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--ink);
+    margin-bottom: 3px;
+    padding-right: 18px;
+  }
+  .pop-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 9px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.78rem;
+    color: var(--ink-light);
+  }
+  .pop-hearts { color: var(--stamp-red); font-size: 0.85rem; letter-spacing: 1px; }
+  .pop-cuisine {
+    background: rgba(255,250,240,0.7);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 1px 8px;
+    font-size: 0.72rem;
+  }
+  .pop-dish {
+    font-size: 0.85rem;
+    background: rgba(243,223,126,0.35);
+    background-image: linear-gradient(transparent 60%, rgba(243,223,126,0.6) 60%);
+    border-left: 3px solid var(--hl-yellow);
+    padding: 5px 9px;
+    margin-bottom: 7px;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  .pop-dish-lbl {
+    display: block;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.65rem;
+    color: var(--ink-light);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1px;
+  }
+  .pop-note {
+    font-family: 'Klee One', serif;
+    font-size: 0.84rem;
+    color: var(--ink-light);
+    line-height: 1.55;
+    font-style: italic;
+    padding: 0 2px;
+  }
+  .pop-note::before { content: '"'; color: var(--stamp-red); font-size: 1.4rem; line-height: 0; vertical-align: -6px; margin-right: 2px; font-family: 'Caveat', cursive; }
+  .pop-note::after { content: '"'; color: var(--stamp-red); font-size: 1.4rem; line-height: 0; vertical-align: -6px; margin-left: 2px; font-family: 'Caveat', cursive; }
+
+  /* ─── TIMELINE CHECK-IN ENHANCEMENTS ─── */
+  .tl-item .checkin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.7rem;
+    background: rgba(194,90,72,0.1);
+    border: 1px solid rgba(194,90,72,0.3);
+    color: var(--stamp-red);
+    border-radius: 8px;
+    padding: 1px 6px;
+    margin-top: 2px;
+  }
+
+  .pop-tags { display: flex; gap: 5px; margin-top: 8px; flex-wrap: wrap; }
+  .pop-tag {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 8px;
+    border: 1px dashed var(--rule);
+    color: var(--ink-light);
+  }
+  .pop-tag.go-back { background: rgba(182,211,177,0.4); border-color: var(--moss); border-style: solid; color: var(--moss); }
+  .pop-tag.skip { background: rgba(194,90,72,0.15); border-color: var(--stamp-red); border-style: solid; color: var(--stamp-red); }
+
+  .pop-footer {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .pop-budget {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.78rem;
+    color: var(--moss);
+    font-weight: bold;
+    letter-spacing: 0.05em;
+  }
+  .pop-actions { display: flex; gap: 5px; }
+  .pop-act {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.72rem;
+    padding: 3px 8px;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    color: var(--ink-light);
+    background: rgba(255,250,240,0.5);
+    text-decoration: none;
+    transition: all 0.12s;
+  }
+  .pop-act:hover { border-color: var(--ink); color: var(--ink); }
+  .pop-act.stamped { color: var(--stamp-red); border-color: rgba(194,90,72,0.3); background: rgba(194,90,72,0.06); }
+
+  /* City dropdown */
+  .city-dd {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.85rem;
+    padding: 4px 11px;
+    border: 1.5px solid var(--rule);
+    border-radius: 14px;
+    background: rgba(255,250,240,0.5);
+    color: var(--ink-light);
+    cursor: pointer;
+    outline: none;
+    transition: all 0.15s;
+  }
+  .city-dd:focus, .city-dd:hover { border-color: var(--ink); color: var(--ink); }
+
+  /* Been-here stamp overlay — floats on the card, no box */
+  .been-stamp {
+    position: absolute;
+    top: 32px; right: 16px;
+    font-family: 'Caveat', cursive;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--stamp-red);
+    border: 2.5px solid var(--stamp-red);
+    border-radius: 4px;
+    padding: 3px 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.3;
+    opacity: 0;
+    pointer-events: none;
+    transform: rotate(-14deg) scale(0.6);
+    background: rgba(244,236,219,0.15);
+    transition: opacity 0.35s, transform 0.35s cubic-bezier(0.15,1.4,0.4,1);
+    z-index: 5;
+  }
+  .been-stamp.visible { opacity: 0.62; transform: rotate(-14deg) scale(1); }
+
+  /* ─── STATS PANEL (bottom-right) ─── */
+  .stats {
+    position: absolute;
+    bottom: 24px;
+    right: 22px;
+    z-index: 500;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    padding: 12px 18px 14px;
+    box-shadow: 4px 4px 0 rgba(58,50,42,0.18);
+    transform: rotate(1.5deg);
+    border-radius: 3px;
+    min-width: 168px;
+  }
+  .stats::before {
+    content: '';
+    position: absolute;
+    top: -8px; left: 14px;
+    width: 36px; height: 12px;
+    background: var(--tape-mint);
+    opacity: 0.85;
+    transform: rotate(-4deg);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+  .stats h3 {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.7rem;
+    color: var(--ink-faded);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .stats .row {
+    font-family: 'Caveat', cursive;
+    font-size: 1.4rem;
+    color: var(--ink);
+    line-height: 1.15;
+  }
+  .stats .row strong { color: var(--stamp-red); font-weight: 700; font-size: 1.7rem; margin-right: 3px; }
+  .stats .row span { font-size: 0.95rem; color: var(--ink-light); }
+
+  /* ─── INLINE SEAL STAMP ─── */
+  /* Trigger: invisible overlay on photo, shows cursor on hover */
+  .pop-photo { cursor: pointer; }
+  .pop-photo:not(.stamped):hover::after {
+    content: '🖃 盖章';
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Caveat', cursive;
+    font-size: 1rem;
+    color: rgba(194,90,72,0.7);
+    background: rgba(244,236,219,0.4);
+    letter-spacing: 0.06em;
+  }
+
+  /* The big rubber-stamp impression that appears on the photo */
+  .seal-impression {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) rotate(-20deg) scale(0.2);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10;
+    transition: transform 0.38s cubic-bezier(0.15, 1.5, 0.4, 1), opacity 0.3s;
+  }
+  .seal-impression.pop-in {
+    transform: translate(-50%, -50%) rotate(-20deg) scale(1);
+    opacity: 1;
+  }
+  .seal-ring {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    border: 3px solid var(--stamp-red);
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(244,236,219,0.15);
+    box-shadow: 0 0 0 1.5px rgba(194,90,72,0.25);
+  }
+  .seal-inner {
+    text-align: center;
+    font-family: 'Caveat', cursive;
+    font-weight: 700;
+    color: var(--stamp-red);
+    line-height: 1.15;
+  }
+  .seal-inner .s-main { font-size: 0.85rem; letter-spacing: 0.04em; display: block; }
+  .seal-inner .s-sub  { font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.8; display: block; }
+
+  /* Count badge shown below popup photo after stamping */
+  .seal-count-badge {
+    position: absolute;
+    bottom: 6px; right: 8px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.7rem;
+    background: rgba(244,236,219,0.92);
+    color: var(--stamp-red);
+    padding: 1px 7px;
+    border-radius: 8px;
+    border: 1px solid rgba(194,90,72,0.3);
+    z-index: 11;
+    pointer-events: none;
+  }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120%);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 10px 22px;
+    border-radius: 22px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.92rem;
+    box-shadow: 0 8px 28px rgba(58,50,42,0.35);
+    z-index: 5000;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ─── DRAWER BACKDROP ─── */
+  .backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(58,50,42,0.25);
+    z-index: 650;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .backdrop.on { opacity: 1; pointer-events: auto; }
+
+  @media (max-width: 720px) {
+    .titlebar { padding: 10px 16px 8px; }
+    .title-main { font-size: 1.9rem; }
+    .title-sub { font-size: 0.72rem; }
+    .toolbar { padding: 8px 12px; gap: 6px; }
+    .signature, .title-stat { display: none; }
+    .stats { right: 12px; bottom: 14px; min-width: 140px; padding: 10px 14px 12px; }
+    .drawer { width: 320px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ROW 1: TITLE -->
+  <div class="titlebar">
+    <div>
+      <div class="title-main">Lily's Food Map<span class="ch">· 美食地图</span></div>
+      <div class="title-sub">A NOTEBOOK OF EATEN PLACES &nbsp;·&nbsp; <span class="vol">VOL. 01</span></div>
+    </div>
+    <div class="title-spacer"></div>
+    <div class="title-stat" id="titleStat">— places · — cities</div>
+    <div class="signature">— by Lily ✿</div>
+  </div>
+
+  <!-- ROW 2: TOOLBAR -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <input class="search" id="searchInput" type="text" placeholder="搜店名 / 菜名…" />
+    </div>
+
+    <div class="tb-sep"></div>
+
+    <div class="tb-group" id="tierFilter">
+      <span class="tb-label">Tier</span>
+      <button class="chip on" data-tier="1">⭐ 会再去</button>
+      <button class="chip tier2 on" data-tier="2">👣 去过</button>
+    </div>
+
+    <div class="tb-sep"></div>
+
+    <div class="tb-group">
+      <span class="tb-label">城市</span>
+      <select class="city-dd" id="cityFilter">
+        <option value="all">全部城市</option>
+      </select>
+    </div>
+
+    <div class="tb-sep"></div>
+
+    <div class="tb-group" id="cuisineFilter">
+      <span class="tb-label">菜系</span>
+      <button class="chip on" data-cuisine="all">全部</button>
+    </div>
+
+    <div class="tb-sep"></div>
+
+    <div class="tb-group" id="budgetFilter">
+      <span class="tb-label">价位</span>
+      <button class="chip budget" data-budget="1">$</button>
+      <button class="chip budget" data-budget="2">$$</button>
+      <button class="chip budget" data-budget="3">$$$</button>
+      <button class="chip budget" data-budget="4">$$$$</button>
+    </div>
+
+    <div class="tb-sep"></div>
+
+    <div class="tb-group" id="ratingFilter">
+      <span class="tb-label">评分</span>
+      <button class="chip star" data-rating="5">5★</button>
+      <button class="chip star" data-rating="4">4★+</button>
+    </div>
+
+    <div class="tb-sep"></div>
+
+    <button class="random-btn" id="randomBtn" title="随机推荐">🎲 今天吃这家？</button>
+  </div>
+
+  <!-- ROW 3: MAP -->
+  <div class="map-wrap">
+    <button class="drawer-toggle" id="drawerToggle" title="打开本子">📒</button>
+    <div class="backdrop" id="backdrop"></div>
+
+    <div class="drawer" id="drawer">
+      <div class="drawer-head">
+        <button class="close" id="drawerClose">✕</button>
+        <h2>The Notebook</h2>
+        <div class="sub">Lily's eaten list · 已去过的地方</div>
+      </div>
+      <div class="drawer-tabs">
+        <button class="drawer-tab on" data-tab="cities">By City</button>
+        <button class="drawer-tab" data-tab="timeline">Timeline</button>
+      </div>
+      <div class="drawer-body" id="drawerBody"></div>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="stats" id="statsBox">
+      <h3>tally</h3>
+      <div class="row"><strong id="statN">—</strong>places eaten</div>
+      <div class="row"><strong id="statC">—</strong><span>cities visited</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const JSON_URL = 'https://raw.githubusercontent.com/lilywmh/food_map/main/foodmap.json';
+
+const BUDGET_MAP = {"1":"$ 便饭","2":"$$ 犒劳","3":"$$$ 庆祝","4":"$$$$ 奢侈"};
+const EMOJI = {"日料":"🍱","韩料":"🥩","中餐":"🍜","泰餐":"🍛","越南":"🍲","咖啡":"☕","甜点":"🍨","西餐":"🍽️","墨西哥":"🌮","":"🍴"};
+const CITY_CENTERS = {
+  "Los Angeles":[34.052,-118.243],"San Diego":[32.715,-117.157],"San Francisco":[37.779,-122.419],
+  "Seattle":[47.606,-122.332],"Chicago":[41.878,-87.630],"Las Vegas":[36.114,-115.172],
+  "Joshua Tree":[34.134,-116.313],"Tokyo":[35.689,139.692],"Kyoto":[35.011,135.768],
+  "Osaka":[34.693,135.502],"Yokohama":[35.443,139.638],"Antigua":[14.560,-90.734]
+};
+
+let DATA = [];
+let activeTiers = new Set([1, 2]);
+let activeCuisine = 'all';
+let activeCity = 'all';
+let activeBudget = new Set();
+let activeRating = null;
+let searchTerm = '';
+let markerByName = new Map();
+
+// ─── SEAL / STAMP STORAGE ───
+function getSealData() {
+  try { return JSON.parse(localStorage.getItem('foodmap_seals') || '{}'); } catch { return {}; }
+}
+function saveSealData(d) {
+  try { localStorage.setItem('foodmap_seals', JSON.stringify(d)); } catch {}
+}
+function getSealCount(name) { return getSealData()[name] || 0; }
+function addSeal(name) {
+  const d = getSealData();
+  d[name] = (d[name] || 0) + 1;
+  saveSealData(d);
+  return d[name];
+}
+function hasUserStamped(name) {
+  try { const s = JSON.parse(localStorage.getItem('foodmap_user_stamps') || '[]'); return s.includes(name); } catch { return false; }
+}
+function setUserStamped(name) {
+  try {
+    const s = JSON.parse(localStorage.getItem('foodmap_user_stamps') || '[]');
+    if (!s.includes(name)) { s.push(name); localStorage.setItem('foodmap_user_stamps', JSON.stringify(s)); }
+  } catch {}
+}
+
+function hearts(r) {
+  return '♥'.repeat(Math.floor(r)) + (r%1>=0.5?'♡':'') + '♡'.repeat(5-Math.floor(r)-(r%1>=0.5?1:0));
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ─── MAP SETUP ───
+const map = L.map('map', { center: [30, 10], zoom: 2, zoomControl: false });
+L.control.zoom({ position: 'bottomleft' }).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  minZoom: 1, maxZoom: 16,
+  attribution: 'tiles © <a href="https://carto.com/">Carto</a> · <a href="https://osm.org">OSM</a>'
+}).addTo(map);
+
+const layer = L.layerGroup().addTo(map);
+
+// ─── DATA LOAD ───
+fetch(JSON_URL)
+  .then(r => r.json())
+  .then(data => {
+    DATA = data;
+    initFilters();
+    render();
+    updateStats();
+  })
+  .catch(err => {
+    toast('数据加载失败 — 请检查网络');
+    console.error(err);
+  });
+
+// ─── INIT FILTERS ───
+function initFilters() {
+  // Cities
+  const cities = [...new Set(DATA.map(d => d.city || '').filter(Boolean))].sort();
+  const cityF = document.getElementById('cityFilter');
+  cities.forEach(city => {
+    const o = document.createElement('option');
+    o.value = city;
+    const n = DATA.filter(d => d.city === city).length;
+    o.textContent = city + ' (' + n + ')';
+    cityF.appendChild(o);
+  });
+
+  // Cuisines
+  const cuisines = [...new Set(DATA.map(d => d.cuisine || '').filter(Boolean))].sort();
+  const cf = document.getElementById('cuisineFilter');
+  cuisines.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'chip';
+    b.dataset.cuisine = c;
+    b.textContent = (EMOJI[c] || '🍴') + ' ' + c;
+    cf.appendChild(b);
+  });
+}
+
+// ─── FILTER PIPELINE ───
+function visibleData() {
+  return DATA.filter(d => {
+    if (!d.lat || !d.lng) return false;
+    if (!activeTiers.has(d.tier)) return false;
+    if (activeCity !== 'all' && d.city !== activeCity) return false;
+    if (activeCuisine !== 'all' && d.cuisine !== activeCuisine) return false;
+    if (activeBudget.size > 0 && !activeBudget.has(parseInt(d.budget))) return false;
+    if (activeRating === 5 && d.rating < 5) return false;
+    if (activeRating === 4 && d.rating < 4) return false;
+    if (searchTerm) {
+      const t = searchTerm.toLowerCase();
+      const hay = ((d.name||'')+' '+(d.cuisine||'')+' '+(d.dish||'')+' '+(d.city||'')+' '+(d.note||'')).toLowerCase();
+      if (!hay.includes(t)) return false;
+    }
+    return true;
+  });
+}
+
+// ─── RENDER MAP ───
+function render() {
+  layer.clearLayers();
+  markerByName.clear();
+  const visible = visibleData();
+
+  visible.forEach(item => {
+    const em = EMOJI[item.cuisine] || '🍴';
+    const tc = 't' + item.tier;
+    const icon = L.divIcon({
+      className: '',
+      html: `<div class="pin-wrap"><div class="pin ${tc}"><div class="pin-head">${em}</div><div class="pin-tail"></div></div></div>`,
+      iconSize: [34, 44],
+      iconAnchor: [17, 44],
+      popupAnchor: [0, -46]
+    });
+    const m = L.marker([item.lat, item.lng], { icon }).bindPopup(buildPopup(item), {
+      maxWidth: 290, minWidth: 270, closeButton: true, autoPanPadding: [50, 50]
+    });
+    m.addTo(layer);
+    markerByName.set(item.name, m);
+  });
+
+  // Update title stat
+  const cities = new Set(visible.map(d => d.city).filter(Boolean));
+  document.getElementById('titleStat').textContent = `${visible.length} places · ${cities.size} cities`;
+  renderDrawerBody();
+}
+
+function buildPopup(item) {
+  const gmUrl = item.url || `https://www.google.com/maps/search/${encodeURIComponent(item.name)}/@${item.lat},${item.lng},17z`;
+  const encName = encodeURIComponent(item.name);
+  const stamped = hasUserStamped(item.name);
+  const tag = item.rating >= 4.5
+    ? '<span class="pop-tag go-back">↻ 想再去</span>'
+    : (item.rating <= 2.5 ? '<span class="pop-tag skip">✗ 不会再去</span>' : '<span class="pop-tag">— 看心情</span>');
+  return `<div class="pop">
+    <div class="been-stamp${stamped ? ' visible' : ''}" id="been-stamp-${encName}">BEEN<br>HERE</div>
+    <div class="pop-name">${item.name}</div>
+    <div class="pop-meta">
+      <span class="pop-hearts">${hearts(item.rating)}</span>
+      ${item.cuisine ? `<span class="pop-cuisine">${EMOJI[item.cuisine]||'🍴'} ${item.cuisine}</span>` : ''}
+      <span>${item.city || ''}</span>
+    </div>
+    ${item.dish ? `<div class="pop-dish"><span class="pop-dish-lbl">推荐菜 · pick</span>${item.dish}</div>` : ''}
+    ${item.note ? `<div class="pop-note">${item.note}</div>` : ''}
+    <div class="pop-tags">${tag}</div>
+    <div class="pop-footer">
+      <span class="pop-budget">${BUDGET_MAP[item.budget] || ''}</span>
+      <div class="pop-actions">
+        <a class="pop-act" href="${gmUrl}" target="_blank">📍 Maps</a>
+        <button class="pop-act" onclick="shareItem('${encName}')">🔗 分享</button>
+        <button class="pop-act${stamped ? ' stamped' : ''}" id="seal-btn-${encName}" onclick="doSeal('${encName}')">${stamped ? '✦ 去过' : '🖃 去过?'}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function shareItem(encName) {
+  const url = location.origin + location.pathname + '?focus=' + encName;
+  navigator.clipboard?.writeText(url).then(() => toast('链接已复制 ✿'));
+}
+window.shareItem = shareItem;
+
+function doSeal(encName) {
+  const name = decodeURIComponent(encName);
+  if (hasUserStamped(name)) return;
+  setUserStamped(name);
+  addSeal(name);
+
+  const stamp = document.getElementById('been-stamp-' + encName);
+  if (stamp) stamp.classList.add('visible');
+
+  const btn = document.getElementById('seal-btn-' + encName);
+  if (btn) { btn.classList.add('stamped'); btn.textContent = '✦ 去过'; }
+
+  toast('🖃 盖章成功！');
+}
+window.doSeal = doSeal;
+
+// ─── STATS ───
+function updateStats() {
+  const all = DATA.filter(d => d.lat && d.lng);
+  const cities = new Set(all.map(d => d.city).filter(Boolean));
+  document.getElementById('statN').textContent = all.length;
+  document.getElementById('statC').textContent = cities.size;
+}
+
+// ─── DRAWER ───
+const drawer = document.getElementById('drawer');
+const backdrop = document.getElementById('backdrop');
+function openDrawer() { drawer.classList.add('open'); backdrop.classList.add('on'); }
+function closeDrawer() { drawer.classList.remove('open'); backdrop.classList.remove('on'); }
+document.getElementById('drawerToggle').addEventListener('click', openDrawer);
+document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+backdrop.addEventListener('click', closeDrawer);
+
+let drawerTab = 'cities';
+document.querySelectorAll('.drawer-tab').forEach(t => {
+  t.addEventListener('click', () => {
+    drawerTab = t.dataset.tab;
+    document.querySelectorAll('.drawer-tab').forEach(x => x.classList.toggle('on', x === t));
+    renderDrawerBody();
+  });
+});
+
+function renderDrawerBody() {
+  const body = document.getElementById('drawerBody');
+  const visible = visibleData();
+  if (drawerTab === 'cities') {
+    const byCity = {};
+    visible.forEach(d => {
+      const c = d.city || '其他';
+      (byCity[c] = byCity[c] || []).push(d);
+    });
+    const order = Object.keys(byCity).sort((a, b) => byCity[b].length - byCity[a].length);
+    body.innerHTML = order.map(city => `
+      <div class="city-group">
+        <div class="city-head">${city} <span class="count">${byCity[city].length} places</span></div>
+        ${byCity[city].sort((a, b) => (b.rating||0)-(a.rating||0)).map(d => placeCard(d)).join('')}
+      </div>
+    `).join('') || `<div style="font-family:'Patrick Hand',cursive;color:var(--ink-faded);padding:20px;text-align:center;">没有匹配的店～试试调一下筛选？</div>`;
+  } else {
+    // Timeline — sort by date if available, else alphabetical buckets
+    const items = [...visible].sort((a, b) => (b.added || b.date || '').localeCompare(a.added || a.date || ''));
+    const buckets = {};
+    items.forEach(d => {
+      const key = (d.added || d.date || '').slice(0, 7) || 'Undated';
+      (buckets[key] = buckets[key] || []).push(d);
+    });
+    const order = Object.keys(buckets);
+    body.innerHTML = '<div class="timeline">' + order.map(month => `
+      <div class="tl-month">${month === 'Undated' ? '✦ Undated' : month}</div>
+      ${buckets[month].map(d => `
+        <div class="tl-item" data-name="${d.name}">
+          <div class="name">${d.name}</div>
+          <div class="city">${(EMOJI[d.cuisine]||'🍴')} ${d.cuisine || ''} · ${d.city || ''}</div>
+          ${(d.added || d.date) ? `<div class="checkin-badge">📅 ${d.added || d.date}</div>` : ''}
+        </div>
+      `).join('')}
+    `).join('') + '</div>';
+  }
+  // Wire clicks
+  body.querySelectorAll('.place-card, .tl-item').forEach(el => {
+    el.addEventListener('click', () => focusPlace(el.dataset.name));
+  });
+}
+
+function placeCard(d) {
+  return `<div class="place-card" data-name="${d.name}">
+    <div class="tier-mark ${d.tier === 1 ? 't1' : 't2'}">${d.tier === 1 ? 'fav' : 'visited'}</div>
+    <div class="name">${d.name}</div>
+    <div class="meta">
+      <span class="hearts">${hearts(d.rating)}</span>
+      <span>${EMOJI[d.cuisine]||'🍴'} ${d.cuisine || ''}</span>
+      <span>${BUDGET_MAP[d.budget] || ''}</span>
+    </div>
+  </div>`;
+}
+
+function focusPlace(name) {
+  const d = DATA.find(x => x.name === name);
+  if (!d || !d.lat) return;
+  closeDrawer();
+  map.flyTo([d.lat, d.lng], 15, { duration: 1.0 });
+  setTimeout(() => {
+    const m = markerByName.get(name);
+    if (m) m.openPopup();
+  }, 1100);
+}
+
+// ─── FILTERS WIRING ───
+document.getElementById('cityFilter').addEventListener('change', e => {
+  activeCity = e.target.value;
+  render();
+  if (activeCity !== 'all') {
+    const pts = DATA.filter(d => d.city === activeCity && d.lat && d.lng);
+    if (pts.length === 1) {
+      map.flyTo([pts[0].lat, pts[0].lng], 13, { duration: 1.2 });
+    } else if (pts.length > 1) {
+      const lats = pts.map(d => d.lat), lngs = pts.map(d => d.lng);
+      map.flyToBounds([[Math.min(...lats), Math.min(...lngs)],[Math.max(...lats), Math.max(...lngs)]], { padding: [60, 60], duration: 1.2, maxZoom: 14 });
+    } else if (CITY_CENTERS[activeCity]) {
+      map.flyTo(CITY_CENTERS[activeCity], 12, { duration: 1.2 });
+    }
+  }
+});
+
+document.getElementById('tierFilter').addEventListener('click', e => {
+  const p = e.target.closest('.chip');
+  if (!p) return;
+  const t = parseInt(p.dataset.tier);
+  if (activeTiers.has(t)) {
+    if (activeTiers.size === 1) return;
+    activeTiers.delete(t); p.classList.remove('on');
+  } else { activeTiers.add(t); p.classList.add('on'); }
+  render();
+});
+
+document.getElementById('cuisineFilter').addEventListener('click', e => {
+  const p = e.target.closest('.chip');
+  if (!p) return;
+  activeCuisine = p.dataset.cuisine;
+  document.querySelectorAll('#cuisineFilter .chip').forEach(x => x.classList.toggle('on', x === p));
+  render();
+});
+
+document.getElementById('budgetFilter').addEventListener('click', e => {
+  const p = e.target.closest('.chip');
+  if (!p) return;
+  const b = parseInt(p.dataset.budget);
+  if (activeBudget.has(b)) { activeBudget.delete(b); p.classList.remove('on'); }
+  else { activeBudget.add(b); p.classList.add('on'); }
+  render();
+});
+
+document.getElementById('ratingFilter').addEventListener('click', e => {
+  const p = e.target.closest('.chip');
+  if (!p) return;
+  const r = parseInt(p.dataset.rating);
+  if (activeRating === r) { activeRating = null; p.classList.remove('on'); }
+  else {
+    activeRating = r;
+    document.querySelectorAll('#ratingFilter .chip').forEach(x => x.classList.toggle('on', x === p));
+  }
+  render();
+});
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchTerm = e.target.value.trim();
+  render();
+});
+
+// ─── RANDOM ───
+document.getElementById('randomBtn').addEventListener('click', () => {
+  const v = visibleData();
+  if (!v.length) { toast('没有匹配的店哦～'); return; }
+  const pick = v[Math.floor(Math.random() * v.length)];
+  toast(`🎲 ${pick.name} · ${pick.city || ''}`);
+  focusPlace(pick.name);
+});
+
+// ─── DEEP LINK (?focus=…) ───
+window.addEventListener('load', () => {
+  const params = new URLSearchParams(location.search);
+  const f = params.get('focus');
+  if (f) {
+    setTimeout(() => focusPlace(decodeURIComponent(f)), 1200);
+  }
+});
+</script>
+</body>
+</html>
