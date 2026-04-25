@@ -531,6 +531,13 @@
     background-position: 0 22px;
     position: relative;
   }
+  .pop-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
   .pop::before {
     /* Tape on top */
     content: '';
@@ -548,8 +555,10 @@
     font-weight: 600;
     line-height: 1.25;
     color: var(--ink);
-    margin-bottom: 3px;
-    padding-right: 18px;
+    margin-bottom: 0;
+    padding-right: 0;
+    flex: 1;
+    min-width: 0;
   }
   .pop-meta {
     display: flex;
@@ -630,9 +639,8 @@
     margin-top: 10px;
     padding-top: 8px;
     border-top: 1px dashed var(--rule);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: grid;
+    grid-template-columns: 1fr;
     gap: 8px;
   }
   .pop-budget {
@@ -641,15 +649,15 @@
     color: var(--moss);
     font-weight: bold;
     letter-spacing: 0.05em;
+    white-space: nowrap;
   }
   .pop-actions {
     display: flex;
     gap: 5px;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
+    flex-wrap: wrap;
+    overflow: visible;
+    min-width: 0;
   }
-  .pop-actions::-webkit-scrollbar { display: none; }
   .pop-act {
     font-family: 'Patrick Hand', cursive;
     font-size: 0.8rem;
@@ -661,7 +669,7 @@
     text-decoration: none;
     transition: all 0.12s;
     white-space: nowrap;
-    flex-shrink: 0;
+    flex: 0 0 auto;
   }
   .pop-act:hover { border-color: var(--ink); color: var(--ink); }
   .pop-act.stamped { color: var(--stamp-red); border-color: rgba(194,90,72,0.3); background: rgba(194,90,72,0.06); }
@@ -690,35 +698,48 @@
   }
   .city-dd:focus, .city-dd:hover { border-color: var(--ink); color: var(--ink); }
 
-  /* Been-here stamp overlay — floats on the card, no box */
+  /* Circular vintage stamp */
   .been-stamp {
-    position: absolute;
-    top: 32px; right: 16px;
+    position: relative;
     font-family: 'Caveat', cursive;
-    font-size: 0.88rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: var(--stamp-red);
     border: 2.5px solid var(--stamp-red);
-    border-radius: 4px;
-    padding: 3px 9px;
-    letter-spacing: 0.12em;
+    border-radius: 50%;
+    width: 78px;
+    height: 78px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     text-align: center;
-    line-height: 1.3;
+    line-height: 1.05;
     opacity: 0;
     pointer-events: none;
-    transform: rotate(-14deg) scale(0.6);
-    background: rgba(244,236,219,0.15);
-    transition: opacity 0.35s, transform 0.35s cubic-bezier(0.15,1.4,0.4,1);
-    z-index: 5;
+    transform: rotate(-16deg) scale(0.45);
+    background: rgba(244,236,219,0.22);
+    box-shadow: inset 0 0 0 1.2px rgba(194,90,72,0.35);
+    transition: opacity 0.25s, transform 0.25s;
+    flex-shrink: 0;
   }
-  .been-stamp.visible { opacity: 0.62; transform: rotate(-14deg) scale(1); }
-  .been-stamp.pop { animation: stampPop 0.42s cubic-bezier(0.15, 1.5, 0.4, 1); }
+  .been-stamp::before {
+    content: '';
+    position: absolute;
+    inset: 7px;
+    border: 1.6px dashed rgba(194,90,72,0.75);
+    border-radius: 50%;
+  }
+  .been-stamp.visible { opacity: 0.72; transform: rotate(-16deg) scale(1); }
+  .been-stamp.pop { animation: stampPress 0.5s cubic-bezier(0.18, 0.9, 0.25, 1.2); }
 
-  @keyframes stampPop {
-    0% { opacity: 0; transform: rotate(-14deg) scale(0.55); }
-    70% { opacity: 0.68; transform: rotate(-14deg) scale(1.06); }
-    100% { opacity: 0.62; transform: rotate(-14deg) scale(1); }
+  @keyframes stampPress {
+    0% { opacity: 0; transform: translateY(-14px) rotate(-16deg) scale(1.28); filter: blur(0.2px); }
+    45% { opacity: 0.82; transform: translateY(1px) rotate(-16deg) scale(0.93); filter: blur(0); }
+    70% { opacity: 0.76; transform: translateY(0) rotate(-16deg) scale(1.04); }
+    100% { opacity: 0.72; transform: translateY(0) rotate(-16deg) scale(1); }
   }
 
   .pin-wrap.stamp-pop {
@@ -1604,8 +1625,10 @@ function buildPopup(item) {
     ? '<span class="pop-tag go-back">↻ 想再去</span>'
     : (item.rating <= 2.5 ? '<span class="pop-tag skip">✗ 不会再去</span>' : '<span class="pop-tag">— 看心情</span>');
   return `<div class="pop">
-    <div class="been-stamp${stamped ? ' visible' : ''}" id="been-stamp-${encName}">BEEN<br>HERE</div>
-    <div class="pop-name">${item.name}</div>
+    <div class="pop-top">
+      <div class="pop-name">${item.name}</div>
+      <div class="been-stamp${stamped ? ' visible' : ''}" id="been-stamp-${encName}">BEEN<br>HERE</div>
+    </div>
     <div class="pop-meta">
       <span class="pop-hearts">${hearts(item.rating)}</span>
       ${item.cuisine ? `<span class="pop-cuisine">${EMOJI[item.cuisine]||'🍴'} ${item.cuisine}</span>` : ''}
