@@ -1202,19 +1202,6 @@
     "lat": 34.0347102,
     "lng": -118.2834563,
     "google_maps_url": ""
-  },
-  {
-    "name": "Crepe De France",
-    "city": "Seattle",
-    "area": "",
-    "cuisine": "甜点",
-    "budget": "1",
-    "rating": 3.5,
-    "dish": "可丽饼",
-    "note": "很甜的可丽饼",
-    "tier": 2,
-    "lat": 47.6084213,
-    "lng": -122.3400802,
-    "google_maps_url": "https://maps.app.goo.gl/r9ut3JpBe22Gx6f1A"
   }
+
 ]
