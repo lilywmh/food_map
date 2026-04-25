@@ -318,7 +318,10 @@
     padding: 8px 18px 0;
     border-bottom: 1px solid var(--rule);
     flex-shrink: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
+  .drawer-tabs::-webkit-scrollbar { display: none; }
   .drawer-tab {
     font-family: 'Patrick Hand', cursive;
     font-size: 0.95rem;
@@ -327,6 +330,8 @@
     border-bottom: 3px solid transparent;
     transition: all 0.15s;
     margin-bottom: -1px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .drawer-tab:hover { color: var(--ink); }
   .drawer-tab.on { color: var(--ink); border-color: var(--stamp-red); font-weight: bold; }
@@ -537,42 +542,6 @@
     opacity: 0.85;
     box-shadow: 0 2px 3px rgba(0,0,0,0.1);
   }
-  .pop-photo {
-    height: 100px;
-    background: var(--paper-deep);
-    border: 1.5px solid var(--rule);
-    border-radius: 2px;
-    margin-bottom: 10px;
-    margin-top: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Patrick Hand', cursive;
-    font-size: 0.78rem;
-    color: var(--ink-faded);
-    background-image:
-      linear-gradient(135deg, transparent 48%, rgba(150,120,80,0.15) 49%, rgba(150,120,80,0.15) 51%, transparent 52%),
-      linear-gradient(45deg, transparent 48%, rgba(150,120,80,0.15) 49%, rgba(150,120,80,0.15) 51%, transparent 52%);
-    box-shadow: 2px 2px 0 rgba(58,50,42,0.08);
-    position: relative;
-  }
-  .pop-photo .stamp {
-    position: absolute;
-    top: 6px; right: 6px;
-    font-family: 'Caveat', cursive;
-    font-size: 0.7rem;
-    color: var(--stamp-red);
-    border: 1.5px solid var(--stamp-red);
-    border-radius: 50%;
-    width: 32px; height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transform: rotate(-12deg);
-    background: rgba(244,236,219,0.7);
-    line-height: 1;
-    text-align: center;
-  }
   .pop-name {
     font-family: 'Klee One', serif;
     font-size: 1.1rem;
@@ -673,7 +642,14 @@
     font-weight: bold;
     letter-spacing: 0.05em;
   }
-  .pop-actions { display: flex; gap: 5px; }
+  .pop-actions {
+    display: flex;
+    gap: 5px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .pop-actions::-webkit-scrollbar { display: none; }
   .pop-act {
     font-family: 'Patrick Hand', cursive;
     font-size: 0.8rem;
@@ -684,6 +660,8 @@
     background: rgba(255,250,240,0.5);
     text-decoration: none;
     transition: all 0.12s;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .pop-act:hover { border-color: var(--ink); color: var(--ink); }
   .pop-act.stamped { color: var(--stamp-red); border-color: rgba(194,90,72,0.3); background: rgba(194,90,72,0.06); }
@@ -795,66 +773,6 @@
   .stats .row strong { color: var(--stamp-red); font-weight: 700; font-size: 1.7rem; margin-right: 3px; }
   .stats .row span { font-size: 0.95rem; color: var(--ink-light); }
 
-  /* ─── INLINE SEAL STAMP ─── */
-  /* Trigger: invisible overlay on photo, shows cursor on hover */
-  .pop-photo { cursor: pointer; }
-  .pop-photo:not(.stamped):hover::after {
-    content: '🖃 盖章';
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Caveat', cursive;
-    font-size: 1rem;
-    color: rgba(194,90,72,0.7);
-    background: rgba(244,236,219,0.4);
-    letter-spacing: 0.06em;
-  }
-
-  /* The big rubber-stamp impression that appears on the photo */
-  .seal-impression {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%) rotate(-20deg) scale(0.2);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 10;
-    transition: transform 0.38s cubic-bezier(0.15, 1.5, 0.4, 1), opacity 0.3s;
-  }
-  .seal-impression.pop-in {
-    transform: translate(-50%, -50%) rotate(-20deg) scale(1);
-    opacity: 1;
-  }
-  .seal-ring {
-    width: 80px; height: 80px;
-    border-radius: 50%;
-    border: 3px solid var(--stamp-red);
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(244,236,219,0.15);
-    box-shadow: 0 0 0 1.5px rgba(194,90,72,0.25);
-  }
-  .seal-inner {
-    text-align: center;
-    font-family: 'Caveat', cursive;
-    font-weight: 700;
-    color: var(--stamp-red);
-    line-height: 1.15;
-  }
-  .seal-inner .s-main { font-size: 0.85rem; letter-spacing: 0.04em; display: block; }
-  .seal-inner .s-sub  { font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.8; display: block; }
-
-  /* Count badge shown below popup photo after stamping */
-  .seal-count-badge {
-    position: absolute;
-    bottom: 6px; right: 8px;
-    font-family: 'Patrick Hand', cursive;
-    font-size: 0.7rem;
-    background: rgba(244,236,219,0.92);
-    color: var(--stamp-red);
-    padding: 1px 7px;
-    border-radius: 8px;
-    border: 1px solid rgba(194,90,72,0.3);
-    z-index: 11;
-    pointer-events: none;
-  }
 
   /* ─── SHARE BUTTON ─── */
   .share-btn {
@@ -1067,11 +985,12 @@
 
   /* ─── CALENDAR ─── */
   .cal {
-    background: rgba(255,250,240,0.55);
-    border: 1px solid var(--rule);
-    border-radius: 4px;
-    padding: 10px 8px 12px;
+    background: linear-gradient(180deg, rgba(255,252,246,0.92), rgba(248,240,223,0.75));
+    border: 1px solid rgba(201,184,148,0.9);
+    border-radius: 10px;
+    padding: 12px 10px 12px;
     margin-bottom: 10px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.65), 0 2px 8px rgba(58,50,42,0.08);
   }
   .cal-head {
     display: flex;
@@ -1086,6 +1005,10 @@
     font-weight: 700;
     color: var(--ink);
     letter-spacing: 0.04em;
+    background: rgba(255,250,240,0.75);
+    border: 1px solid rgba(201,184,148,0.7);
+    border-radius: 999px;
+    padding: 1px 10px;
   }
   .cal-nav {
     font-family: 'Patrick Hand', cursive;
@@ -1093,20 +1016,22 @@
     color: var(--ink-light);
     padding: 2px 8px;
     border: 1px solid var(--rule);
-    border-radius: 6px;
-    background: rgba(255,250,240,0.6);
+    border-radius: 999px;
+    background: rgba(255,250,240,0.88);
     transition: all 0.12s;
+    min-width: 28px;
+    white-space: nowrap;
   }
   .cal-nav:hover:not(:disabled) { border-color: var(--ink); color: var(--ink); }
   .cal-nav:disabled { opacity: 0.28; cursor: default; }
   .cal-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
+    gap: 4px;
   }
   .cal-dow {
     font-family: 'Patrick Hand', cursive;
-    font-size: 0.62rem;
+    font-size: 0.7rem;
     color: var(--ink-faded);
     text-align: center;
     padding: 2px 0 3px;
@@ -1116,12 +1041,12 @@
     font-family: 'Patrick Hand', cursive;
     font-size: 0.78rem;
     text-align: center;
-    padding: 3px 1px 2px;
-    border-radius: 4px;
+    padding: 4px 1px 3px;
+    border-radius: 8px;
     color: var(--ink-faded);
     cursor: default;
     position: relative;
-    min-height: 28px;
+    min-height: 32px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1134,8 +1059,17 @@
     color: var(--ink);
     cursor: pointer;
   }
-  .cal-day.has-stamp:hover:not(.selected) { background: rgba(194,90,72,0.08); }
-  .cal-day.selected { background: var(--stamp-red); color: white; border-radius: 4px; }
+  .cal-day.has-stamp {
+    border: 1px solid rgba(194,90,72,0.22);
+    background: rgba(194,90,72,0.05);
+  }
+  .cal-day.has-stamp:hover:not(.selected) { background: rgba(194,90,72,0.12); }
+  .cal-day.selected {
+    background: linear-gradient(180deg, #cf6a58, var(--stamp-red));
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(194,90,72,0.25);
+  }
   .cal-dot {
     width: 5px; height: 5px;
     background: var(--stamp-red);
@@ -1215,7 +1149,11 @@
     display: flex;
     gap: 6px;
     margin-top: 6px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
+  .stamp-card-actions::-webkit-scrollbar { display: none; }
   .stamp-mini-act {
     font-family: 'Patrick Hand', cursive;
     font-size: 0.78rem;
@@ -1224,6 +1162,8 @@
     border-radius: 8px;
     color: var(--ink-light);
     background: rgba(255,250,240,0.7);
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .stamp-mini-act:hover { color: var(--ink); border-color: var(--ink); }
   .stamp-mini-act.danger { color: var(--stamp-red); border-color: rgba(194,90,72,0.35); }
@@ -1232,8 +1172,11 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
+  .stamp-date-editor::-webkit-scrollbar { display: none; }
   .stamp-date-input {
     font-family: 'Patrick Hand', cursive;
     font-size: 0.82rem;
@@ -1242,6 +1185,8 @@
     border-radius: 8px;
     color: var(--ink);
     background: rgba(255,250,240,0.8);
+    min-width: 136px;
+    flex-shrink: 0;
   }
   .stamp-mini-act.primary {
     color: var(--paper);
@@ -1327,7 +1272,6 @@
 
     /* Popup inner layout tightened */
     .pop { padding: 12px 13px 10px; }
-    .pop-photo { height: 84px; }
   }
 
   @media (max-width: 480px) {
@@ -1431,7 +1375,7 @@
       </div>
       <div class="drawer-tabs">
         <button class="drawer-tab on" data-tab="cities">城市 City</button>
-        <button class="drawer-tab" data-tab="timeline">时间线 Timeline</button>
+        <button class="drawer-tab" data-tab="timeline">按月回顾 Timeline</button>
         <button class="drawer-tab" data-tab="stamped">🖃 打卡<span class="tab-badge" id="stampBadge"></span></button>
       </div>
       <div class="drawer-body" id="drawerBody"></div>
@@ -1477,20 +1421,7 @@ let searchTerm = '';
 let markerByName = new Map();
 let friendStamps = null; // set when ?friend= URL param is present
 
-// ─── SEAL / STAMP STORAGE ───
-function getSealData() {
-  try { return JSON.parse(localStorage.getItem('foodmap_seals') || '{}'); } catch { return {}; }
-}
-function saveSealData(d) {
-  try { localStorage.setItem('foodmap_seals', JSON.stringify(d)); } catch {}
-}
-function getSealCount(name) { return getSealData()[name] || 0; }
-function addSeal(name) {
-  const d = getSealData();
-  d[name] = (d[name] || 0) + 1;
-  saveSealData(d);
-  return d[name];
-}
+// ─── STAMP STORAGE ───
 function hasUserStamped(name) {
   try { const s = JSON.parse(localStorage.getItem('foodmap_user_stamps') || '[]'); return s.includes(name); } catch { return false; }
 }
@@ -1704,7 +1635,6 @@ function doSeal(encName) {
   const name = decodeURIComponent(encName);
   if (hasUserStamped(name)) return;
   setUserStamped(name);
-  addSeal(name);
   saveStampDate(name);
   updateStampBadge();
 
@@ -1886,9 +1816,10 @@ function renderCalendarHTML() {
   return `<div class="cal">
     <div class="cal-head">
       <button class="cal-nav" data-dir="-1" ${atMinMonth ? 'disabled' : ''}>◄</button>
-      <span class="cal-title">${calYear} · ${mm}</span>
+      <span class="cal-title">筛选日历 · ${calYear} / ${mm}</span>
       <button class="cal-nav" data-dir="1" ${atCurrentMonth ? 'disabled' : ''}>►</button>
     </div>
+    <div class="cal-filter-row"><span>点日期仅用于筛选，不会修改记录日期</span></div>
     <div class="cal-grid">
       <div class="cal-dow">日</div><div class="cal-dow">一</div><div class="cal-dow">二</div>
       <div class="cal-dow">三</div><div class="cal-dow">四</div><div class="cal-dow">五</div>
@@ -1908,7 +1839,7 @@ function stampCard(name, dateStr, item) {
     <div class="stamp-card-name">${em} ${name}</div>
     ${item?.city ? `<div class="stamp-card-city">${item.city}</div>` : ''}
     <div class="stamp-card-actions">
-      <button class="stamp-mini-act" data-edit-date="${name.replace(/"/g, '&quot;')}">改日期</button>
+      <button class="stamp-mini-act" data-edit-date="${name.replace(/"/g, '&quot;')}">修改记录日期</button>
       <button class="stamp-mini-act danger" data-remove-stamp="${name.replace(/"/g, '&quot;')}">删除打卡</button>
     </div>
     <div class="stamp-date-editor" data-date-editor="${name.replace(/"/g, '&quot;')}" hidden>
@@ -1971,7 +1902,10 @@ function renderStampedBody(body) {
   if (clr) clr.addEventListener('click', () => { selectedCalDay = null; renderDrawerBody(); });
   // Wire stamp card clicks
   body.querySelectorAll('.stamp-card').forEach(el => {
-    el.addEventListener('click', () => focusPlace(el.dataset.name));
+    el.addEventListener('click', (e) => {
+      if (e.target.closest('.stamp-card-actions, .stamp-date-editor, .stamp-mini-act, .stamp-date-input')) return;
+      focusPlace(el.dataset.name);
+    });
   });
   body.querySelectorAll('[data-remove-stamp]').forEach(el => {
     el.addEventListener('click', (e) => {
