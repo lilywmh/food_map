@@ -1227,6 +1227,27 @@
   }
   .stamp-mini-act:hover { color: var(--ink); border-color: var(--ink); }
   .stamp-mini-act.danger { color: var(--stamp-red); border-color: rgba(194,90,72,0.35); }
+  .stamp-date-editor {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .stamp-date-input {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.82rem;
+    padding: 2px 7px;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    color: var(--ink);
+    background: rgba(255,250,240,0.8);
+  }
+  .stamp-mini-act.primary {
+    color: var(--paper);
+    background: var(--ink);
+    border-color: var(--ink);
+  }
 
   .soft-btn {
     font-family: 'Patrick Hand', cursive;
@@ -1890,6 +1911,11 @@ function stampCard(name, dateStr, item) {
       <button class="stamp-mini-act" data-edit-date="${name.replace(/"/g, '&quot;')}">改日期</button>
       <button class="stamp-mini-act danger" data-remove-stamp="${name.replace(/"/g, '&quot;')}">删除打卡</button>
     </div>
+    <div class="stamp-date-editor" data-date-editor="${name.replace(/"/g, '&quot;')}" hidden>
+      <input class="stamp-date-input" type="date" data-date-input="${name.replace(/"/g, '&quot;')}" value="${dateStr || ''}" />
+      <button class="stamp-mini-act primary" data-save-date="${name.replace(/"/g, '&quot;')}">保存</button>
+      <button class="stamp-mini-act" data-cancel-date="${name.replace(/"/g, '&quot;')}">取消</button>
+    </div>
   </div>`;
 }
 
@@ -1963,10 +1989,30 @@ function renderStampedBody(body) {
     el.addEventListener('click', (e) => {
       e.stopPropagation();
       const name = el.dataset.editDate;
-      const current = getStampDates()[name] || new Date().toISOString().slice(0, 10);
-      const next = prompt('请输入打卡日期（YYYY-MM-DD）', current);
-      if (!next) return;
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(next)) { toast('日期格式需为 YYYY-MM-DD'); return; }
+      body.querySelectorAll('[data-date-editor]').forEach(ed => { ed.hidden = true; });
+      const editor = body.querySelector(`[data-date-editor="${CSS.escape(name)}"]`);
+      if (editor) {
+        editor.hidden = false;
+        const input = editor.querySelector('[data-date-input]');
+        if (input) input.focus();
+      }
+    });
+  });
+  body.querySelectorAll('[data-cancel-date]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const name = el.dataset.cancelDate;
+      const editor = body.querySelector(`[data-date-editor="${CSS.escape(name)}"]`);
+      if (editor) editor.hidden = true;
+    });
+  });
+  body.querySelectorAll('[data-save-date]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const name = el.dataset.saveDate;
+      const input = body.querySelector(`[data-date-input="${CSS.escape(name)}"]`);
+      const next = input?.value || '';
+      if (!next) { toast('请先选择日期'); return; }
       setStampDate(name, next);
       renderDrawerBody();
       toast('打卡日期已更新');
