@@ -193,11 +193,14 @@
 </div>
 
 <script>
-const DATA = [
-  fetch('https://raw.githubusercontent.com/lilywmh/food_map/main/foodmap.json')
+const JSON_URL = 'https://raw.githubusercontent.com/lilywmh/food_map/main/foodmap.json';
+
+let DATA = [];
+fetch(JSON_URL)
   .then(res => res.json())
-  .then(data => render(data))
-];
+  .then(data => {
+    DATA = data;
+  });
 
 const BUDGET_MAP = {"1":"$ 便饭","2":"$$ 犒劳自己","3":"$$$ 值得庆祝","4":"$$$$ 奢侈一下"};
 const EMOJI = {"日料":"🍱","韩料":"🥩","中餐":"🍜","泰餐":"🍛","越南":"🍲","咖啡":"☕","甜点":"🍨","西餐":"🍽️","墨西哥":"🌮","":"🍴"};
@@ -265,9 +268,8 @@ function render(){
       html:`<div class="m-wrap ${tc}"><div class="m-pin"><span>${em}</span></div><div class="m-stem"></div></div>`,
       iconSize:[30,38],iconAnchor:[15,38],popupAnchor:[0,-40]
     });
-    const gm=item.google_maps_url
-      ?`<a class="pop-gmap" href="${item.google_maps_url}" target="_blank">📍 Maps</a>`
-      :`<span class="pop-gmap disabled">📍 Maps</span>`;
+    const gmUrl=`https://www.google.com/maps/search/${encodeURIComponent(item.name)}/@${item.lat},${item.lng},17z`;
+    const gm=`<a class="pop-gmap" href="${gmUrl}" target="_blank">📍 Maps</a>`;
     const pop=`<div class="pop">
       <span class="pop-badge ${item.tier===2?'t2':''}">${item.tier===1?'⭐ 精选':'· 去过'}</span>
       <div class="pop-name">${item.name}</div>
