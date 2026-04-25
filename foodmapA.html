@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Lily 的美食地图 · Notebook</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -829,20 +829,163 @@
     pointer-events: none;
   }
 
+  /* ─── SHARE BUTTON ─── */
+  .share-btn {
+    position: absolute;
+    top: 16px; right: 16px;
+    z-index: 600;
+    width: 42px; height: 42px;
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: 8px;
+    box-shadow: 2px 3px 0 rgba(58,50,42,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: all 0.15s;
+  }
+  .share-btn:hover { transform: translate(1px, -1px); box-shadow: 1px 4px 0 rgba(58,50,42,0.28); }
+  .share-btn::before {
+    content: '';
+    position: absolute;
+    top: -6px; right: 8px;
+    width: 22px; height: 8px;
+    background: var(--tape-pink);
+    opacity: 0.85;
+    transform: rotate(2deg);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+
+  /* ─── MATCH CARD ─── */
+  .match-card {
+    position: absolute;
+    bottom: 24px; left: 22px;
+    z-index: 500;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    padding: 14px 16px 16px;
+    box-shadow: 4px 4px 0 rgba(58,50,42,0.18);
+    transform: rotate(-1.2deg);
+    border-radius: 3px;
+    width: 196px;
+    background-image: repeating-linear-gradient(0deg, transparent 0 24px, rgba(150,120,80,0.09) 24px 25px);
+    display: none;
+    animation: mc-pop 0.32s cubic-bezier(0.15, 1.4, 0.4, 1) both;
+  }
+  @keyframes mc-pop {
+    from { opacity: 0; transform: rotate(-1.2deg) scale(0.82) translateY(12px); }
+    to   { opacity: 1; transform: rotate(-1.2deg) scale(1) translateY(0); }
+  }
+  .match-card.visible { display: block; }
+  .match-card::before {
+    content: '';
+    position: absolute;
+    top: -8px; left: 18px;
+    width: 44px; height: 12px;
+    background: var(--tape-pink);
+    opacity: 0.88;
+    transform: rotate(1.5deg);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+  .mc-close {
+    position: absolute;
+    top: 7px; right: 9px;
+    font-size: 0.85rem;
+    color: var(--ink-light);
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    transition: all 0.12s;
+  }
+  .mc-close:hover { background: rgba(58,50,42,0.08); color: var(--ink); }
+  .mc-label {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.65rem;
+    color: var(--ink-faded);
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .mc-pct {
+    font-family: 'Caveat', cursive;
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--stamp-red);
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+  .mc-pct span { font-size: 1.5rem; color: var(--ink-light); font-weight: 400; }
+  .mc-shared {
+    font-family: 'Caveat', cursive;
+    font-size: 1rem;
+    color: var(--ink);
+    margin-bottom: 3px;
+  }
+  .mc-shared strong { color: var(--stamp-red); }
+  .mc-cuisines {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.75rem;
+    color: var(--ink-light);
+    margin-bottom: 6px;
+    letter-spacing: 0.03em;
+  }
+  .mc-divider {
+    border: none;
+    border-top: 1px dashed var(--rule);
+    margin: 6px 0 8px;
+  }
+  .mc-list {
+    max-height: 110px;
+    overflow-y: auto;
+  }
+  .mc-list::-webkit-scrollbar { width: 4px; }
+  .mc-list::-webkit-scrollbar-thumb { background: var(--paper-edge); border-radius: 2px; }
+  .mc-item {
+    font-family: 'Klee One', serif;
+    font-size: 0.78rem;
+    color: var(--ink);
+    padding: 2px 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: color 0.12s;
+  }
+  .mc-item:hover { color: var(--stamp-red); }
+  .mc-item::before { content: '♥'; color: var(--moss); font-size: 0.68rem; flex-shrink: 0; }
+  .mc-empty {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.82rem;
+    color: var(--ink-faded);
+    line-height: 1.5;
+    padding: 2px 0 4px;
+  }
+
+  /* Match pin highlight — green ring on shared markers */
+  .pin-wrap.match .pin-head {
+    outline: 3px solid #5a9e6f;
+    outline-offset: 2px;
+  }
+
   /* ─── TOAST ─── */
   .toast {
     position: fixed;
-    bottom: 30px;
+    /* Respect iOS home indicator and Android nav bar */
+    bottom: max(30px, calc(env(safe-area-inset-bottom, 0px) + 14px));
     left: 50%;
-    transform: translateX(-50%) translateY(120%);
+    /* Push far enough off-screen regardless of element height */
+    transform: translateX(-50%) translateY(calc(100% + 60px));
     background: var(--ink);
     color: var(--paper);
     padding: 10px 22px;
     border-radius: 22px;
     font-family: 'Patrick Hand', cursive;
     font-size: 0.92rem;
+    white-space: nowrap;                      /* prevent awkward text wrap */
+    max-width: calc(100vw - 32px);            /* safety net on narrow screens */
     box-shadow: 0 8px 28px rgba(58,50,42,0.35);
-    z-index: 5000;
+    z-index: 9999;                            /* above leaflet popups (z 1000) */
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none;
   }
@@ -926,6 +1069,14 @@
     /* Popup inner layout tightened */
     .pop { padding: 12px 13px 10px; }
     .pop-photo { height: 84px; }
+  }
+
+  @media (max-width: 480px) {
+    .share-btn { top: 12px; right: 12px; width: 46px; height: 46px; }
+    /* Lift match card above Leaflet zoom controls (~80px tall at bottom-left) */
+    .match-card { left: 8px; bottom: 96px; width: calc(50vw + 10px); min-width: 160px; transform: rotate(-0.5deg); }
+    .mc-pct { font-size: 2.2rem; }
+    .mc-list { max-height: 80px; }
   }
 
   /* Very small (iPhone SE, Galaxy A series) */
@@ -1025,7 +1176,13 @@
       <div class="drawer-body" id="drawerBody"></div>
     </div>
 
+    <!-- Share button (top-right of map) -->
+    <button class="share-btn" id="shareBtn" title="分享我的打卡">📤</button>
+
     <div id="map"></div>
+
+    <!-- Friend match card (bottom-left of map) -->
+    <div class="match-card" id="matchCard"></div>
 
     <div class="stats" id="statsBox">
       <h3>tally</h3>
@@ -1057,6 +1214,7 @@ let activeBudget = new Set();
 let activeRating = null;
 let searchTerm = '';
 let markerByName = new Map();
+let friendStamps = null; // set when ?friend= URL param is present
 
 // ─── SEAL / STAMP STORAGE ───
 function getSealData() {
@@ -1110,8 +1268,13 @@ fetch(JSON_URL)
   .then(data => {
     DATA = data;
     initFilters();
+    friendStamps = getFriendStamps();
     render();
     updateStats();
+    if (friendStamps) {
+      const myStamps = JSON.parse(localStorage.getItem('foodmap_user_stamps') || '[]');
+      renderMatchCard(computeMatch(myStamps, friendStamps));
+    }
   })
   .catch(err => {
     toast('数据加载失败 — 请检查网络');
@@ -1171,9 +1334,10 @@ function render() {
   visible.forEach(item => {
     const em = EMOJI[item.cuisine] || '🍴';
     const tc = 't' + item.tier;
+    const isMatch = friendStamps && friendStamps.includes(item.name);
     const icon = L.divIcon({
       className: '',
-      html: `<div class="pin-wrap"><div class="pin ${tc}"><div class="pin-head">${em}</div><div class="pin-tail"></div></div></div>`,
+      html: `<div class="pin-wrap${isMatch ? ' match' : ''}"><div class="pin ${tc}"><div class="pin-head">${em}</div><div class="pin-tail"></div></div></div>`,
       iconSize: [34, 44],
       iconAnchor: [17, 44],
       popupAnchor: [0, -46]
@@ -1246,6 +1410,81 @@ function doSeal(encName) {
   toast('🖃 盖章成功！');
 }
 window.doSeal = doSeal;
+
+// ─── FRIEND MATCH ───
+function getFriendStamps() {
+  const params = new URLSearchParams(location.search);
+  const raw = params.get('friend');
+  if (!raw) return null;
+  try { return JSON.parse(decodeURIComponent(atob(raw))); } catch { return null; }
+}
+
+function computeMatch(myStamps, friendArr) {
+  const mySet = new Set(myStamps);
+  const friendSet = new Set(friendArr);
+  const shared = [...mySet].filter(n => friendSet.has(n));
+  const union = new Set([...mySet, ...friendSet]);
+  const pct = union.size > 0 ? Math.round(shared.length / union.size * 100) : 0;
+
+  // Top shared cuisines
+  const cCount = {};
+  shared.forEach(name => {
+    const item = DATA.find(d => d.name === name);
+    if (item?.cuisine) cCount[item.cuisine] = (cCount[item.cuisine] || 0) + 1;
+  });
+  const topCuisines = Object.entries(cCount)
+    .sort((a, b) => b[1] - a[1]).slice(0, 3)
+    .map(([c]) => (EMOJI[c] || '🍴') + ' ' + c);
+
+  return { pct, shared, topCuisines };
+}
+
+function renderMatchCard(match) {
+  const card = document.getElementById('matchCard');
+  const listHTML = match.shared.length
+    ? match.shared.map(name =>
+        `<div class="mc-item" data-name="${name.replace(/"/g,'&quot;')}">${name}</div>`
+      ).join('')
+    : `<div class="mc-empty">还没有共同打卡的店，<br>先去多吃几家吧 🍴</div>`;
+
+  card.innerHTML = `
+    <button class="mc-close" id="matchClose">✕</button>
+    <div class="mc-label">口味契合度</div>
+    <div class="mc-pct">${match.pct}<span>%</span></div>
+    <div class="mc-shared">共同打卡 <strong>${match.shared.length}</strong> 家</div>
+    ${match.topCuisines.length ? `<div class="mc-cuisines">${match.topCuisines.join(' · ')}</div>` : ''}
+    ${match.shared.length ? '<hr class="mc-divider" />' : ''}
+    <div class="mc-list">${listHTML}</div>
+  `;
+
+  // Wire close
+  card.querySelector('#matchClose').addEventListener('click', closeMatchCard);
+  // Wire clicks on shared places
+  card.querySelectorAll('.mc-item').forEach(el => {
+    el.addEventListener('click', () => focusPlace(el.dataset.name));
+  });
+
+  card.classList.add('visible');
+}
+
+function closeMatchCard() {
+  document.getElementById('matchCard').classList.remove('visible');
+  friendStamps = null;
+  render(); // Remove green rings from pins
+}
+
+function shareMyStamps() {
+  const stamps = JSON.parse(localStorage.getItem('foodmap_user_stamps') || '[]');
+  if (!stamps.length) { toast('还没有打卡记录哦 — 先去盖几个章吧 🖃'); return; }
+  // encodeURIComponent handles Chinese chars; btoa encodes to URL-safe ASCII
+  const encoded = btoa(encodeURIComponent(JSON.stringify(stamps)));
+  const url = location.origin + location.pathname + '?friend=' + encoded;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => toast('🔗 口味链接已复制，快发给朋友！'));
+  } else {
+    prompt('复制链接发给朋友：', url);
+  }
+}
 
 // ─── STATS ───
 function updateStats() {
@@ -1416,13 +1655,15 @@ window.addEventListener('resize', () => {
   _resizeTimer = setTimeout(render, 250);
 });
 
-// ─── DEEP LINK (?focus=…) ───
+// ─── SHARE BUTTON ───
+document.getElementById('shareBtn').addEventListener('click', shareMyStamps);
+
+// ─── DEEP LINK (?focus= and/or ?friend=) ───
 window.addEventListener('load', () => {
   const params = new URLSearchParams(location.search);
   const f = params.get('focus');
-  if (f) {
-    setTimeout(() => focusPlace(decodeURIComponent(f)), 1200);
-  }
+  if (f) setTimeout(() => focusPlace(decodeURIComponent(f)), 1200);
+  // ?friend= is handled after DATA loads (see fetch block above)
 });
 </script>
 </body>
