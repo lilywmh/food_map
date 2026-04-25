@@ -65,8 +65,8 @@
     "dish": "short rib pho",
     "note": "short rib pho份量特别大但是超级实惠，而且炖的很烂，汤汁味道也很浓郁。",
     "tier": 1,
-    "lat": 9.3168892,
-    "lng": 123.3055765,
+    "lat": 32.8670351,
+    "lng": -117.2066841,
     "google_maps_url": ""
   },
   {
@@ -163,9 +163,9 @@
     "dish": "天妇罗盖饭",
     "note": "这家店很多花式天妇罗盖饭，可以说是东西fusion典范了。但是一定要加钱点茶，不然会有点腻。",
     "tier": 1,
-    "lat": 1.2855814,
-    "lng": 103.845273,
-    "google_maps_url": ""
+    "lat": 47.6129752,
+    "lng": -122.1992386,
+    "google_maps_url": "https://maps.app.goo.gl/qcYuZevqrxKm7obw6"
   },
   {
     "name": "JM Seafood (Wing Yip Chop Suey Restaurant)",
@@ -247,9 +247,9 @@
     "dish": "烤肉午市套餐",
     "note": "非常划算的烤肉午市套餐，一人份完全够吃，还有和牛肥肥嫩嫩。",
     "tier": 2,
-    "lat": null,
-    "lng": null,
-    "google_maps_url": ""
+    "lat": 34.6635353,
+    "lng": 135.5026748,
+    "google_maps_url": "https://maps.app.goo.gl/JVPEQrLqC3RM7a1x8"
   },
   {
     "name": "WOCCA ROCCA curry and...​​UJI",
@@ -373,8 +373,8 @@
     "dish": "意式肉酱拌饭",
     "note": "之前都是吃他家的乌冬特别好吃还便宜，汤料会有点咸不过拌面吃挺可口的，经常会搭配炸猪排，天妇罗或者可乐饼吃。后面点过一次意式肉酱拌饭好吃无敌了还很便宜，搭配一颗温泉蛋，美醉了。",
     "tier": 1,
-    "lat": 51.5025882,
-    "lng": 0.0042873,
+    "lat": 37.7274809,
+    "lng": -122.4765005,
     "google_maps_url": ""
   },
   {
@@ -989,8 +989,8 @@
     "dish": "方块小面包",
     "note": "方块面包里面夹心奶油，十分美味，店里的饮品也很美味。",
     "tier": 2,
-    "lat": -33.9891347,
-    "lng": 18.4853041,
+    "lat": 34.0551603,
+    "lng": -118.3083861,
     "google_maps_url": ""
   },
   {
