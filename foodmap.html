@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>美食地图 · Food Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Noto+Serif+SC:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root {
+      --cream: #F5EFE4;
+      --parchment: #EDE4D3;
+      --ink: #3D3530;
+      --ink-light: #7A6E66;
+      --brick: #B85C38;
+      --moss: #6B8C6B;
+      --lavender: #8B7BA8;
+      --gold: #C9963A;
+      --tier2-color: #8B9B8B;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Klee One', 'Noto Serif SC', serif;
+      background: var(--cream);
+      color: var(--ink);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* HEADER */
+    header {
+      background: var(--parchment);
+      border-bottom: 1.5px solid #D4C5A9;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .header-title h1 { font-size: 1.15rem; font-weight: 600; color: var(--ink); }
+    .header-title span { font-size: 0.65rem; color: var(--ink-light); letter-spacing: 0.1em; }
+
+    .sep { width: 1px; height: 22px; background: #C9BAA0; flex-shrink: 0; }
+
+    .filters { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+
+    .pill {
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1.5px solid #C9BAA0;
+      background: transparent;
+      font-family: inherit;
+      font-size: 0.7rem;
+      color: var(--ink-light);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .pill:hover { border-color: var(--brick); color: var(--brick); }
+    .pill.active { background: var(--brick); border-color: var(--brick); color: white; }
+    .pill.t2.active { background: var(--tier2-color); border-color: var(--tier2-color); }
+
+    .city-select {
+      font-family: inherit;
+      font-size: 0.7rem;
+      padding: 3px 9px;
+      border-radius: 20px;
+      border: 1.5px solid #C9BAA0;
+      background: var(--cream);
+      color: var(--ink-light);
+      cursor: pointer;
+    }
+
+    .count { margin-left: auto; font-size: 0.68rem; color: var(--ink-light); background: var(--parchment); border: 1px solid #C9BAA0; border-radius: 10px; padding: 2px 8px; white-space: nowrap; }
+
+    /* MAP */
+    #map { flex: 1; min-height: 0; }
+    .leaflet-control-attribution { font-size: 9px !important; background: rgba(245,239,228,0.85) !important; }
+
+    /* MARKERS */
+    .m-wrap { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+    .m-wrap:hover .m-pin { transform: rotate(-45deg) scale(1.15); }
+    .m-pin {
+      width: 28px; height: 28px;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      border: 2px solid white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.22);
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.15s;
+    }
+    .m-pin span { transform: rotate(45deg); font-size: 12px; line-height: 1; }
+    .m-stem { width: 2px; height: 5px; background: rgba(0,0,0,0.2); margin-top: -1px; }
+    .t1 .m-pin { background: var(--brick); }
+    .t2 .m-pin { background: var(--tier2-color); }
+
+    /* POPUP */
+    .leaflet-popup-content-wrapper {
+      background: var(--cream);
+      border: 1.5px solid #D4C5A9;
+      border-radius: 12px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.14);
+      padding: 0; overflow: hidden;
+      max-width: 255px;
+    }
+    .leaflet-popup-tip-container { display: none; }
+    .leaflet-popup-content { margin: 0 !important; }
+    .leaflet-popup-close-button { color: var(--ink-light) !important; font-size: 17px !important; top: 7px !important; right: 9px !important; z-index: 10; }
+
+    .pop {
+      padding: 14px 16px 12px;
+    }
+    .pop-badge {
+      font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase;
+      color: white; background: var(--brick);
+      padding: 2px 7px; border-radius: 10px; display: inline-block; margin-bottom: 7px;
+    }
+    .pop-badge.t2 { background: var(--tier2-color); }
+    .pop-name { font-size: 0.95rem; font-weight: 600; color: var(--ink); margin-bottom: 3px; line-height: 1.3; padding-right: 18px; }
+    .pop-meta { font-size: 0.68rem; color: var(--ink-light); margin-bottom: 9px; display: flex; align-items: center; gap: 7px; }
+    .pop-hearts { color: var(--brick); font-size: 0.72rem; letter-spacing: 1px; }
+    .pop-dish {
+      font-size: 0.77rem; background: var(--parchment);
+      border-left: 3px solid var(--gold);
+      padding: 5px 9px; border-radius: 0 6px 6px 0;
+      margin-bottom: 7px; color: var(--ink);
+    }
+    .pop-dish-lbl { font-size: 0.6rem; color: var(--ink-light); display: block; margin-bottom: 1px; }
+    .pop-note { font-size: 0.75rem; color: var(--ink-light); line-height: 1.55; font-style: italic; }
+    .pop-note::before { content: '\201C'; color: var(--gold); font-size: 1.1rem; line-height: 0; vertical-align: -4px; margin-right: 1px; }
+    .pop-note::after  { content: '\201D'; color: var(--gold); font-size: 1.1rem; line-height: 0; vertical-align: -4px; margin-left: 1px; }
+    .pop-footer { margin-top: 9px; padding-top: 7px; border-top: 1px solid #D4C5A9; display: flex; justify-content: space-between; align-items: center; }
+    .pop-budget { font-size: 0.68rem; color: var(--moss); font-weight: 600; }
+    .pop-gmap { font-size: 0.65rem; color: var(--ink-light); text-decoration: none; border: 1px solid #C9BAA0; border-radius: 10px; padding: 2px 7px; transition: all 0.12s; }
+    .pop-gmap:hover { border-color: var(--brick); color: var(--brick); }
+    .pop-gmap.disabled { opacity: 0.35; pointer-events: none; }
+
+    /* LEGEND */
+    .legend {
+      position: absolute; bottom: 28px; left: 10px; z-index: 1000;
+      background: rgba(245,239,228,0.92); border: 1.5px solid #D4C5A9;
+      border-radius: 9px; padding: 9px 12px; font-size: 0.68rem;
+      backdrop-filter: blur(3px); pointer-events: none;
+    }
+    .leg-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+    .leg-row:last-child { margin-bottom: 0; }
+    .leg-dot { width: 11px; height: 11px; border-radius: 50%; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.18); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-title">
+    <h1>🍜 美食地图</h1>
+    <span>MY FOOD MAP · Vol. 01</span>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- Tier -->
+  <div class="filters" id="tierFilter">
+    <button class="pill active" data-tier="1">⭐ 精选</button>
+    <button class="pill t2 active" data-tier="2">去过</button>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- Cuisine -->
+  <div class="filters" id="cuisineFilter">
+    <button class="pill active" data-cuisine="all">全部</button>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- City jump -->
+  <select class="city-select" id="cityJump">
+    <option value="">✈️ 飞去城市...</option>
+  </select>
+
+  <span class="count" id="countBadge">— 家</span>
+</header>
+
+<div id="map"></div>
+
+<div class="legend">
+  <div class="leg-row"><div class="leg-dot" style="background:var(--brick)"></div>精选推荐</div>
+  <div class="leg-row"><div class="leg-dot" style="background:var(--tier2-color)"></div>去过·记录</div>
+</div>
+
+<script>
+const DATA = [
+  {"name":"Gamja Gol","city":"Los Angeles","cuisine":"韩料","budget":"2","rating":5,"dish":"韩式猪脊骨汤","note":"猪骨头太美味了，五花肉也不错，份量很大。","tier":1,"lat":34.052616,"lng":-118.301193,"google_maps_url":""},
+  {"name":"Bak Kung Korean B.B.Q","city":"Los Angeles","cuisine":"韩料","budget":"3","rating":5,"dish":"","note":"","tier":1,"lat":34.0530235,"lng":-118.319054,"google_maps_url":""},
+  {"name":"Kagura Monterey Park","city":"Los Angeles","cuisine":"日料","budget":"1","rating":5,"dish":"lion katsu","note":"在LA也能吃到非常正经日式炸猪排，有种回到日本的感觉，店旁边还有一个日本超市非常好逛。喜欢肥嫩嫩肉的可以点lion！","tier":1,"lat":34.066711,"lng":-118.134323,"google_maps_url":""},
+  {"name":"ujin","city":"San Diego","cuisine":"日料","budget":"2","rating":4.5,"dish":"经典东京酱油拉面","note":"藏在utc旁边走路十分钟的plaza里，装修很好看的店。个人觉得面很好吃，就是有一点点咸。","tier":1,"lat":32.8677373,"lng":-117.2059428,"google_maps_url":""},
+  {"name":"VIET NOM","city":"San Diego","cuisine":"越南","budget":"2","rating":5,"dish":"short rib pho","note":"short rib pho份量特别大但是超级实惠，而且炖的很烂，汤汁味道也很浓郁。","tier":1,"lat":32.715,"lng":-117.156,"google_maps_url":""},
+  {"name":"Blue Ocean Sushi & Grill","city":"San Diego","cuisine":"日料","budget":"1","rating":4,"dish":"poke bowl","note":"去的时候非常可惜，三文鱼没有了，但是金枪鱼配上一点葱花调味，味道也还不错。","tier":2,"lat":32.820,"lng":-117.200,"google_maps_url":""},
+  {"name":"Ramen Nagi","city":"San Diego","cuisine":"日料","budget":"1","rating":4,"dish":"自选拉面","note":"la 和 sd Westfield都有的一家店排队通常都挺久的，味道属于不会出错的拉面店。","tier":1,"lat":32.872152,"lng":-117.2129983,"google_maps_url":""},
+  {"name":"Shabuya Los Angeles","city":"Los Angeles","cuisine":"中餐","budget":"2","rating":4.5,"dish":"自助火锅","note":"特别正宗的一家单人火锅店，大厅可以随便自己拿小料。羊腿肉很好吃！","tier":1,"lat":34.0513293,"lng":-118.2782147,"google_maps_url":""},
+  {"name":"Square Lotus","city":"Seattle","cuisine":"泰餐","budget":"2","rating":4.5,"dish":"short rib & red curry","note":"份量大，属于是吃过最好吃的咖喱锅！","tier":1,"lat":47.5793494,"lng":-122.1674289,"google_maps_url":""},
+  {"name":"Suehiro DTLA","city":"Los Angeles","cuisine":"日料","budget":"2","rating":4.5,"dish":"三文鱼茶泡饭","note":"第一次在LA吃到很好吃的茶泡饭，炸鱿鱼很好吃，最后点的 hojicha 布丁封神了。","tier":1,"lat":34.0968705,"lng":-118.0962659,"google_maps_url":""},
+  {"name":"Wild Ginger Downtown Seattle","city":"Seattle","cuisine":"泰餐","budget":"3","rating":4,"dish":"牛肉和烤羊排","note":"烤羊排很香，份量稍微有点小。","tier":2,"lat":47.6087816,"lng":-122.3371955,"google_maps_url":""},
+  {"name":"Tendon Kohaku","city":"Seattle","cuisine":"日料","budget":"3","rating":4.5,"dish":"天妇罗盖饭","note":"这家店很多花式天妇罗盖饭，可以说是东西fusion典范了。但是一定要加钱点茶，不然会有点腻。","tier":1,"lat":47.608,"lng":-122.338,"google_maps_url":""},
+  {"name":"JM Seafood","city":"Chicago","cuisine":"中餐","budget":"2","rating":5,"dish":"脆肉皖，杨枝甘露","note":"从来没有吃过这样的杨枝甘露，非常好吃！其他中餐菜也都很正宗没有踩雷的。","tier":1,"lat":41.8343848,"lng":-87.6465082,"google_maps_url":""},
+  {"name":"Niu Japanese Fusion Lounge","city":"Chicago","cuisine":"日料","budget":"3","rating":3.5,"dish":"刺身盖饭","note":"摆盘很美丽，但是味道平平。","tier":2,"lat":41.8912044,"lng":-87.6187447,"google_maps_url":""},
+  {"name":"Kyuramen x TBaar - Chicago","city":"Chicago","cuisine":"日料","budget":"2","rating":3.5,"dish":"蛋包饭","note":"流心蛋包饭爱好者可以尝试。","tier":2,"lat":41.890317,"lng":-87.6283061,"google_maps_url":""},
+  {"name":"Wildberry Pancakes & Cafe","city":"Chicago","cuisine":"西餐","budget":"2","rating":4.5,"dish":"brunch","note":"hash brown放在锅里和料一起做的方式很有意思，好吃，松饼有点甜。","tier":1,"lat":41.8843072,"lng":-87.6242295,"google_maps_url":""},
+  {"name":"LiLo Coffee Roasters","city":"Osaka","cuisine":"咖啡","budget":"1","rating":4,"dish":"咖啡","note":"可以买挂耳咖啡送朋友，包装好看。","tier":1,"lat":34.6740631,"lng":135.4982234,"google_maps_url":""},
+  {"name":"Yakiniku Kokokara","city":"Osaka","cuisine":"日料","budget":"2","rating":4,"dish":"烤肉午市套餐","note":"非常划算的烤肉午市套餐，一人份完全够吃，还有和牛肥肥嫩嫩。","tier":2,"lat":34.668,"lng":135.503,"google_maps_url":""},
+  {"name":"WOCCA ROCCA curry","city":"Kyoto","cuisine":"日料","budget":"2","rating":3.5,"dish":"咖喱饭","note":"有药材味的咖喱饭，不是普通咖喱的味道，喜好比较挑人的口味。加根香肠比较好吃。","tier":2,"lat":34.8885,"lng":135.8002,"google_maps_url":""},
+  {"name":"Nakamura Tokichi Honten","city":"Kyoto","cuisine":"咖啡","budget":"2","rating":5,"dish":"抹茶拿铁","note":"特别特别好喝的抹茶店，味道十分浓厚，抹茶芭菲很漂亮也很好吃，但抹茶还是封神了，一定要喝热的！","tier":1,"lat":34.8893131,"lng":135.8015158,"google_maps_url":""},
+  {"name":"Katsukura Shijo","city":"Kyoto","cuisine":"日料","budget":"2","rating":4.5,"dish":"炸猪排","note":"非常经典的日式炸猪排，很大一块，可以无限续包菜。蟹肉鸡蛋羹也很美味。","tier":1,"lat":35.004473,"lng":135.760961,"google_maps_url":""},
+  {"name":"Caf Amazon","city":"Kyoto","cuisine":"日料","budget":"2","rating":5,"dish":"炸虾三明治","note":"店里有各种各样的日式三明治，虾天妇罗的很好吃，但是可能会售罄。滑蛋嫩嫩的，份量挺大的。","tier":1,"lat":34.995,"lng":135.755,"google_maps_url":""},
+  {"name":"888 Sushi and Robata","city":"Las Vegas","cuisine":"日料","budget":"4","rating":3.5,"dish":"自助寿司","note":"猎奇尝鲜可以，确实把所有鱼类吃了个遍，但是单个肉的品质有点一般。章鱼小丸子挺好吃的。","tier":2,"lat":36.1089257,"lng":-115.1510471,"google_maps_url":""},
+  {"name":"Kopan Izakaya","city":"Los Angeles","cuisine":"日料","budget":"3","rating":4.5,"dish":"奶油乌冬面","note":"寿司套餐出品都挺好的，奶油乌冬面尤其好吃，尤其加上明太子特别好吃。","tier":1,"lat":34.0615264,"lng":-118.4465104,"google_maps_url":""},
+  {"name":"Zinque","city":"Los Angeles","cuisine":"西餐","budget":"2","rating":3.5,"dish":"brunch","note":"漂亮饭但是味道一般，还是吃不太来。店里记得白天去环境有点昏暗。","tier":2,"lat":34.0415115,"lng":-118.2571508,"google_maps_url":""},
+  {"name":"Bacari W. Adams","city":"Los Angeles","cuisine":"西餐","budget":"2","rating":4.5,"dish":"crab cake 蟹饼和班尼迪克蛋","note":"USC附近的好吃的意大利餐店，一口惊艳，蟹饼尤其好吃，酱料是酸酸的，但是饼炸得很好吃脆脆的。","tier":1,"lat":34.0347483,"lng":-118.2834339,"google_maps_url":""},
+  {"name":"Marugame Udon","city":"San Francisco","cuisine":"日料","budget":"1","rating":4,"dish":"意式肉酱拌饭","note":"之前都是吃他家的乌冬特别好吃还便宜，后面点过一次意式肉酱拌饭好吃无敌了还很便宜，搭配一颗温泉蛋，美醉了。","tier":1,"lat":37.7840,"lng":-122.4059,"google_maps_url":""},
+  {"name":"Ahgassi Gopchang","city":"Los Angeles","cuisine":"韩料","budget":"3","rating":3,"dish":"蘑菇炒饭","note":"kpop爱豆光顾很多的店，慕名而来。普通烤肉蛮好吃的但是分量有点少。","tier":2,"lat":34.0634077,"lng":-118.3039371,"google_maps_url":""},
+  {"name":"Verve Coffee Roasters","city":"San Francisco","cuisine":"咖啡","budget":"1","rating":4,"dish":"拿铁","note":"很火的一家咖啡店，味道我尝不太出来区别，但是店里的环境很不错。","tier":2,"lat":37.7875,"lng":-122.4070,"google_maps_url":""},
+  {"name":"Jun Won Dak","city":"Los Angeles","cuisine":"韩料","budget":"3","rating":5,"dish":"韩式牛骨，红烧鳕鱼","note":"无敌的一家店，只卖四道菜，店面只有一张桌子坐六个人，所以一般提前打电话预约自提。不愧是米其林推荐。","tier":1,"lat":34.0690333,"lng":-118.2981943,"google_maps_url":""},
+  {"name":"Unaginonaruse Nihonbashiten","city":"Tokyo","cuisine":"日料","budget":"2","rating":3.5,"dish":"鳗鱼饭","note":"份量有点少但是价格也不低的鳗鱼饭，配的鳗鱼汤挺好喝的。","tier":2,"lat":35.6830,"lng":139.7753,"google_maps_url":""},
+  {"name":"Tendon Tenya Ginza","city":"Tokyo","cuisine":"日料","budget":"1","rating":4.5,"dish":"天妇罗盖饭","note":"日本平价连锁好吃的天妇罗盖饭。堂食有很漂亮的碗，在京都的分店可以坐在厨师面前看他们做饭，一定要点汤解腻。","tier":1,"lat":35.6718709,"lng":139.7682582,"google_maps_url":""},
+  {"name":"Maguro Ichidai Hibiya","city":"Tokyo","cuisine":"日料","budget":"2","rating":4,"dish":"寿司午市套餐","note":"有点像omakase一样的午市套餐，非常划算味道也很好，所有鱼类都有。","tier":1,"lat":35.6745,"lng":139.7597,"google_maps_url":""},
+  {"name":"Sushi Hana","city":"Yokohama","cuisine":"日料","budget":"4","rating":4,"dish":"omakase","note":"在日本吃的第一顿omakase，店主是个老爷爷，现在店已经歇业了估计老爷爷退休了吧。","tier":2,"lat":35.444,"lng":139.638,"google_maps_url":""},
+  {"name":"Sumiyaki Shiki Torid","city":"Yokohama","cuisine":"日料","budget":"2","rating":4.5,"dish":"烧鸟","note":"在一个小集市里的烧鸟店，很有烟火气，都是本地人在吃，味道很不错，横滨不愧是烧鸟城市。","tier":1,"lat":35.447682,"lng":139.6305858,"google_maps_url":""},
+  {"name":"Mokichi","city":"Tokyo","cuisine":"日料","budget":"2","rating":4.5,"dish":"大阪烧","note":"东京很好吃的大阪烧，比我在大阪吃得还好吃，而且价格实惠。","tier":1,"lat":35.7010183,"lng":139.7424245,"google_maps_url":""},
+  {"name":"Gyukatsu Motomura","city":"Tokyo","cuisine":"日料","budget":"2","rating":5,"dish":"烤牛排","note":"很美味的自助烤牛排店，一口惊艳，而且很有互动感和趣味性。","tier":1,"lat":35.6867856,"lng":139.7750904,"google_maps_url":""},
+  {"name":"Kyuramen x TBaar - Arcadia","city":"Los Angeles","cuisine":"日料","budget":"2","rating":3.5,"dish":"蛋包饭","note":"喜欢吃流心蛋包饭的可以尝试。","tier":2,"lat":34.1075704,"lng":-118.0316453,"google_maps_url":""},
+  {"name":"Ramen Nagi","city":"Los Angeles","cuisine":"日料","budget":"1","rating":4,"dish":"自选拉面","note":"la 和 sd Westfield都有的拉面店，不会出错的选择就是排队比较久。","tier":1,"lat":34.0592478,"lng":-118.419648,"google_maps_url":""},
+  {"name":"Eggslut","city":"Los Angeles","cuisine":"西餐","budget":"1","rating":4,"dish":"滑蛋三明治","note":"很火的早餐滑蛋三明治店，非常嫩但是可能会有点腻，所以我一般会加牛油果，再搭配一杯鲜榨橙汁解腻。","tier":1,"lat":34.0530,"lng":-118.2580,"google_maps_url":""},
+  {"name":"MEMORYLOOK","city":"Los Angeles","cuisine":"咖啡","budget":"1","rating":5,"dish":"抹茶拿铁","note":"抹茶拿铁很好喝，店里还有其他的选择。","tier":1,"lat":34.0528479,"lng":-118.2970763,"google_maps_url":""},
+  {"name":"Philz Coffee","city":"Los Angeles","cuisine":"咖啡","budget":"1","rating":5,"dish":"拿铁","note":"可以自己挑选搭配咖啡，从豆子到烘焙程度，风味，甜度都可以自己调，味道都很不错。","tier":1,"lat":34.0977771,"lng":-118.33012,"google_maps_url":""},
+  {"name":"Kumquat Coffee DTLA","city":"Los Angeles","cuisine":"咖啡","budget":"1","rating":4,"dish":"拿铁","note":"dtla 的咖啡店，价格有点高但是不是很多。","tier":2,"lat":34.0515512,"lng":-118.2585271,"google_maps_url":""},
+  {"name":"Mike's Red Tacos","city":"San Diego","cuisine":"墨西哥","budget":"1","rating":4.5,"dish":"taco","note":"sd 很地道的 taco 店，非常多老墨都在这吃。","tier":1,"lat":32.9168402,"lng":-117.127323,"google_maps_url":""},
+  {"name":"Bavel","city":"Los Angeles","cuisine":"西餐","budget":"4","rating":5,"dish":"烤鱼，羊排，烤蘑菇","note":"Pita蘸茄子酱很好吃，烤鱼也很美味，一点刺都没有，羊排很嫩，非常好吃的中东菜。注意去之前一定要预约。","tier":1,"lat":34.0414422,"lng":-118.2327188,"google_maps_url":""},
+  {"name":"Joshua Tree Coffee Co.","city":"Joshua Tree","cuisine":"咖啡","budget":"1","rating":3.5,"dish":"拿铁","note":"途中困晕了所以 stop by 的咖啡店。","tier":2,"lat":34.1341,"lng":-116.3131,"google_maps_url":""},
+  {"name":"Blue Water Seafood","city":"San Diego","cuisine":"墨西哥","budget":"2","rating":4.5,"dish":"scallop taco","note":"award winning scallop taco 很好吃！！个头超级大。三文鱼刺身味道很好，搭配的饭应该加了黄油香香的。","tier":1,"lat":32.742072,"lng":-117.179771,"google_maps_url":""},
+  {"name":"Sovereign Modern Thai","city":"San Diego","cuisine":"泰餐","budget":"3","rating":4.5,"dish":"牛排炒饭","note":"除了上餐很慢之外味道很不错。","tier":1,"lat":32.7094334,"lng":-117.1533169,"google_maps_url":""},
+  {"name":"Coco Bomb","city":"San Diego","cuisine":"甜点","budget":"1","rating":5,"dish":"gelato","note":"椰子味和斑斓味特别浓郁，不愧是网红 gelato 店。","tier":1,"lat":32.7864457,"lng":-117.1696072,"google_maps_url":""},
+  {"name":"Rockin' Baja Lobster","city":"San Diego","cuisine":"墨西哥","budget":"4","rating":4,"dish":"taco","note":"牛肉taco很好吃，龙虾一般般。","tier":1,"lat":32.7518993,"lng":-117.1970603,"google_maps_url":""},
+  {"name":"Lady M Cake Boutique","city":"San Diego","cuisine":"甜点","budget":"1","rating":4,"dish":"千层蛋糕","note":"千层蛋糕在澳门吃得时候觉得好好吃，但是来美国吃得都有点甜，两个人share一块比较好吃。","tier":2,"lat":32.755,"lng":-117.198,"google_maps_url":""},
+  {"name":"Ikkaku Yokohama","city":"Yokohama","cuisine":"日料","budget":"2","rating":5,"dish":"骨付鸟","note":"横滨本地特色菜骨付鸟，和国内的窑鸡味道很像，鸡汤也很好喝。","tier":1,"lat":35.4647033,"lng":139.6187968,"google_maps_url":""},
+  {"name":"3CAT Handcrafted Beverage","city":"Los Angeles","cuisine":"咖啡","budget":"1","rating":4.5,"dish":"奶茶","note":"LA最好喝的奶茶店没有之一，牛油果芒果，酒酿都很好喝。","tier":1,"lat":34.0613,"lng":-118.3097,"google_maps_url":""},
+  {"name":"Honeymee","city":"Los Angeles","cuisine":"甜点","budget":"1","rating":4.5,"dish":"冰淇淋","note":"很有意思的冰淇淋，外冷内热，里面可以搭配抹茶拿铁或者浓缩咖啡，等它慢慢融化外层，有点像affogato。","tier":1,"lat":34.0487711,"lng":-118.24002,"google_maps_url":""},
+  {"name":"Red Rock-Torrance","city":"Los Angeles","cuisine":"日料","budget":"2","rating":4.5,"dish":"牛肉堡饭","note":"牛肉堡盖饭好好吃","tier":1,"lat":33.8663757,"lng":-118.3171018,"google_maps_url":""},
+  {"name":"Temaki Society","city":"Los Angeles","cuisine":"日料","budget":"4","rating":4.5,"dish":"日式手卷","note":"鱼的品质都很好，很难得吃到没有腥味甜甜的海胆，蓝鳍金枪鱼也非常肥美。","tier":1,"lat":34.0499003,"lng":-118.2492427,"google_maps_url":""},
+  {"name":"All You Can Eat Sushi & BBQ","city":"Los Angeles","cuisine":"日料","budget":"2","rating":2,"dish":"自助寿司烤肉","note":"非常不推荐了，没有一个肉质是 ok 的。","tier":2,"lat":34.0614502,"lng":-118.3120518,"google_maps_url":""},
+  {"name":"Dha Rae Oak","city":"Los Angeles","cuisine":"韩料","budget":"4","rating":4,"dish":"烤鸭肉","note":"米其林推荐的烤肉店，味道其实很不错，泡菜炒饭也很美味，但是价格来说有点贵了。","tier":1,"lat":34.0505782,"lng":-118.3089464,"google_maps_url":""},
+  {"name":"Lunasia Dim Sum House","city":"Los Angeles","cuisine":"中餐","budget":"2","rating":4,"dish":"早茶","note":"正宗早茶店。","tier":1,"lat":34.0925117,"lng":-118.1322507,"google_maps_url":""},
+  {"name":"Formosa Aroma","city":"Los Angeles","cuisine":"咖啡","budget":"1","rating":3.5,"dish":"奶茶","note":"台湾奶茶店，但是茶的选择很多挑不过来。","tier":2,"lat":34.092252,"lng":-118.1325551,"google_maps_url":""},
+  {"name":"Calic Bagel","city":"Los Angeles","cuisine":"甜点","budget":"1","rating":3.5,"dish":"贝果","note":"太腻了有点","tier":2,"lat":34.0575098,"lng":-118.2857985,"google_maps_url":""},
+  {"name":"Gangnam Station Korean BBQ","city":"Los Angeles","cuisine":"韩料","budget":"3","rating":4,"dish":"自助烤肉","note":"小吃炸鸡和粉丝很好吃，容易就吃这俩吃饱，肉的选择也是中规中矩但从自助烤肉来说性价比不错。","tier":1,"lat":34.0618828,"lng":-118.3086333,"google_maps_url":""},
+  {"name":"STAGGER COFFEE","city":"Los Angeles","cuisine":"咖啡","budget":"1","rating":5,"dish":"抹茶拿铁","note":"抹茶拿铁一绝了，记得拿他们店的贴纸！","tier":1,"lat":34.0576814,"lng":-118.3048385,"google_maps_url":""},
+  {"name":"Lasso My Taco","city":"Los Angeles","cuisine":"墨西哥","budget":"1","rating":4.5,"dish":"taco","note":"usc旁边的taco stand，营业时间7pm-2am，物美价廉，属于不会出错的宵夜选择。","tier":1,"lat":34.0289226,"lng":-118.2916788,"google_maps_url":""},
+  {"name":"Taste of Chao Shan","city":"Los Angeles","cuisine":"中餐","budget":"3","rating":4.5,"dish":"牛肉火锅","note":"很地道的潮汕牛肉火锅店，很多菜品都是我在这里吃到种草回国吃的。","tier":1,"lat":34.078365,"lng":-118.128203,"google_maps_url":""},
+  {"name":"Olive and James Cafe Tea","city":"Los Angeles","cuisine":"甜点","budget":"1","rating":5,"dish":"流心巴斯克","note":"太美味的流心巴斯克，真的会流心。","tier":1,"lat":34.0837512,"lng":-118.3529573,"google_maps_url":""},
+  {"name":"Farmhouse Kitchen Thai","city":"Los Angeles","cuisine":"泰餐","budget":"4","rating":4.5,"dish":"short rib","note":"short rib 很软烂很好吃。","tier":1,"lat":34.0700,"lng":-118.2900,"google_maps_url":""},
+  {"name":"Pho N Mor","city":"Los Angeles","cuisine":"越南","budget":"1","rating":3.5,"dish":"pho","note":"usc 附近的越南粉店，被越南教授认可的店，肉量很大。","tier":2,"lat":34.0233065,"lng":-118.2793319,"google_maps_url":""},
+  {"name":"ShinChon Restaurant","city":"Los Angeles","cuisine":"韩料","budget":"3","rating":4.5,"dish":"galbi","note":"很美味的galbi，和 ktown 其他店的味道都不太一样。第一次去的时候很喜欢吃腌虾。","tier":1,"lat":34.0635,"lng":-118.2990,"google_maps_url":""},
+  {"name":"Le Kream","city":"Los Angeles","cuisine":"甜点","budget":"2","rating":3.5,"dish":"方块小面包","note":"方块面包里面夹心奶油，十分美味，店里的饮品也很美味。","tier":2,"lat":34.0602,"lng":-118.3051,"google_maps_url":""},
+  {"name":"Artista de Cafe","city":"Antigua","cuisine":"咖啡","budget":"1","rating":4,"dish":"咖啡","note":"安提瓜当地一家咖啡店，都是白人或者外国人在办公，有一些酒精饮料很有意思。","tier":1,"lat":14.5570,"lng":-90.7340,"google_maps_url":""},
+  {"name":"La Casa de las Sopas","city":"Antigua","cuisine":"墨西哥","budget":"2","rating":4,"dish":"鸡肉汤","note":"安提瓜本地风味鸡肉汤，可以尝试的特色菜。","tier":1,"lat":14.5587504,"lng":-90.7362067,"google_maps_url":""},
+  {"name":"Caesars Palace","city":"Las Vegas","cuisine":"西餐","budget":"4","rating":4,"dish":"自助餐","note":"太多太多了，吃了超多蟹腿直接就快吐了出来的。","tier":2,"lat":36.1166277,"lng":-115.1767568,"google_maps_url":""},
+  {"name":"JINCOOKDTLA","city":"Los Angeles","cuisine":"韩料","budget":"2","rating":3.5,"dish":"咖喱","note":"炸猪排咖喱饭，比较特别的是他的炸猪排里面有各种夹心，红薯味的好吃。","tier":2,"lat":34.0539793,"lng":-118.2458794,"google_maps_url":""},
+  {"name":"Sun Nong Dan","city":"Los Angeles","cuisine":"韩料","budget":"4","rating":5,"dish":"韩式牛骨","note":"LA最好吃的牛骨锅没有之一，价格有点高但确实很好吃，但是份量越来越小了。","tier":1,"lat":34.0629804,"lng":-118.2974791,"google_maps_url":""},
+  {"name":"Melo Melo Coconut Dessert","city":"Los Angeles","cuisine":"甜点","budget":"1","rating":5,"dish":"椰子冻","note":"超级好吃的椰子冻，吃过melo melo很多口味之后还是会拥护原味。","tier":1,"lat":34.0632675,"lng":-118.2975206,"google_maps_url":""},
+  {"name":"BCD Tofu House","city":"Los Angeles","cuisine":"韩料","budget":"2","rating":3.5,"dish":"short rib，豆腐煲","note":"hmart 可以买到同款豆腐自己做豆腐煲","tier":2,"lat":34.0618,"lng":-118.3030,"google_maps_url":""},
+  {"name":"JunTong SulLungTang","city":"Los Angeles","cuisine":"韩料","budget":"2","rating":5,"dish":"galbi tang","note":"LA超级美味 galbi tang，我不知道吃什么的时候就会去的店，汤很好喝份量也很大，推荐中午去吃。","tier":1,"lat":34.0564481,"lng":-118.3091658,"google_maps_url":""},
+  {"name":"Damsot","city":"Los Angeles","cuisine":"韩料","budget":"3","rating":3,"dish":"釜饭","note":"之前 xhs 很火的釜饭，但是去吃了感觉份量小然后味道也一般般，不是很喜欢。","tier":2,"lat":34.062499,"lng":-118.297502,"google_maps_url":""},
+  {"name":"Ruen Pair","city":"Los Angeles","cuisine":"泰餐","budget":"2","rating":3.5,"dish":"pad thai","note":"中规中矩泰餐店，好莱坞旁边。","tier":2,"lat":34.1019734,"lng":-118.3054952,"google_maps_url":""},
+  {"name":"Luv2eat Thai Bistro","city":"Los Angeles","cuisine":"泰餐","budget":"3","rating":4.5,"dish":"蟹肉炒饭","note":"蟹肉炒饭美味极了，烤肉串也很好吃。","tier":1,"lat":34.0977236,"lng":-118.3358846,"google_maps_url":""},
+  {"name":"Liu's Cafe","city":"Los Angeles","cuisine":"中餐","budget":"2","rating":4.5,"dish":"卤肉饭，牛肉面","note":"牛肉面汤底很浓郁，好好喝，卤肉饭也很正宗。","tier":1,"lat":34.0601251,"lng":-118.4461574,"google_maps_url":""},
+  {"name":"Tea Master Matcha Cafe","city":"Los Angeles","cuisine":"甜点","budget":"1","rating":4.5,"dish":"抹茶冰淇淋","note":"很美味的抹茶冰淇淋，味道很浓郁。","tier":1,"lat":34.0470232,"lng":-118.2386155,"google_maps_url":""},
+  {"name":"DAMO","city":"Los Angeles","cuisine":"咖啡","budget":"1","rating":4.5,"dish":"抹茶拿铁","note":"ktown 很火的抹茶店，味道都挺好的，很正的抹茶店。","tier":1,"lat":34.0615,"lng":-118.3088,"google_maps_url":""},
+  {"name":"Ebaes","city":"Los Angeles","cuisine":"日料","budget":"1","rating":3.5,"dish":"poke bowl","note":"USC 旁边的日料店，poke 越来越少了之前其实还挺喜欢吃的，每个月一号有8刀的拉面，但是cash only","tier":2,"lat":34.0347102,"lng":-118.2834563,"google_maps_url":""},
+  {"name":"Crepe De France","city":"Seattle","cuisine":"甜点","budget":"1","rating":3.5,"dish":"可丽饼","note":"很甜的可丽饼","tier":2,"lat":47.6070,"lng":-122.3400,"google_maps_url":""}
+];
+
+const BUDGET_MAP = {"1":"$ 便饭","2":"$$ 犒劳自己","3":"$$$ 值得庆祝","4":"$$$$ 奢侈一下"};
+const EMOJI = {"日料":"🍱","韩料":"🥩","中餐":"🍜","泰餐":"🍛","越南":"🍲","咖啡":"☕","甜点":"🍨","西餐":"🍽️","墨西哥":"🌮","":"🍴"};
+const CITY_CENTERS = {
+  "Los Angeles":[34.052,-118.243],"San Diego":[32.715,-117.157],"San Francisco":[37.779,-122.419],
+  "Seattle":[47.606,-122.332],"Chicago":[41.878,-87.630],"Las Vegas":[36.114,-115.172],
+  "Joshua Tree":[34.134,-116.313],"Tokyo":[35.689,139.692],"Kyoto":[35.011,135.768],
+  "Osaka":[34.693,135.502],"Yokohama":[35.443,139.638],"Antigua":[14.560,-90.734]
+};
+
+function hearts(r) {
+  return '♥'.repeat(Math.floor(r)) + (r%1>=0.5?'♡':'') + '♡'.repeat(5-Math.floor(r)-(r%1>=0.5?1:0));
+}
+
+// Map init
+const map = L.map('map',{center:[30,10],zoom:2});
+L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg',{
+  minZoom:1,maxZoom:16,
+  attribution:'&copy; <a href="https://stamen.com">Stamen</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+}).addTo(map);
+
+// State
+let activeTiers = new Set([1,2]);
+let activeCuisine = 'all';
+const layer = L.layerGroup().addTo(map);
+
+// Build cuisine pills
+const cuisineSet = [...new Set(DATA.map(d=>d.cuisine||'').filter(Boolean))].sort();
+const cf = document.getElementById('cuisineFilter');
+cuisineSet.forEach(c=>{
+  const b=document.createElement('button');
+  b.className='pill'; b.dataset.cuisine=c;
+  b.textContent=(EMOJI[c]||'🍴')+' '+c;
+  cf.appendChild(b);
+});
+
+// Build city jump
+const cj=document.getElementById('cityJump');
+Object.entries(CITY_CENTERS).forEach(([city,coord])=>{
+  const n=DATA.filter(d=>d.city===city).length;
+  if(!n)return;
+  const o=document.createElement('option');
+  o.value=city; o.textContent=city+' ('+n+')'; cj.appendChild(o);
+});
+cj.addEventListener('change',()=>{
+  const c=cj.value;
+  if(c&&CITY_CENTERS[c]) map.flyTo(CITY_CENTERS[c],c==='Los Angeles'?12:11,{duration:1.4});
+  setTimeout(()=>{cj.value='';},600);
+});
+
+// Render
+function render(){
+  layer.clearLayers();
+  const visible=DATA.filter(d=>{
+    if(!d.lat||!d.lng)return false;
+    if(!activeTiers.has(d.tier))return false;
+    if(activeCuisine!=='all'&&d.cuisine!==activeCuisine)return false;
+    return true;
+  });
+  visible.forEach(item=>{
+    const em=EMOJI[item.cuisine]||'🍴';
+    const tc='t'+item.tier;
+    const icon=L.divIcon({
+      className:'',
+      html:`<div class="m-wrap ${tc}"><div class="m-pin"><span>${em}</span></div><div class="m-stem"></div></div>`,
+      iconSize:[30,38],iconAnchor:[15,38],popupAnchor:[0,-40]
+    });
+    const gm=item.google_maps_url
+      ?`<a class="pop-gmap" href="${item.google_maps_url}" target="_blank">📍 Maps</a>`
+      :`<span class="pop-gmap disabled">📍 Maps</span>`;
+    const pop=`<div class="pop">
+      <span class="pop-badge ${item.tier===2?'t2':''}">${item.tier===1?'⭐ 精选':'· 去过'}</span>
+      <div class="pop-name">${item.name}</div>
+      <div class="pop-meta"><span class="pop-hearts">${hearts(item.rating)}</span><span>${item.city||''}</span></div>
+      ${item.dish?`<div class="pop-dish"><span class="pop-dish-lbl">推荐菜</span>${item.dish}</div>`:''}
+      ${item.note?`<div class="pop-note">${item.note}</div>`:''}
+      <div class="pop-footer"><span class="pop-budget">${BUDGET_MAP[item.budget]||''}</span>${gm}</div>
+    </div>`;
+    L.marker([item.lat,item.lng],{icon}).bindPopup(pop,{maxWidth:255,minWidth:210}).addTo(layer);
+  });
+  document.getElementById('countBadge').textContent=visible.length+' 家';
+}
+render();
+
+// Tier filter
+document.getElementById('tierFilter').addEventListener('click',e=>{
+  const p=e.target.closest('.pill'); if(!p)return;
+  const t=parseInt(p.dataset.tier);
+  if(activeTiers.has(t)){
+    if(activeTiers.size===1)return;
+    activeTiers.delete(t); p.classList.remove('active');
+  } else { activeTiers.add(t); p.classList.add('active'); }
+  render();
+});
+
+// Cuisine filter
+cf.addEventListener('click',e=>{
+  const p=e.target.closest('.pill'); if(!p)return;
+  activeCuisine=p.dataset.cuisine;
+  cf.querySelectorAll('.pill').forEach(x=>x.classList.remove('active'));
+  p.classList.add('active'); render();
+});
+</script>
+</body>
+</html>
