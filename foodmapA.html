@@ -687,6 +687,15 @@
   }
   .pop-act:hover { border-color: var(--ink); color: var(--ink); }
   .pop-act.stamped { color: var(--stamp-red); border-color: rgba(194,90,72,0.3); background: rgba(194,90,72,0.06); }
+  .pop-act.just-stamped {
+    animation: popActPulse 0.55s ease-out;
+  }
+
+  @keyframes popActPulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 rgba(194,90,72,0.25); }
+    45% { transform: scale(1.08); box-shadow: 0 0 0 7px rgba(194,90,72,0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 rgba(194,90,72,0); }
+  }
 
   /* City dropdown */
   .city-dd {
@@ -726,6 +735,24 @@
     z-index: 5;
   }
   .been-stamp.visible { opacity: 0.62; transform: rotate(-14deg) scale(1); }
+  .been-stamp.pop { animation: stampPop 0.42s cubic-bezier(0.15, 1.5, 0.4, 1); }
+
+  @keyframes stampPop {
+    0% { opacity: 0; transform: rotate(-14deg) scale(0.55); }
+    70% { opacity: 0.68; transform: rotate(-14deg) scale(1.06); }
+    100% { opacity: 0.62; transform: rotate(-14deg) scale(1); }
+  }
+
+  .pin-wrap.stamp-pop {
+    animation: pinHop 0.5s ease-out;
+  }
+
+  @keyframes pinHop {
+    0% { transform: translateY(0); }
+    28% { transform: translateY(-10px); }
+    60% { transform: translateY(2px); }
+    100% { transform: translateY(0); }
+  }
 
   /* ─── STATS PANEL (bottom-right) ─── */
   .stats {
@@ -1003,6 +1030,188 @@
   }
   .backdrop.on { opacity: 1; pointer-events: auto; }
 
+  /* ─── TAB BADGE ─── */
+  .tab-badge {
+    display: inline-block;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.62rem;
+    background: var(--stamp-red);
+    color: white;
+    border-radius: 8px;
+    padding: 0 5px;
+    margin-left: 4px;
+    vertical-align: 1px;
+    min-width: 14px;
+    text-align: center;
+    line-height: 14px;
+    height: 14px;
+  }
+  .tab-badge:empty { display: none; }
+
+  /* ─── STAMPED TAB ─── */
+  .stamp-empty {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.88rem;
+    color: var(--ink-faded);
+    text-align: center;
+    padding: 32px 16px 24px;
+    line-height: 1.85;
+  }
+  .stamp-empty .big {
+    font-family: 'Caveat', cursive;
+    font-size: 1.4rem;
+    color: var(--ink-light);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  /* ─── CALENDAR ─── */
+  .cal {
+    background: rgba(255,250,240,0.55);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 10px 8px 12px;
+    margin-bottom: 10px;
+  }
+  .cal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding: 0 2px;
+  }
+  .cal-title {
+    font-family: 'Caveat', cursive;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.04em;
+  }
+  .cal-nav {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.8rem;
+    color: var(--ink-light);
+    padding: 2px 8px;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: rgba(255,250,240,0.6);
+    transition: all 0.12s;
+  }
+  .cal-nav:hover:not(:disabled) { border-color: var(--ink); color: var(--ink); }
+  .cal-nav:disabled { opacity: 0.28; cursor: default; }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+  .cal-dow {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.62rem;
+    color: var(--ink-faded);
+    text-align: center;
+    padding: 2px 0 3px;
+    letter-spacing: 0.03em;
+  }
+  .cal-day {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.78rem;
+    text-align: center;
+    padding: 3px 1px 2px;
+    border-radius: 4px;
+    color: var(--ink-faded);
+    cursor: default;
+    position: relative;
+    min-height: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    line-height: 1.2;
+  }
+  .cal-day.empty { pointer-events: none; }
+  .cal-day.today:not(.selected) { color: var(--stamp-blue); font-weight: bold; }
+  .cal-day.has-stamp {
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .cal-day.has-stamp:hover:not(.selected) { background: rgba(194,90,72,0.08); }
+  .cal-day.selected { background: var(--stamp-red); color: white; border-radius: 4px; }
+  .cal-dot {
+    width: 5px; height: 5px;
+    background: var(--stamp-red);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .cal-day.selected .cal-dot { background: rgba(255,255,255,0.75); }
+  .cal-filter-row {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.75rem;
+    color: var(--ink-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    padding: 4px 0;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .cal-clear {
+    color: var(--stamp-red);
+    cursor: pointer;
+    font-size: 0.72rem;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    font-family: inherit;
+    padding: 0;
+  }
+
+  /* ─── STAMP CARDS ─── */
+  .stamp-card {
+    padding: 8px 12px 9px;
+    margin-bottom: 6px;
+    background: rgba(255,250,240,0.55);
+    border: 1px solid transparent;
+    border-left: 3px solid var(--stamp-red);
+    border-radius: 0 6px 6px 0;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .stamp-card:hover {
+    background: rgba(255,250,240,0.95);
+    border-color: var(--rule);
+    border-left-color: var(--stamp-red);
+    transform: translateX(2px);
+  }
+  .stamp-card-date {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.7rem;
+    color: var(--ink-faded);
+    letter-spacing: 0.06em;
+    margin-bottom: 2px;
+  }
+  .stamp-card-name {
+    font-family: 'Klee One', serif;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.25;
+  }
+  .stamp-card-city {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.74rem;
+    color: var(--ink-light);
+    margin-top: 2px;
+  }
+  .stamp-empty-filter {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.82rem;
+    color: var(--ink-faded);
+    text-align: center;
+    padding: 14px 8px;
+  }
+
   /* ─── RESPONSIVE ─── */
 
   /* Tablet / large phone */
@@ -1172,6 +1381,7 @@
       <div class="drawer-tabs">
         <button class="drawer-tab on" data-tab="cities">By City</button>
         <button class="drawer-tab" data-tab="timeline">Timeline</button>
+        <button class="drawer-tab" data-tab="stamped">🖃 打卡<span class="tab-badge" id="stampBadge"></span></button>
       </div>
       <div class="drawer-body" id="drawerBody"></div>
     </div>
@@ -1239,6 +1449,30 @@ function setUserStamped(name) {
     if (!s.includes(name)) { s.push(name); localStorage.setItem('foodmap_user_stamps', JSON.stringify(s)); }
   } catch {}
 }
+
+// ─── STAMP DATE STORAGE ───
+function getStampDates() {
+  try { return JSON.parse(localStorage.getItem('foodmap_stamp_dates') || '{}'); } catch { return {}; }
+}
+function saveStampDate(name) {
+  try {
+    const d = getStampDates();
+    if (!d[name]) {
+      d[name] = new Date().toISOString().slice(0, 10);
+      localStorage.setItem('foodmap_stamp_dates', JSON.stringify(d));
+    }
+  } catch {}
+}
+function updateStampBadge() {
+  const stamps = JSON.parse(localStorage.getItem('foodmap_user_stamps') || '[]');
+  const el = document.getElementById('stampBadge');
+  if (el) el.textContent = stamps.length || '';
+}
+
+// Calendar state
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let selectedCalDay = null;
 
 function hearts(r) {
   return '♥'.repeat(Math.floor(r)) + (r%1>=0.5?'♡':'') + '♡'.repeat(5-Math.floor(r)-(r%1>=0.5?1:0));
@@ -1400,13 +1634,33 @@ function doSeal(encName) {
   if (hasUserStamped(name)) return;
   setUserStamped(name);
   addSeal(name);
+  saveStampDate(name);
+  updateStampBadge();
 
   const stamp = document.getElementById('been-stamp-' + encName);
-  if (stamp) stamp.classList.add('visible');
+  if (stamp) {
+    stamp.classList.add('visible', 'pop');
+    setTimeout(() => stamp.classList.remove('pop'), 460);
+  }
 
   const btn = document.getElementById('seal-btn-' + encName);
-  if (btn) { btn.classList.add('stamped'); btn.textContent = '✦ 去过'; }
+  if (btn) {
+    btn.classList.add('stamped', 'just-stamped');
+    btn.textContent = '✦ 去过';
+    setTimeout(() => btn.classList.remove('just-stamped'), 600);
+  }
 
+  const marker = markerByName.get(name);
+  const markerEl = marker?.getElement?.();
+  const pinWrap = markerEl?.querySelector('.pin-wrap');
+  if (pinWrap) {
+    pinWrap.classList.remove('stamp-pop');
+    void pinWrap.offsetWidth;
+    pinWrap.classList.add('stamp-pop');
+    setTimeout(() => pinWrap.classList.remove('stamp-pop'), 520);
+  }
+
+  if (drawerTab === 'stamped' || drawerTab === 'timeline') renderDrawerBody();
   toast('🖃 盖章成功！');
 }
 window.doSeal = doSeal;
@@ -1512,6 +1766,113 @@ document.querySelectorAll('.drawer-tab').forEach(t => {
   });
 });
 
+// ─── CALENDAR HELPERS ───
+function renderCalendarHTML() {
+  const now = new Date();
+  const today = now.toISOString().slice(0, 10);
+  const stampDays = new Set(Object.values(getStampDates()));
+  const firstDay = new Date(calYear, calMonth, 1);
+  const lastDate = new Date(calYear, calMonth + 1, 0).getDate();
+  const startDow = firstDay.getDay();
+  const mm = String(calMonth + 1).padStart(2, '0');
+  const atCurrentMonth = (calYear === now.getFullYear() && calMonth === now.getMonth());
+  const atMinMonth = (calYear <= now.getFullYear() - 2);
+
+  let cells = '';
+  for (let i = 0; i < startDow; i++) cells += '<div class="cal-day empty"></div>';
+  for (let d = 1; d <= lastDate; d++) {
+    const ds = `${calYear}-${mm}-${String(d).padStart(2, '0')}`;
+    const cls = ['cal-day',
+      ds === today ? 'today' : '',
+      stampDays.has(ds) ? 'has-stamp' : '',
+      ds === selectedCalDay ? 'selected' : ''
+    ].filter(Boolean).join(' ');
+    cells += `<div class="${cls}" data-date="${ds}">${d}${stampDays.has(ds) ? '<span class="cal-dot"></span>' : ''}</div>`;
+  }
+
+  return `<div class="cal">
+    <div class="cal-head">
+      <button class="cal-nav" data-dir="-1" ${atMinMonth ? 'disabled' : ''}>◄</button>
+      <span class="cal-title">${calYear} · ${mm}</span>
+      <button class="cal-nav" data-dir="1" ${atCurrentMonth ? 'disabled' : ''}>►</button>
+    </div>
+    <div class="cal-grid">
+      <div class="cal-dow">日</div><div class="cal-dow">一</div><div class="cal-dow">二</div>
+      <div class="cal-dow">三</div><div class="cal-dow">四</div><div class="cal-dow">五</div>
+      <div class="cal-dow">六</div>
+      ${cells}
+    </div>
+  </div>`;
+}
+
+function stampCard(name, dateStr, item) {
+  const label = dateStr
+    ? new Date(dateStr + 'T12:00:00').toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })
+    : '日期未记录';
+  const em = item ? (EMOJI[item.cuisine] || '🍴') : '🍴';
+  return `<div class="stamp-card" data-name="${name.replace(/"/g, '&quot;')}">
+    <div class="stamp-card-date">${label}</div>
+    <div class="stamp-card-name">${em} ${name}</div>
+    ${item?.city ? `<div class="stamp-card-city">${item.city}</div>` : ''}
+  </div>`;
+}
+
+function renderStampedBody(body) {
+  const stamps = JSON.parse(localStorage.getItem('foodmap_user_stamps') || '[]');
+
+  if (!stamps.length) {
+    body.innerHTML = `<div class="stamp-empty">
+      <span class="big">还没有打卡记录 ✦</span>
+      打开任意餐厅的气泡，<br>点击「🖃 去过?」就会出现在这里。
+    </div>`;
+    return;
+  }
+
+  const dates = getStampDates();
+  const filtered = selectedCalDay
+    ? stamps.filter(n => dates[n] === selectedCalDay)
+    : stamps;
+  const sorted = filtered
+    .map(n => ({ name: n, date: dates[n] || '', item: DATA.find(d => d.name === n) }))
+    .sort((a, b) => b.date.localeCompare(a.date));
+
+  const filterRow = selectedCalDay
+    ? `<div class="cal-filter-row">
+         <span>📅 ${selectedCalDay}</span>
+         <button class="cal-clear">✕ 清除筛选</button>
+       </div>` : '';
+
+  const listHTML = sorted.length
+    ? sorted.map(({ name, date, item }) => stampCard(name, date, item)).join('')
+    : '<div class="stamp-empty-filter">这天还没有打卡记录</div>';
+
+  body.innerHTML = renderCalendarHTML() + filterRow + listHTML;
+
+  // Wire calendar navigation
+  body.querySelectorAll('.cal-nav').forEach(btn => {
+    btn.addEventListener('click', () => {
+      calMonth += parseInt(btn.dataset.dir);
+      if (calMonth < 0) { calMonth = 11; calYear--; }
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      renderDrawerBody();
+    });
+  });
+  // Wire day clicks
+  body.querySelectorAll('.cal-day.has-stamp').forEach(el => {
+    el.addEventListener('click', () => {
+      selectedCalDay = selectedCalDay === el.dataset.date ? null : el.dataset.date;
+      renderDrawerBody();
+    });
+  });
+  // Wire clear filter
+  const clr = body.querySelector('.cal-clear');
+  if (clr) clr.addEventListener('click', () => { selectedCalDay = null; renderDrawerBody(); });
+  // Wire stamp card clicks
+  body.querySelectorAll('.stamp-card').forEach(el => {
+    el.addEventListener('click', () => focusPlace(el.dataset.name));
+  });
+}
+
 function renderDrawerBody() {
   const body = document.getElementById('drawerBody');
   const visible = visibleData();
@@ -1528,25 +1889,41 @@ function renderDrawerBody() {
         ${byCity[city].sort((a, b) => (b.rating||0)-(a.rating||0)).map(d => placeCard(d)).join('')}
       </div>
     `).join('') || `<div style="font-family:'Patrick Hand',cursive;color:var(--ink-faded);padding:20px;text-align:center;">没有匹配的店～试试调一下筛选？</div>`;
+  } else if (drawerTab === 'stamped') {
+    renderStampedBody(body);
+    return;
   } else {
-    // Timeline — sort by date if available, else alphabetical buckets
-    const items = [...visible].sort((a, b) => (b.added || b.date || '').localeCompare(a.added || a.date || ''));
-    const buckets = {};
-    items.forEach(d => {
-      const key = (d.added || d.date || '').slice(0, 7) || 'Undated';
-      (buckets[key] = buckets[key] || []).push(d);
-    });
-    const order = Object.keys(buckets);
-    body.innerHTML = '<div class="timeline">' + order.map(month => `
-      <div class="tl-month">${month === 'Undated' ? '✦ Undated' : month}</div>
-      ${buckets[month].map(d => `
-        <div class="tl-item" data-name="${d.name}">
-          <div class="name">${d.name}</div>
-          <div class="city">${(EMOJI[d.cuisine]||'🍴')} ${d.cuisine || ''} · ${d.city || ''}</div>
-          ${(d.added || d.date) ? `<div class="checkin-badge">📅 ${d.added || d.date}</div>` : ''}
-        </div>
-      `).join('')}
-    `).join('') + '</div>';
+    // Timeline based on actual check-in dates
+    const stamps = JSON.parse(localStorage.getItem('foodmap_user_stamps') || '[]');
+    const dates = getStampDates();
+    const stampedInView = visible
+      .filter(d => stamps.includes(d.name))
+      .map(d => ({ ...d, checkinDate: dates[d.name] || '' }))
+      .sort((a, b) => b.checkinDate.localeCompare(a.checkinDate));
+
+    if (!stampedInView.length) {
+      body.innerHTML = `<div class="stamp-empty">
+        <span class="big">Timeline 还没有打卡记录 ✦</span>
+        打卡后会按日期出现在这里。
+      </div>`;
+    } else {
+      const buckets = {};
+      stampedInView.forEach(d => {
+        const key = d.checkinDate.slice(0, 7) || 'Undated';
+        (buckets[key] = buckets[key] || []).push(d);
+      });
+      const order = Object.keys(buckets).sort((a, b) => b.localeCompare(a));
+      body.innerHTML = '<div class="timeline">' + order.map(month => `
+        <div class="tl-month">${month === 'Undated' ? '✦ Undated' : month}</div>
+        ${buckets[month].map(d => `
+          <div class="tl-item" data-name="${d.name}">
+            <div class="name">${d.name}</div>
+            <div class="city">${(EMOJI[d.cuisine]||'🍴')} ${d.cuisine || ''} · ${d.city || ''}</div>
+            ${d.checkinDate ? `<div class="checkin-badge">📅 ${d.checkinDate}</div>` : ''}
+          </div>
+        `).join('')}
+      `).join('') + '</div>';
+    }
   }
   // Wire clicks
   body.querySelectorAll('.place-card, .tl-item').forEach(el => {
@@ -1657,6 +2034,7 @@ window.addEventListener('resize', () => {
 
 // ─── SHARE BUTTON ───
 document.getElementById('shareBtn').addEventListener('click', shareMyStamps);
+updateStampBadge();
 
 // ─── DEEP LINK (?focus= and/or ?friend=) ───
 window.addEventListener('load', () => {
