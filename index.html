@@ -114,11 +114,11 @@ a { color: inherit; text-decoration: none; }
   line-height: 1.5;
 }
 .tagline-en {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--ink-faded);
   margin-bottom: 28px;
   font-family: 'Patrick Hand', sans-serif;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 .btn-google {
   display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -175,8 +175,8 @@ a { color: inherit; text-decoration: none; }
   margin-bottom: 8px;
 }
 .how-step-icon { font-size: 20px; margin-bottom: 8px; display: block; }
-.how-step-zh { font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
-.how-step-en { font-size: 10px; color: var(--ink-faded); font-family: 'Patrick Hand', sans-serif; line-height: 1.4; }
+.how-step-zh { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+.how-step-en { font-size: 12px; color: var(--ink-faded); font-family: 'Patrick Hand', sans-serif; line-height: 1.5; }
 
 /* ── Username setup ── */
 .setup-greeting {
@@ -516,9 +516,300 @@ a { color: inherit; text-decoration: none; }
   .action-btns { grid-template-columns: 1fr; }
   .logo-stamp { font-size: 38px; }
 }
+
+/* ══════════════════════════════════════════════
+   SPLASH SCREEN — Ghibli traveler loading
+══════════════════════════════════════════════ */
+.splash {
+  position: fixed; inset: 0; z-index: 999;
+  overflow: hidden;
+  transition: opacity .7s ease;
+}
+.splash.fade-out { opacity: 0; pointer-events: none; }
+
+/* Sky */
+.splash-sky {
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    to bottom,
+    #b8d8f0 0%,
+    #d4eaf7 30%,
+    #e8f2e0 65%,
+    #f0e8d0 100%
+  );
+}
+
+/* Clouds */
+.splash-cloud {
+  position: absolute;
+  background: rgba(255,255,255,.8);
+  border-radius: 50px;
+  filter: blur(6px);
+}
+.splash-cloud::before, .splash-cloud::after {
+  content: '';
+  position: absolute;
+  background: inherit;
+  border-radius: inherit;
+}
+.c1 { width: 120px; height: 36px; top: 12%; left: 8%;
+  animation: cloudDrift 14s linear infinite; }
+.c2 { width: 80px; height: 24px; top: 20%; left: 55%;
+  animation: cloudDrift 20s linear 3s infinite; }
+.c3 { width: 150px; height: 40px; top: 8%; left: 35%;
+  animation: cloudDrift 18s linear 6s infinite; }
+.c1::before { width: 60px; height: 50px; top: -24px; left: 24px; }
+.c1::after  { width: 45px; height: 40px; top: -18px; left: 55px; }
+.c2::before { width: 40px; height: 35px; top: -18px; left: 16px; }
+.c3::before { width: 80px; height: 55px; top: -28px; left: 32px; }
+.c3::after  { width: 55px; height: 42px; top: -20px; left: 80px; }
+@keyframes cloudDrift {
+  from { transform: translateX(-200px); }
+  to   { transform: translateX(calc(100vw + 200px)); }
+}
+
+/* Hills */
+.splash-hills {
+  position: absolute;
+  bottom: 14%;
+  left: 0; right: 0;
+  height: 44%;
+  overflow: visible;
+}
+
+/* Ground strip */
+.splash-ground {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 15%;
+  background: linear-gradient(to bottom, #b8d490 0%, #94b86a 100%);
+}
+
+/* Dashed path */
+.splash-path {
+  position: absolute;
+  bottom: 14.5%;
+  left: 0; right: 0;
+  height: 0;
+  border-top: 3px dashed rgba(155,110,82,.55);
+  border-spacing: 8px;
+}
+
+/* Food pin stamps */
+.food-pin {
+  position: absolute;
+  bottom: calc(14.5% + 10px);
+  left: var(--left);
+  font-size: 24px;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.2));
+  transform-origin: bottom center;
+  opacity: 0;
+  animation: pinPop .55s cubic-bezier(.34,1.56,.64,1) var(--delay) forwards;
+}
+.food-pin::after {
+  content: '';
+  position: absolute;
+  bottom: -4px; left: 50%;
+  transform: translateX(-50%);
+  width: 8px; height: 8px;
+  background: rgba(155,110,82,.4);
+  border-radius: 50%;
+}
+@keyframes pinPop {
+  0%   { opacity: 0; transform: scale(0) translateY(16px) rotate(-15deg); }
+  65%  { opacity: 1; transform: scale(1.25) translateY(-4px) rotate(4deg); }
+  82%  { transform: scale(0.92) translateY(2px) rotate(-2deg); }
+  100% { opacity: 1; transform: scale(1) translateY(0) rotate(0deg); }
+}
+
+/* ── Walker character ── */
+.walker {
+  position: absolute;
+  bottom: 13%;
+  width: 52px;
+  animation: walkAcross 5s linear both;
+  will-change: transform;
+  filter: drop-shadow(2px 3px 2px rgba(0,0,0,.15));
+}
+@keyframes walkAcross {
+  from { left: -70px; }
+  to   { left: calc(100% + 70px); }
+}
+
+.walker-svg {
+  width: 52px; height: auto;
+  animation: walkBob .38s ease-in-out infinite alternate;
+}
+@keyframes walkBob {
+  from { transform: translateY(0) rotate(-.8deg); }
+  to   { transform: translateY(-4px) rotate(.8deg); }
+}
+
+/* Leg swing — uses transform-box for correct SVG origin */
+.leg-l {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: legSwingL .38s ease-in-out infinite alternate;
+}
+.leg-r {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: legSwingR .38s ease-in-out infinite alternate;
+}
+@keyframes legSwingL {
+  from { transform: rotate(-22deg); }
+  to   { transform: rotate(22deg); }
+}
+@keyframes legSwingR {
+  from { transform: rotate(22deg); }
+  to   { transform: rotate(-22deg); }
+}
+
+/* ── Splash title ── */
+.splash-title {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  animation: titleRise 1s ease .3s both;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.splash-title-zh {
+  font-family: 'Caveat', cursive;
+  font-size: 56px;
+  font-weight: 700;
+  color: #3a322a;
+  text-shadow: 0 2px 12px rgba(255,255,255,.9), 0 1px 0 rgba(255,255,255,.6);
+  line-height: 1;
+}
+.splash-title-en {
+  font-family: 'Patrick Hand', sans-serif;
+  font-size: 18px;
+  color: #7d6f60;
+  margin-top: 4px;
+  text-shadow: 0 1px 6px rgba(255,255,255,.8);
+  letter-spacing: .5px;
+}
+.splash-loading-dots {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #a99a86;
+  font-family: 'Patrick Hand', sans-serif;
+  letter-spacing: 2px;
+  animation: dotPulse 1.4s ease-in-out infinite;
+}
+@keyframes titleRise {
+  from { opacity: 0; transform: translateX(-50%) translateY(14px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes dotPulse {
+  0%, 100% { opacity: .4; }
+  50%       { opacity: 1; }
+}
 </style>
 </head>
 <body>
+
+<!-- ══ SPLASH SCREEN ══════════════════════════════════════════ -->
+<div class="splash" id="splashScreen">
+  <div class="splash-sky"></div>
+
+  <!-- Clouds -->
+  <div class="splash-cloud c1"></div>
+  <div class="splash-cloud c2"></div>
+  <div class="splash-cloud c3"></div>
+
+  <!-- Hills (SVG) -->
+  <svg class="splash-hills" viewBox="0 0 1440 240" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Far hills -->
+    <path d="M0 240 Q180 80 360 140 Q540 200 720 90 Q900 0 1080 110 Q1260 200 1440 140 L1440 240Z"
+          fill="#c8dfa0" opacity=".6"/>
+    <!-- Near hills -->
+    <path d="M0 240 Q220 140 440 180 Q660 220 880 155 Q1060 100 1200 170 Q1340 220 1440 160 L1440 240Z"
+          fill="#b0cf88" opacity=".85"/>
+    <!-- Tree clusters -->
+    <ellipse cx="320" cy="165" rx="28" ry="22" fill="#7aad72" opacity=".7"/>
+    <ellipse cx="308" cy="170" rx="18" ry="16" fill="#6a9d62" opacity=".8"/>
+    <ellipse cx="335" cy="168" rx="16" ry="14" fill="#6a9d62" opacity=".8"/>
+    <ellipse cx="900" cy="152" rx="24" ry="18" fill="#7aad72" opacity=".7"/>
+    <ellipse cx="890" cy="157" rx="16" ry="13" fill="#6a9d62" opacity=".8"/>
+    <ellipse cx="912" cy="155" rx="14" ry="12" fill="#6a9d62" opacity=".8"/>
+    <!-- Small house -->
+    <rect x="600" y="164" width="30" height="22" rx="2" fill="#e8d8b8" opacity=".8"/>
+    <polygon points="595,165 615,148 635,165" fill="#c17a5e" opacity=".8"/>
+    <rect x="609" y="174" width="8" height="12" rx="1" fill="#9b6e52" opacity=".7"/>
+    <rect x="602" y="167" width="7" height="7" rx="1" fill="#a8c8e8" opacity=".7"/>
+    <rect x="621" y="167" width="7" height="7" rx="1" fill="#a8c8e8" opacity=".7"/>
+  </svg>
+
+  <div class="splash-ground"></div>
+
+  <!-- Dashed path -->
+  <div class="splash-path"></div>
+
+  <!-- Food pins along the route -->
+  <div class="food-pin" style="--left:12%;--delay:.4s">🍜</div>
+  <div class="food-pin" style="--left:27%;--delay:1s">🍣</div>
+  <div class="food-pin" style="--left:45%;--delay:1.7s">🥐</div>
+  <div class="food-pin" style="--left:63%;--delay:2.4s">☕</div>
+  <div class="food-pin" style="--left:80%;--delay:3.1s">🍦</div>
+
+  <!-- Walking traveler -->
+  <div class="walker" id="splashWalker">
+    <svg class="walker-svg" viewBox="0 0 48 72" xmlns="http://www.w3.org/2000/svg">
+      <!-- Hat brim -->
+      <ellipse cx="24" cy="11" rx="15" ry="5" fill="#7a5c3a"/>
+      <!-- Hat crown -->
+      <rect x="17" y="4" width="14" height="9" rx="3.5" fill="#7a5c3a"/>
+      <!-- Hat ribbon -->
+      <rect x="17" y="11" width="14" height="2.5" rx="1" fill="#c17a5e" opacity=".85"/>
+      <!-- Head -->
+      <circle cx="24" cy="21" r="10" fill="#f2c9a0"/>
+      <!-- Hair -->
+      <ellipse cx="24" cy="12.5" rx="9" ry="3.5" fill="#4a2e18" opacity=".6"/>
+      <!-- Eyes -->
+      <circle cx="20.5" cy="20" r="1.8" fill="#3a2a1a"/>
+      <circle cx="27.5" cy="20" r="1.8" fill="#3a2a1a"/>
+      <!-- Eye shine -->
+      <circle cx="21.3" cy="19.2" r=".6" fill="white"/>
+      <circle cx="28.3" cy="19.2" r=".6" fill="white"/>
+      <!-- Rosy cheeks -->
+      <circle cx="18" cy="23" r="3" fill="#f4a0a0" opacity=".45"/>
+      <circle cx="30" cy="23" r="3" fill="#f4a0a0" opacity=".45"/>
+      <!-- Smile -->
+      <path d="M 20 25.5 Q 24 28.5 28 25.5" stroke="#b06040" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+      <!-- Body / jacket -->
+      <rect x="15" y="30" width="18" height="22" rx="6" fill="#6e8c72"/>
+      <!-- Jacket lapels -->
+      <path d="M 24 30 L 20 36 L 15 34" fill="#5a7860" opacity=".6"/>
+      <path d="M 24 30 L 28 36 L 33 34" fill="#5a7860" opacity=".6"/>
+      <!-- Backpack -->
+      <rect x="31" y="31" width="10" height="17" rx="4" fill="#9b6e52"/>
+      <rect x="32.5" y="35" width="7" height="5" rx="2" fill="#b87a60"/>
+      <line x1="33" y1="32" x2="33" y2="48" stroke="#7a4e3a" stroke-width="1" opacity=".5"/>
+      <!-- Left arm (forward swing) -->
+      <line x1="15" y1="34" x2="8" y2="43" stroke="#f2c9a0" stroke-width="4" stroke-linecap="round"/>
+      <!-- Pants -->
+      <rect x="16" y="50" width="16" height="11" rx="2" fill="#5a7a8a"/>
+      <!-- Legs -->
+      <line class="leg-l" x1="19" y1="61" x2="15" y2="72" stroke="#486878" stroke-width="4.5" stroke-linecap="round"/>
+      <line class="leg-r" x1="27" y1="61" x2="31" y2="72" stroke="#486878" stroke-width="4.5" stroke-linecap="round"/>
+      <!-- Shoes -->
+      <ellipse cx="14" cy="72" rx="5" ry="2.5" fill="#3a2a1a" opacity=".75"/>
+      <ellipse cx="32" cy="72" rx="5" ry="2.5" fill="#3a2a1a" opacity=".75"/>
+    </svg>
+  </div>
+
+  <!-- Title -->
+  <div class="splash-title">
+    <div class="splash-title-zh">美食手账</div>
+    <div class="splash-title-en">Food Map · Your personal food diary</div>
+    <div class="splash-loading-dots">· · ·</div>
+  </div>
+</div>
+<!-- ════════════════════════════════════════════════════════════ -->
 
 <div class="page">
 
@@ -664,12 +955,29 @@ let currentUsername = null;
 let currentProfileName = null;
 let _checkTimer = null;
 
+// ── Splash ────────────────────────────────────────────────────────────────────
+let _authDone = false;
+let _splashMinDone = false;
+
+function _tryHideSplash() {
+  if (!_authDone || !_splashMinDone) return;
+  const sp = document.getElementById("splashScreen");
+  sp.classList.add("fade-out");
+  setTimeout(() => { sp.style.display = "none"; }, 750);
+}
+
+// Minimum splash time: 3.5s so the walker fully crosses and food pins all appear
+setTimeout(() => { _splashMinDone = true; _tryHideSplash(); }, 3500);
+
 // ── State display ────────────────────────────────────────────────────────────
 function showState(id) {
+  if (id === "stateLoading") return; // splash covers this, skip the loading panel
   ["stateLoading","stateSigned","stateUsername","stateProfile"].forEach(s => {
     document.getElementById(s).classList.remove("active");
   });
   document.getElementById(id).classList.add("active");
+  _authDone = true;
+  _tryHideSplash();
 }
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -860,8 +1168,7 @@ function toast(msg) {
   setTimeout(() => el.classList.remove("show"), 3000);
 }
 
-// Initial state
-showState("stateLoading");
+// Splash is shown by default; auth.onAuthStateChanged will trigger _tryHideSplash
 </script>
 </body>
 </html>
