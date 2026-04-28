@@ -766,10 +766,15 @@ function onUsernameInput() {
   clearTimeout(_usernameCheckTimer);
   err.textContent = "Checking…";
   _usernameCheckTimer = setTimeout(async () => {
-    const snap = await db.collection("usernames").doc(val).get();
-    if (snap.exists) {
-      err.textContent = `"${val}" is already taken`;
-    } else {
+    try {
+      const snap = await db.collection("usernames").doc(val).get();
+      if (snap.exists) {
+        err.textContent = `"${val}" is already taken`;
+      } else {
+        err.textContent = "";
+        btn.disabled = false;
+      }
+    } catch(e) {
       err.textContent = "";
       btn.disabled = false;
     }
