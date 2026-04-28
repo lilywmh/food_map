@@ -2146,7 +2146,13 @@ async function loadMapData() {
     const urlUser = new URLSearchParams(location.search).get("user");
     if (urlUser) {
       const usnap = await db.collection("usernames").doc(urlUser.toLowerCase()).get();
-      if (!usnap.exists) throw new Error(`User "${urlUser}" not found`);
+      if (!usnap.exists) {
+        hideSplash();
+        const titleEl = document.querySelector(".title-main");
+        if (titleEl) titleEl.childNodes[0].textContent = `"${urlUser}" not found`;
+        document.querySelector(".signature").textContent = "— check the URL";
+        return;
+      }
       uid = usnap.data().uid;
       const profile = await db.collection("users").doc(uid).get();
       const pdata = profile.data() || {};
@@ -2172,6 +2178,7 @@ async function loadMapData() {
     if (sigEl) sigEl.textContent = `— by ${firstName} ✿`;
 
     const snap = await db.collection("users").doc(uid).collection("restaurants").get();
+    console.log(`[foodmap] loaded uid=${uid} urlUser=${urlUser} restaurants=${snap.size}`);
     DATA = snap.docs.map(d => d.data());
     initFilters();
     friendStamps = getFriendStamps();

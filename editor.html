@@ -187,7 +187,8 @@ a { color: inherit; }
 .maps-search-btn {
   font-size: 12px; color: #7a9e87; text-decoration: none;
   padding: 7px 13px; border: 1px solid #c5dac9; border-radius: 8px;
-  white-space: nowrap; transition: all .15s; flex-shrink: 0;
+  white-space: nowrap; transition: a
+  ll .15s; flex-shrink: 0;
   display: inline-flex; align-items: center; gap: 4px;
 }
 .maps-search-btn:hover { background: #f0f7f2; border-color: #7a9e87; color: #5a7a5e; }
@@ -474,6 +475,7 @@ a { color: inherit; }
 <!-- ── HEADER ── -->
 <header class="app-header">
   <a class="back-link" href="index.html">← Home</a>
+  <a class="back-link" id="viewMapHeaderLink" href="foodmapA.html" target="_blank" style="display:none">🗺 My Map ↗</a>
   <div class="app-title">
     <strong>◆ Food Diary Editor</strong>
     <span>Browse · Record · Publish</span>
@@ -834,6 +836,8 @@ function updateProfileUI(username, profileName) {
   window._currentMapUrl = mapUrl;
   window._currentUsername = username;
   window._currentProfileName = profileName || displayName;
+  const hdr = document.getElementById("viewMapHeaderLink");
+  if (hdr) { hdr.href = mapUrl; hdr.style.display = ""; }
 }
 
 function pdEditPname() {
