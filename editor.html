@@ -380,15 +380,76 @@ a { color: inherit; }
 .user-avatar {
   width: 28px; height: 28px; border-radius: 50%;
   border: 1.5px solid #e2d8cc; object-fit: cover; flex-shrink: 0;
-  background: #f0e8dc;
+  background: #f0e8dc; cursor: pointer;
 }
-.user-name { font-size: 13px; color: #5a3e2b; font-weight: 600; flex: 1; }
-.user-email { font-size: 11px; color: #a8907a; }
+.user-name { font-size: 13px; color: #5a3e2b; font-weight: 600; }
+.user-map-link {
+  font-size: 10px; color: #9b6e52; font-family: "Patrick Hand", sans-serif;
+  text-decoration: none; opacity: .8;
+}
+.user-map-link:hover { opacity: 1; text-decoration: underline; }
+.user-info { flex: 1; }
 .btn-signout {
   font-size: 11px; color: #b89f8a; background: none; border: none;
   cursor: pointer; padding: 4px 8px; border-radius: 8px; transition: all .12s;
 }
 .btn-signout:hover { background: #f0e8dc; color: #9b6e52; }
+
+/* ─── Profile dropdown ─── */
+.profile-dropdown {
+  position: fixed; top: 50px; right: 16px; z-index: 200;
+  background: #fdf8f2; border: 1.5px solid #e2d8cc; border-radius: 14px;
+  padding: 18px 20px; width: 280px;
+  box-shadow: 0 8px 32px rgba(61,44,30,.15);
+  display: none;
+}
+.profile-dropdown.open { display: block; }
+.profile-dropdown::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0;
+  height: 3px; border-radius: 14px 14px 0 0;
+  background: linear-gradient(90deg,#9b6e52,#c17a5e,#b87aa0,#6e8c72);
+}
+.pd-head {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+}
+.pd-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1.5px solid #e2d8cc; object-fit: cover; background: #f0e8dc;
+}
+.pd-name { font-size: 13px; font-weight: 600; color: #5a3e2b; }
+.pd-email { font-size: 10px; color: #a8907a; }
+.pd-url-box {
+  background: #f5efe6; border: 1px dashed #d9c8a4; border-radius: 8px;
+  padding: 8px 10px; margin-bottom: 14px;
+}
+.pd-url-label { font-size: 9px; color: #a8907a; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; font-family: "Patrick Hand", sans-serif; }
+.pd-url-row { display: flex; align-items: center; gap: 6px; }
+.pd-url-text { flex: 1; font-size: 11px; color: #9b6e52; font-family: "Patrick Hand", sans-serif; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pd-btn-copy {
+  font-size: 10px; padding: 3px 8px; border-radius: 5px;
+  border: 1px solid #e2d8cc; background: #fdf8f2; color: #7d6f60;
+  cursor: pointer; white-space: nowrap; transition: all .12s;
+}
+.pd-btn-copy:hover { background: #f0e8dc; color: #9b6e52; }
+.pd-btn-open {
+  font-size: 10px; padding: 3px 8px; border-radius: 5px;
+  border: 1px solid #e2d8cc; background: #fdf8f2; color: #7d6f60;
+  text-decoration: none; white-space: nowrap; transition: all .12s;
+  display: inline-block;
+}
+.pd-btn-open:hover { background: #f0e8dc; color: #9b6e52; }
+.pd-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 12px; border-top: 1px dashed #e2d8cc;
+}
+.pd-minor {
+  font-size: 11px; color: #b89f8a; font-family: "Patrick Hand", sans-serif;
+  background: none; border: none; cursor: pointer; padding: 3px 6px;
+  border-radius: 6px; transition: all .12s;
+}
+.pd-minor:hover { color: #9b6e52; background: #f0e8dc; }
+.pd-overlay { position: fixed; inset: 0; z-index: 199; display: none; }
+.pd-overlay.open { display: block; }
 
 /* ─── Responsive ─── */
 @media (max-width: 700px) {
@@ -412,7 +473,7 @@ a { color: inherit; }
 
 <!-- ── HEADER ── -->
 <header class="app-header">
-  <a class="back-link" href="foodmapA.html">← Food Map</a>
+  <a class="back-link" href="index.html">← Home</a>
   <div class="app-title">
     <strong>◆ Food Diary Editor</strong>
     <span>Browse · Record · Publish</span>
@@ -448,12 +509,36 @@ a { color: inherit; }
   <main class="editor-panel" id="editorPanel">
 
     <div class="user-bar" id="userBar">
-      <img class="user-avatar" id="userAvatar" src="" alt="">
-      <div>
+      <img class="user-avatar" id="userAvatar" src="" alt="" onclick="toggleProfileDropdown()">
+      <div class="user-info">
         <div class="user-name" id="userName">—</div>
-        <div class="user-email" id="userEmail">—</div>
+        <a class="user-map-link" id="userMapLink" href="#" target="_blank" style="display:none"></a>
       </div>
       <button class="btn-signout" onclick="signOutUser()">Sign out</button>
+    </div>
+
+    <!-- Profile dropdown -->
+    <div class="pd-overlay" id="pdOverlay" onclick="toggleProfileDropdown(false)"></div>
+    <div class="profile-dropdown" id="profileDropdown">
+      <div class="pd-head">
+        <img class="pd-avatar" id="pdAvatar" src="" alt="">
+        <div>
+          <div class="pd-name" id="pdName">—</div>
+          <div class="pd-email" id="pdEmail">—</div>
+        </div>
+      </div>
+      <div class="pd-url-box" id="pdUrlBox" style="display:none">
+        <div class="pd-url-label">🗺 Your map</div>
+        <div class="pd-url-row">
+          <span class="pd-url-text" id="pdUrlText">—</span>
+          <button class="pd-btn-copy" onclick="pdCopyUrl()">Copy</button>
+          <a class="pd-btn-open" id="pdUrlOpen" href="#" target="_blank">Open ↗</a>
+        </div>
+      </div>
+      <div class="pd-footer">
+        <button class="pd-minor" onclick="toggleProfileDropdown(false); document.getElementById('usernameOverlay').classList.add('open')">Change username ✎</button>
+        <button class="pd-minor" onclick="signOutUser()">Sign out</button>
+      </div>
     </div>
 
     <div class="ed-card" id="edCard">
@@ -719,6 +804,34 @@ function signOutUser() {
   auth.signOut();
 }
 
+function updateProfileUI(username) {
+  const base = location.href.replace(/editor\.html.*$/, "");
+  const mapUrl = `${base}foodmapA.html?user=${username}`;
+  const linkEl = document.getElementById("userMapLink");
+  linkEl.textContent = `foodmap/?user=${username}`;
+  linkEl.href = mapUrl;
+  linkEl.style.display = "block";
+  document.getElementById("pdUrlText").textContent = `…/foodmapA.html?user=${username}`;
+  document.getElementById("pdUrlOpen").href = mapUrl;
+  document.getElementById("pdUrlBox").style.display = "block";
+  window._currentMapUrl = mapUrl;
+}
+
+function toggleProfileDropdown(forceOpen) {
+  const pd = document.getElementById("profileDropdown");
+  const ov = document.getElementById("pdOverlay");
+  const isOpen = pd.classList.contains("open");
+  const open = forceOpen !== undefined ? forceOpen : !isOpen;
+  pd.classList.toggle("open", open);
+  ov.classList.toggle("open", open);
+}
+
+function pdCopyUrl() {
+  if (!window._currentMapUrl) return;
+  navigator.clipboard.writeText(window._currentMapUrl)
+    .then(() => toast("Link copied!"));
+}
+
 auth.onAuthStateChanged(async user => {
   const overlay = document.getElementById("authOverlay");
   if (!user) {
@@ -729,10 +842,11 @@ auth.onAuthStateChanged(async user => {
   }
   overlay.style.display = "none";
   currentUID = user.uid;
-  // Update user bar
   document.getElementById("userAvatar").src = user.photoURL || "";
-  document.getElementById("userName").textContent  = user.displayName || "—";
-  document.getElementById("userEmail").textContent = user.email || "—";
+  document.getElementById("pdAvatar").src   = user.photoURL || "";
+  document.getElementById("userName").textContent = user.displayName || "—";
+  document.getElementById("pdName").textContent   = user.displayName || "—";
+  document.getElementById("pdEmail").textContent  = user.email || "—";
   // Ensure user profile doc exists, then check for username
   const profileRef = db.collection("users").doc(user.uid);
   await profileRef.set(
@@ -740,10 +854,11 @@ auth.onAuthStateChanged(async user => {
     { merge: true }
   );
   const profile = await profileRef.get();
-  if (!profile.data()?.username) {
-    // First time — prompt for username
+  const username = profile.data()?.username;
+  if (!username) {
     document.getElementById("usernameOverlay").classList.add("open");
   } else {
+    updateProfileUI(username);
     loadData();
   }
 });
@@ -793,6 +908,7 @@ async function saveUsername() {
     batch.update(db.collection("users").doc(currentUID), { username });
     await batch.commit();
     document.getElementById("usernameOverlay").classList.remove("open");
+    updateProfileUI(username);
     toast(`✓ Your map is live at ?user=${username}`);
     loadData();
   } catch(e) {

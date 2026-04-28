@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>美食手账 · Food Map</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Klee+One:wght@400;600&family=Patrick+Hand&family=Noto+Serif+SC:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<style>
+:root {
+  --paper:      #f4ecdb;
+  --paper-deep: #ebe0c8;
+  --paper-edge: #d9c8a4;
+  --ink:        #3a322a;
+  --ink-light:  #7d6f60;
+  --ink-faded:  #a99a86;
+  --rule:       #c9b894;
+  --brown:      #9b6e52;
+  --green:      #6e8c72;
+  --pink:       #b87aa0;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+body {
+  font-family: 'Klee One', 'Noto Serif SC', serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100%;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(160,130,90,.06) 0, transparent 60%),
+    radial-gradient(circle at 80% 70%, rgba(120,90,60,.05) 0, transparent 50%),
+    repeating-linear-gradient(0deg, transparent 0 23px, rgba(180,150,110,.06) 23px 24px);
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+a { color: inherit; text-decoration: none; }
+
+/* ── Page wrapper ── */
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 20px 64px;
+}
+
+/* ── Logo area ── */
+.logo-area {
+  text-align: center;
+  margin-bottom: 36px;
+}
+.logo-stamp {
+  font-family: 'Caveat', cursive;
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--brown);
+  letter-spacing: 1px;
+  line-height: 1.1;
+  display: block;
+}
+.logo-sub {
+  font-size: 13px;
+  color: var(--ink-faded);
+  margin-top: 6px;
+  letter-spacing: .5px;
+  font-family: 'Patrick Hand', sans-serif;
+}
+.logo-deco {
+  margin: 14px auto 0;
+  width: 48px;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--brown) 0 6px, transparent 6px 10px);
+  border-radius: 1px;
+}
+
+/* ── Section panels ── */
+.panel {
+  background: #fdf8f2;
+  border: 1.5px solid var(--paper-edge);
+  border-radius: 16px;
+  padding: 32px 36px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 4px 24px rgba(61,44,30,.09);
+  position: relative;
+  overflow: hidden;
+}
+.panel::before {
+  content: "";
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px; border-radius: 16px 16px 0 0;
+  background: linear-gradient(90deg, var(--brown), #c17a5e, var(--pink), var(--green));
+}
+
+/* ── State management ── */
+#stateLoading, #stateSigned, #stateUsername, #stateProfile { display: none; }
+#stateLoading.active, #stateSigned.active, #stateUsername.active, #stateProfile.active { display: block; }
+
+/* ── Loading ── */
+.loading-msg {
+  text-align: center;
+  padding: 20px;
+  color: var(--ink-faded);
+  font-size: 13px;
+}
+
+/* ── Signed-out: tagline ── */
+.tagline-zh {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+  line-height: 1.5;
+}
+.tagline-en {
+  font-size: 13px;
+  color: var(--ink-faded);
+  margin-bottom: 28px;
+  font-family: 'Patrick Hand', sans-serif;
+  line-height: 1.5;
+}
+.btn-google {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 13px; border-radius: 12px;
+  border: 1.5px solid var(--paper-edge); background: var(--paper);
+  font-size: 14px; color: var(--ink); transition: all .15s;
+  box-shadow: 0 2px 8px rgba(61,44,30,.08);
+}
+.btn-google:hover { background: #f0e8dc; border-color: var(--brown); transform: translateY(-1px); }
+.btn-google img { width: 18px; height: 18px; }
+
+/* ── How it works ── */
+.how-section {
+  margin-top: 32px;
+  width: 100%;
+  max-width: 480px;
+}
+.how-title {
+  text-align: center;
+  font-size: 11px;
+  color: var(--ink-faded);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-family: 'Patrick Hand', sans-serif;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.how-title::before, .how-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, var(--rule) 0 4px, transparent 4px 8px);
+}
+.how-steps {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+.how-step {
+  background: #fdf8f2;
+  border: 1px solid var(--paper-edge);
+  border-radius: 12px;
+  padding: 16px 12px;
+  text-align: center;
+}
+.how-step-num {
+  font-family: 'Caveat', cursive;
+  font-size: 22px;
+  color: var(--brown);
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.how-step-icon { font-size: 20px; margin-bottom: 8px; display: block; }
+.how-step-zh { font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+.how-step-en { font-size: 10px; color: var(--ink-faded); font-family: 'Patrick Hand', sans-serif; line-height: 1.4; }
+
+/* ── Username setup ── */
+.setup-greeting {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.setup-sub {
+  font-size: 13px;
+  color: var(--ink-faded);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+.uname-field {
+  display: flex;
+  align-items: center;
+  background: var(--paper);
+  border: 1.5px solid var(--paper-edge);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  transition: border-color .15s;
+}
+.uname-field:focus-within { border-color: var(--brown); }
+.uname-prefix {
+  padding: 10px 4px 10px 14px;
+  font-size: 13px;
+  color: var(--ink-faded);
+  white-space: nowrap;
+  font-family: 'Patrick Hand', sans-serif;
+  flex-shrink: 0;
+}
+.uname-input {
+  flex: 1;
+  padding: 10px 14px 10px 4px;
+  font-size: 14px;
+  font-family: 'Klee One', sans-serif;
+  color: var(--ink);
+  background: none;
+  border: none;
+  outline: none;
+  min-width: 0;
+}
+.uname-hint {
+  font-size: 11px;
+  color: var(--ink-faded);
+  margin-bottom: 6px;
+  font-family: 'Patrick Hand', sans-serif;
+}
+.uname-status {
+  font-size: 12px;
+  min-height: 18px;
+  margin-bottom: 20px;
+  color: var(--brown);
+  font-family: 'Patrick Hand', sans-serif;
+}
+.uname-status.ok { color: var(--green); }
+.uname-status.err { color: #b94040; }
+.btn-claim {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--brown);
+  color: #fdf8f2;
+  font-size: 14px;
+  font-family: 'Klee One', sans-serif;
+  border: none;
+  transition: all .15s;
+  box-shadow: 0 2px 8px rgba(155,110,82,.3);
+}
+.btn-claim:hover:not(:disabled) { background: #8a5f45; transform: translateY(-1px); }
+.btn-claim:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── Profile card ── */
+.profile-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.profile-avatar {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  border: 2px solid var(--paper-edge);
+  object-fit: cover;
+  background: var(--paper-deep);
+  flex-shrink: 0;
+}
+.profile-name {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.3;
+}
+.profile-welcome {
+  font-size: 11px;
+  color: var(--ink-faded);
+  font-family: 'Patrick Hand', sans-serif;
+}
+.map-url-box {
+  background: var(--paper-deep);
+  border: 1px dashed var(--rule);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+}
+.map-url-label {
+  font-size: 10px;
+  color: var(--ink-faded);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: 'Patrick Hand', sans-serif;
+  margin-bottom: 6px;
+}
+.map-url-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.map-url-text {
+  flex: 1;
+  font-size: 13px;
+  color: var(--brown);
+  font-family: 'Patrick Hand', sans-serif;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.btn-copy {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--paper-edge);
+  background: #fdf8f2;
+  color: var(--ink-light);
+  transition: all .12s;
+  white-space: nowrap;
+}
+.btn-copy:hover { background: var(--paper), border-color: var(--brown); color: var(--brown); }
+.btn-open-map {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--paper-edge);
+  background: #fdf8f2;
+  color: var(--ink-light);
+  transition: all .12s;
+  white-space: nowrap;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.btn-open-map:hover { background: var(--paper-deep); color: var(--brown); }
+.action-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.btn-action {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--paper-edge);
+  background: var(--paper);
+  font-size: 13px;
+  font-family: 'Klee One', sans-serif;
+  color: var(--ink);
+  text-align: center;
+  transition: all .15s;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn-action:hover { background: #f0e8dc; border-color: var(--brown); }
+.btn-action.primary {
+  background: var(--brown);
+  border-color: var(--brown);
+  color: #fdf8f2;
+  box-shadow: 0 2px 8px rgba(155,110,82,.25);
+}
+.btn-action.primary:hover { background: #8a5f45; }
+.profile-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px dashed var(--rule);
+}
+.btn-minor {
+  font-size: 12px;
+  color: var(--ink-faded);
+  font-family: 'Patrick Hand', sans-serif;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all .12s;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.btn-minor:hover { color: var(--brown); background: #f0e8dc; }
+
+/* ── Change-username inline form ── */
+.change-uname-form {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--paper-deep);
+  border: 1px dashed var(--rule);
+  border-radius: 10px;
+  display: none;
+}
+.change-uname-form.open { display: block; }
+.change-uname-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-light);
+  margin-bottom: 10px;
+}
+.change-footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.btn-save-uname {
+  flex: 1;
+  padding: 9px;
+  border-radius: 8px;
+  background: var(--brown);
+  color: #fdf8f2;
+  font-size: 13px;
+  font-family: 'Klee One', sans-serif;
+  border: none;
+  transition: all .15s;
+}
+.btn-save-uname:hover:not(:disabled) { background: #8a5f45; }
+.btn-save-uname:disabled { opacity: .5; cursor: not-allowed; }
+.btn-cancel-uname {
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--paper-edge);
+  background: #fdf8f2;
+  color: var(--ink-light);
+  font-size: 13px;
+  font-family: 'Klee One', sans-serif;
+  cursor: pointer;
+}
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: 28px; left: 50%; transform: translateX(-50%) translateY(12px);
+  background: #3a322a; color: #fdf8f2;
+  padding: 9px 20px; border-radius: 20px;
+  font-size: 13px; font-family: 'Patrick Hand', sans-serif;
+  opacity: 0; transition: all .25s; pointer-events: none;
+  white-space: nowrap; z-index: 100;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 500px) {
+  .page { padding: 32px 14px 48px; }
+  .panel { padding: 24px 20px; }
+  .how-steps { grid-template-columns: 1fr; }
+  .action-btns { grid-template-columns: 1fr; }
+  .logo-stamp { font-size: 38px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Logo -->
+  <div class="logo-area">
+    <span class="logo-stamp">美食手账</span>
+    <div class="logo-sub">Food Map · Your personal food diary</div>
+    <div class="logo-deco"></div>
+  </div>
+
+  <!-- Loading -->
+  <div id="stateLoading" class="panel">
+    <div class="loading-msg">Loading…</div>
+  </div>
+
+  <!-- Signed out -->
+  <div id="stateSigned" class="panel">
+    <div class="tagline-zh">把旅途中每一家值得记住的餐厅，<br>写进你的专属手账。</div>
+    <div class="tagline-en">Record every good meal. Share the ones worth finding.</div>
+    <button class="btn-google" onclick="signIn()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+      使用 Google 登录 / Continue with Google
+    </button>
+  </div>
+
+  <!-- Username setup (first login) -->
+  <div id="stateUsername" class="panel">
+    <div class="setup-greeting" id="setupGreeting">嗨！👋</div>
+    <div class="setup-sub">选一个用户名，你的专属地图就诞生了。<br><span style="font-family:'Patrick Hand',sans-serif;font-size:12px">Choose a username — your map will live here:</span></div>
+    <div class="uname-field">
+      <span class="uname-prefix">foodmap / </span>
+      <input class="uname-input" id="unameInput" placeholder="yourname" maxlength="20" oninput="onUnameInput()">
+    </div>
+    <div class="uname-hint">字母、数字、连字符 · 3–20 位 / letters, numbers, hyphens · 3–20 chars</div>
+    <div class="uname-status" id="unameStatus"></div>
+    <button class="btn-claim" id="unameBtn" onclick="claimUsername()" disabled>认领我的地图 → Claim my map</button>
+  </div>
+
+  <!-- Profile (logged in with username) -->
+  <div id="stateProfile" class="panel">
+    <div class="profile-top">
+      <img class="profile-avatar" id="profileAvatar" src="" alt="">
+      <div>
+        <div class="profile-welcome">欢迎回来 · Welcome back</div>
+        <div class="profile-name" id="profileName">—</div>
+      </div>
+    </div>
+
+    <div class="map-url-box">
+      <div class="map-url-label">🗺 你的地图 · Your map</div>
+      <div class="map-url-row">
+        <span class="map-url-text" id="mapUrlText">—</span>
+        <button class="btn-copy" onclick="copyMapUrl()">复制链接</button>
+        <a class="btn-open-map" id="mapUrlLink" href="#" target="_blank">预览 ↗</a>
+      </div>
+    </div>
+
+    <div class="action-btns">
+      <a class="btn-action primary" id="btnViewMap" href="#" target="_blank">🗺 查看地图<br><span style="font-size:10px;opacity:.8">View my map</span></a>
+      <a class="btn-action" href="editor.html">✏️ 编辑餐厅<br><span style="font-size:10px;opacity:.7">Edit food list</span></a>
+    </div>
+
+    <!-- Change username inline form -->
+    <div class="change-uname-form" id="changeUnameForm">
+      <div class="change-uname-title">修改用户名 · Change username</div>
+      <div class="uname-field">
+        <span class="uname-prefix">foodmap / </span>
+        <input class="uname-input" id="changeUnameInput" placeholder="newname" maxlength="20" oninput="onChangeUnameInput()">
+      </div>
+      <div class="uname-hint">3–20 位字母、数字、连字符</div>
+      <div class="uname-status" id="changeUnameStatus"></div>
+      <div class="change-footer">
+        <button class="btn-save-uname" id="changeUnameBtn" onclick="saveChangeUsername()" disabled>保存 · Save</button>
+        <button class="btn-cancel-uname" onclick="toggleChangeUname(false)">取消</button>
+      </div>
+    </div>
+
+    <div class="profile-footer">
+      <button class="btn-minor" onclick="toggleChangeUname()">修改用户名 ✎</button>
+      <button class="btn-minor" onclick="signOut()">退出登录 · Sign out</button>
+    </div>
+  </div>
+
+  <!-- How it works (always visible below the card) -->
+  <div class="how-section">
+    <div class="how-title">怎么用 · How it works</div>
+    <div class="how-steps">
+      <div class="how-step">
+        <span class="how-step-icon">✦</span>
+        <div class="how-step-zh">创建地图</div>
+        <div class="how-step-en">Sign in &amp; claim your username</div>
+      </div>
+      <div class="how-step">
+        <span class="how-step-icon">✏️</span>
+        <div class="how-step-zh">记录餐厅</div>
+        <div class="how-step-en">Add ratings, notes &amp; Maps links</div>
+      </div>
+      <div class="how-step">
+        <span class="how-step-icon">🔗</span>
+        <div class="how-step-zh">分享链接</div>
+        <div class="how-step-en">Friends see your personal map page</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- .page -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+firebase.initializeApp({
+  apiKey:            "AIzaSyCLk5D8ELPtfsfREnBkFq1QyxPNAfllr6Q",
+  authDomain:        "foodmap-32f34.firebaseapp.com",
+  projectId:         "foodmap-32f34",
+  storageBucket:     "foodmap-32f34.firebasestorage.app",
+  messagingSenderId: "205830770210",
+  appId:             "1:205830770210:web:8a2ef938e22c2b8b83c47b"
+});
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+let currentUser = null;
+let currentUsername = null;
+let _checkTimer = null;
+
+// ── State display ────────────────────────────────────────────────────────────
+function showState(id) {
+  ["stateLoading","stateSigned","stateUsername","stateProfile"].forEach(s => {
+    document.getElementById(s).classList.remove("active");
+  });
+  document.getElementById(id).classList.add("active");
+}
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+function signIn() {
+  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
+    .catch(e => toast("登录失败 · " + e.message));
+}
+function signOut() {
+  auth.signOut();
+}
+
+auth.onAuthStateChanged(async user => {
+  if (!user) {
+    currentUser = null;
+    currentUsername = null;
+    showState("stateSigned");
+    return;
+  }
+  showState("stateLoading");
+  currentUser = user;
+
+  // Ensure profile doc
+  const profileRef = db.collection("users").doc(user.uid);
+  await profileRef.set(
+    { displayName: user.displayName, email: user.email, photoURL: user.photoURL },
+    { merge: true }
+  );
+  const profile = await profileRef.get();
+  currentUsername = profile.data()?.username || null;
+
+  if (!currentUsername) {
+    // Show username setup
+    document.getElementById("setupGreeting").textContent =
+      `嗨，${(user.displayName||"").split(" ")[0] || "你"}！👋`;
+    showState("stateUsername");
+  } else {
+    renderProfile(user, currentUsername);
+    showState("stateProfile");
+  }
+});
+
+// ── Profile rendering ─────────────────────────────────────────────────────────
+function renderProfile(user, username) {
+  const base = location.href.replace(/index\.html.*$/, "");
+  const mapUrl = `${base}foodmapA.html?user=${username}`;
+  document.getElementById("profileAvatar").src = user.photoURL || "";
+  document.getElementById("profileName").textContent = user.displayName || username;
+  document.getElementById("mapUrlText").textContent = `…/foodmapA.html?user=${username}`;
+  document.getElementById("mapUrlLink").href = mapUrl;
+  document.getElementById("btnViewMap").href = mapUrl;
+}
+
+function copyMapUrl() {
+  const base = location.href.replace(/index\.html.*$/, "");
+  const url = `${base}foodmapA.html?user=${currentUsername}`;
+  navigator.clipboard.writeText(url).then(() => toast("链接已复制 · Link copied!"));
+}
+
+// ── Username claim ────────────────────────────────────────────────────────────
+function onUnameInput() {
+  _runUnameCheck("unameInput", "unameStatus", "unameBtn");
+}
+function onChangeUnameInput() {
+  _runUnameCheck("changeUnameInput", "changeUnameStatus", "changeUnameBtn");
+}
+
+function _runUnameCheck(inputId, statusId, btnId) {
+  const val = document.getElementById(inputId).value.trim().toLowerCase();
+  const btn = document.getElementById(btnId);
+  const status = document.getElementById(statusId);
+  status.className = "uname-status";
+  status.textContent = "";
+  btn.disabled = true;
+  if (!val) return;
+  if (!/^[a-z0-9-]{3,20}$/.test(val)) {
+    status.className = "uname-status err";
+    status.textContent = "格式不对 · 3–20 位字母/数字/连字符";
+    return;
+  }
+  clearTimeout(_checkTimer);
+  status.textContent = "检查中… Checking…";
+  _checkTimer = setTimeout(async () => {
+    try {
+      const snap = await db.collection("usernames").doc(val).get();
+      if (snap.exists && snap.data().uid !== currentUser?.uid) {
+        status.className = "uname-status err";
+        status.textContent = `"${val}" 已被占用 · already taken`;
+      } else {
+        status.className = "uname-status ok";
+        status.textContent = `✓ "${val}" 可以使用 · available`;
+        btn.disabled = false;
+      }
+    } catch {
+      status.className = "uname-status ok";
+      status.textContent = `✓ "${val}" 看起来可以 · looks good`;
+      btn.disabled = false;
+    }
+  }, 500);
+}
+
+async function claimUsername() {
+  const username = document.getElementById("unameInput").value.trim().toLowerCase();
+  const btn = document.getElementById("unameBtn");
+  if (!username || btn.disabled) return;
+  btn.disabled = true;
+  btn.textContent = "保存中… Saving…";
+  try {
+    const batch = db.batch();
+    batch.set(db.collection("usernames").doc(username), { uid: currentUser.uid });
+    batch.update(db.collection("users").doc(currentUser.uid), { username });
+    await batch.commit();
+    currentUsername = username;
+    renderProfile(currentUser, username);
+    showState("stateProfile");
+    toast(`✓ 你的地图已创建！Your map is live at ?user=${username}`);
+  } catch(e) {
+    document.getElementById("unameStatus").textContent = "保存失败 · " + e.message;
+    btn.disabled = false;
+    btn.textContent = "认领我的地图 → Claim my map";
+  }
+}
+
+// ── Change username ───────────────────────────────────────────────────────────
+function toggleChangeUname(forceOpen) {
+  const form = document.getElementById("changeUnameForm");
+  const isOpen = form.classList.contains("open");
+  const open = forceOpen !== undefined ? forceOpen : !isOpen;
+  form.classList.toggle("open", open);
+  if (open) {
+    document.getElementById("changeUnameInput").value = currentUsername || "";
+    document.getElementById("changeUnameStatus").textContent = "";
+    document.getElementById("changeUnameBtn").disabled = true;
+  }
+}
+
+async function saveChangeUsername() {
+  const newName = document.getElementById("changeUnameInput").value.trim().toLowerCase();
+  const btn = document.getElementById("changeUnameBtn");
+  if (!newName || btn.disabled || newName === currentUsername) return;
+  btn.disabled = true;
+  btn.textContent = "保存中…";
+  try {
+    const batch = db.batch();
+    if (currentUsername) batch.delete(db.collection("usernames").doc(currentUsername));
+    batch.set(db.collection("usernames").doc(newName), { uid: currentUser.uid });
+    batch.update(db.collection("users").doc(currentUser.uid), { username: newName });
+    await batch.commit();
+    currentUsername = newName;
+    renderProfile(currentUser, newName);
+    toggleChangeUname(false);
+    toast(`✓ 用户名已更新 · Username changed to "${newName}"`);
+  } catch(e) {
+    document.getElementById("changeUnameStatus").textContent = "失败 · " + e.message;
+    btn.disabled = false;
+    btn.textContent = "保存 · Save";
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 3000);
+}
+
+// Initial state
+showState("stateLoading");
+</script>
+</body>
+</html>
