@@ -528,15 +528,30 @@ a { color: inherit; }
         </div>
       </div>
       <div class="pd-url-box" id="pdUrlBox" style="display:none">
-        <div class="pd-url-label">🗺 Your map</div>
-        <div class="pd-url-row">
-          <span class="pd-url-text" id="pdUrlText">—</span>
-          <button class="pd-btn-copy" onclick="pdCopyUrl()">Copy</button>
-          <a class="pd-btn-open" id="pdUrlOpen" href="#" target="_blank">Open ↗</a>
+        <div class="pd-url-label">🗺 Map title</div>
+        <div class="pd-url-row" id="pdPnameRow">
+          <span class="pd-url-text" id="pdPnameText">—</span>
+          <span style="font-size:10px;color:#a8907a;font-family:'Patrick Hand',sans-serif">'s Food Map</span>
+          <button class="pd-btn-copy" onclick="pdEditPname()" style="margin-left:4px">Edit ✎</button>
+        </div>
+        <div id="pdPnameEditRow" style="display:none;margin-top:6px;gap:4px;display:none">
+          <input id="pdPnameInput" style="flex:1;padding:5px 8px;border-radius:6px;border:1px solid #e2d8cc;background:#f5efe6;font-size:12px;font-family:'Klee One',sans-serif;color:#3d2c1e;outline:none;width:100%;margin-bottom:4px" placeholder="Map name…">
+          <div style="display:flex;gap:4px">
+            <button class="pd-btn-copy" style="flex:1" onclick="pdSavePname()">Save</button>
+            <button class="pd-btn-copy" onclick="pdCancelPname()">✕</button>
+          </div>
+        </div>
+        <div style="margin-top:8px;border-top:1px dashed #e2d8cc;padding-top:8px">
+          <div class="pd-url-label">🔗 Map URL</div>
+          <div class="pd-url-row">
+            <span class="pd-url-text" id="pdUrlText">—</span>
+            <button class="pd-btn-copy" onclick="pdCopyUrl()">Copy</button>
+            <a class="pd-btn-open" id="pdUrlOpen" href="#" target="_blank">Open ↗</a>
+          </div>
         </div>
       </div>
       <div class="pd-footer">
-        <button class="pd-minor" onclick="toggleProfileDropdown(false); document.getElementById('usernameOverlay').classList.add('open')">Change username ✎</button>
+        <button class="pd-minor" onclick="toggleProfileDropdown(false); document.getElementById('usernameOverlay').classList.add('open')">Change URL ID ✎</button>
         <button class="pd-minor" onclick="signOutUser()">Sign out</button>
       </div>
     </div>
@@ -804,17 +819,42 @@ function signOutUser() {
   auth.signOut();
 }
 
-function updateProfileUI(username) {
+function updateProfileUI(username, profileName) {
   const base = location.href.replace(/editor\.html.*$/, "");
   const mapUrl = `${base}foodmapA.html?user=${username}`;
+  const displayName = profileName || (username.charAt(0).toUpperCase() + username.slice(1));
   const linkEl = document.getElementById("userMapLink");
-  linkEl.textContent = `foodmap/?user=${username}`;
+  linkEl.textContent = `${displayName}'s Food Map`;
   linkEl.href = mapUrl;
   linkEl.style.display = "block";
-  document.getElementById("pdUrlText").textContent = `…/foodmapA.html?user=${username}`;
+  document.getElementById("pdPnameText").textContent = displayName;
+  document.getElementById("pdUrlText").textContent = `…/?user=${username}`;
   document.getElementById("pdUrlOpen").href = mapUrl;
   document.getElementById("pdUrlBox").style.display = "block";
   window._currentMapUrl = mapUrl;
+  window._currentUsername = username;
+  window._currentProfileName = profileName || displayName;
+}
+
+function pdEditPname() {
+  document.getElementById("pdPnameRow").style.display = "none";
+  const editRow = document.getElementById("pdPnameEditRow");
+  editRow.style.display = "flex";
+  editRow.style.flexDirection = "column";
+  document.getElementById("pdPnameInput").value = window._currentProfileName || "";
+}
+function pdCancelPname() {
+  document.getElementById("pdPnameRow").style.display = "flex";
+  document.getElementById("pdPnameEditRow").style.display = "none";
+}
+async function pdSavePname() {
+  const val = document.getElementById("pdPnameInput").value.trim();
+  if (!val) return;
+  await db.collection("users").doc(currentUID).update({ profileName: val });
+  window._currentProfileName = val;
+  updateProfileUI(window._currentUsername, val);
+  pdCancelPname();
+  toast("✓ Map name updated");
 }
 
 function toggleProfileDropdown(forceOpen) {
@@ -854,11 +894,12 @@ auth.onAuthStateChanged(async user => {
     { merge: true }
   );
   const profile = await profileRef.get();
-  const username = profile.data()?.username;
+  const username    = profile.data()?.username;
+  const profileName = profile.data()?.profileName;
   if (!username) {
     document.getElementById("usernameOverlay").classList.add("open");
   } else {
-    updateProfileUI(username);
+    updateProfileUI(username, profileName);
     loadData();
   }
 });
@@ -908,7 +949,7 @@ async function saveUsername() {
     batch.update(db.collection("users").doc(currentUID), { username });
     await batch.commit();
     document.getElementById("usernameOverlay").classList.remove("open");
-    updateProfileUI(username);
+    updateProfileUI(username, null);
     toast(`✓ Your map is live at ?user=${username}`);
     loadData();
   } catch(e) {

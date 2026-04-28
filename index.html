@@ -381,9 +381,80 @@ a { color: inherit; text-decoration: none; }
 }
 .btn-minor:hover { color: var(--brown); background: #f0e8dc; }
 
+/* ── Profile name inline edit ── */
+.pname-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.pname-display {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  font-family: 'Caveat', cursive;
+  flex: 1;
+  line-height: 1.2;
+}
+.pname-suffix {
+  font-size: 14px;
+  color: var(--ink-faded);
+  font-family: 'Patrick Hand', sans-serif;
+  white-space: nowrap;
+}
+.btn-edit-pname {
+  font-size: 13px;
+  color: var(--ink-faded);
+  padding: 2px 6px;
+  border-radius: 5px;
+  transition: all .12s;
+  cursor: pointer;
+}
+.btn-edit-pname:hover { color: var(--brown); background: var(--paper-deep); }
+.pname-edit-row {
+  display: none;
+  gap: 6px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+.pname-edit-row.open { display: flex; }
+.pname-input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1.5px solid var(--paper-edge);
+  background: var(--paper);
+  font-size: 15px;
+  font-family: 'Caveat', cursive;
+  color: var(--ink);
+  outline: none;
+}
+.pname-input:focus { border-color: var(--brown); }
+.btn-save-pname {
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--brown);
+  color: #fdf8f2;
+  font-size: 12px;
+  font-family: 'Klee One', sans-serif;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-save-pname:hover { background: #8a5f45; }
+.btn-cancel-pname {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--paper-edge);
+  background: #fdf8f2;
+  font-size: 12px;
+  color: var(--ink-light);
+  cursor: pointer;
+}
+
 /* ── Change-username inline form ── */
 .change-uname-form {
-  margin-top: 20px;
+  margin-top: 0;
   padding: 16px;
   background: var(--paper-deep);
   border: 1px dashed var(--rule);
@@ -476,13 +547,20 @@ a { color: inherit; text-decoration: none; }
   <!-- Username setup (first login) -->
   <div id="stateUsername" class="panel">
     <div class="setup-greeting" id="setupGreeting">嗨！👋</div>
-    <div class="setup-sub">选一个用户名，你的专属地图就诞生了。<br><span style="font-family:'Patrick Hand',sans-serif;font-size:12px">Choose a username — your map will live here:</span></div>
+    <div class="setup-sub">设置你的专属地址和地图名字。<br><span style="font-family:'Patrick Hand',sans-serif;font-size:12px">Set your URL and the name shown on your map.</span></div>
+
+    <div style="font-size:11px;color:var(--ink-faded);margin-bottom:6px;font-family:'Patrick Hand',sans-serif">地图链接 · Map URL</div>
     <div class="uname-field">
       <span class="uname-prefix">foodmap / </span>
       <input class="uname-input" id="unameInput" placeholder="yourname" maxlength="20" oninput="onUnameInput()">
     </div>
-    <div class="uname-hint">字母、数字、连字符 · 3–20 位 / letters, numbers, hyphens · 3–20 chars</div>
+    <div class="uname-hint">字母、数字、连字符 · 3–20 位</div>
     <div class="uname-status" id="unameStatus"></div>
+
+    <div style="font-size:11px;color:var(--ink-faded);margin:12px 0 6px;font-family:'Patrick Hand',sans-serif">地图显示名字 · Map display name</div>
+    <input class="pname-input" id="profileNameInput" placeholder="e.g. Lily, 小蜜, Honey…" style="width:100%;margin-bottom:6px">
+    <div style="font-size:11px;color:var(--ink-faded);margin-bottom:20px;font-family:'Patrick Hand',sans-serif">访客会看到「[名字]'s Food Map」/ Shown as "[name]'s Food Map"</div>
+
     <button class="btn-claim" id="unameBtn" onclick="claimUsername()" disabled>认领我的地图 → Claim my map</button>
   </div>
 
@@ -490,17 +568,29 @@ a { color: inherit; text-decoration: none; }
   <div id="stateProfile" class="panel">
     <div class="profile-top">
       <img class="profile-avatar" id="profileAvatar" src="" alt="">
-      <div>
+      <div style="flex:1;min-width:0">
         <div class="profile-welcome">欢迎回来 · Welcome back</div>
-        <div class="profile-name" id="profileName">—</div>
+        <div style="font-size:11px;color:var(--ink-faded);font-family:'Patrick Hand',sans-serif" id="profileUsername">—</div>
       </div>
     </div>
 
+    <!-- Profile name (map title) with inline edit -->
+    <div class="pname-row" id="pnameRow">
+      <span class="pname-display" id="pnameDisplay">—</span>
+      <span class="pname-suffix">'s Food Map</span>
+      <button class="btn-edit-pname" onclick="togglePnameEdit(true)" title="修改地图名字">✎</button>
+    </div>
+    <div class="pname-edit-row" id="pnameEditRow">
+      <input class="pname-input" id="pnameEditInput" placeholder="地图名字…" maxlength="30">
+      <button class="btn-save-pname" onclick="saveProfileName()">保存</button>
+      <button class="btn-cancel-pname" onclick="togglePnameEdit(false)">✕</button>
+    </div>
+
     <div class="map-url-box">
-      <div class="map-url-label">🗺 你的地图 · Your map</div>
+      <div class="map-url-label">🔗 地图链接 · Map URL</div>
       <div class="map-url-row">
         <span class="map-url-text" id="mapUrlText">—</span>
-        <button class="btn-copy" onclick="copyMapUrl()">复制链接</button>
+        <button class="btn-copy" onclick="copyMapUrl()">复制</button>
         <a class="btn-open-map" id="mapUrlLink" href="#" target="_blank">预览 ↗</a>
       </div>
     </div>
@@ -512,7 +602,7 @@ a { color: inherit; text-decoration: none; }
 
     <!-- Change username inline form -->
     <div class="change-uname-form" id="changeUnameForm">
-      <div class="change-uname-title">修改用户名 · Change username</div>
+      <div class="change-uname-title">修改地图链接 · Change URL username</div>
       <div class="uname-field">
         <span class="uname-prefix">foodmap / </span>
         <input class="uname-input" id="changeUnameInput" placeholder="newname" maxlength="20" oninput="onChangeUnameInput()">
@@ -526,7 +616,7 @@ a { color: inherit; text-decoration: none; }
     </div>
 
     <div class="profile-footer">
-      <button class="btn-minor" onclick="toggleChangeUname()">修改用户名 ✎</button>
+      <button class="btn-minor" onclick="toggleChangeUname()">修改链接 ID ✎</button>
       <button class="btn-minor" onclick="signOut()">退出登录 · Sign out</button>
     </div>
   </div>
@@ -571,6 +661,7 @@ const db   = firebase.firestore();
 
 let currentUser = null;
 let currentUsername = null;
+let currentProfileName = null;
 let _checkTimer = null;
 
 // ── State display ────────────────────────────────────────────────────────────
@@ -607,28 +698,33 @@ auth.onAuthStateChanged(async user => {
     { merge: true }
   );
   const profile = await profileRef.get();
-  currentUsername = profile.data()?.username || null;
+  currentUsername    = profile.data()?.username    || null;
+  currentProfileName = profile.data()?.profileName || null;
 
   if (!currentUsername) {
-    // Show username setup
-    document.getElementById("setupGreeting").textContent =
-      `嗨，${(user.displayName||"").split(" ")[0] || "你"}！👋`;
+    const firstName = (user.displayName||"").split(" ")[0] || "";
+    document.getElementById("setupGreeting").textContent = `嗨，${firstName || "你"}！👋`;
+    // Pre-fill profile name with Google first name
+    document.getElementById("profileNameInput").value = firstName;
     showState("stateUsername");
   } else {
-    renderProfile(user, currentUsername);
+    renderProfile(user, currentUsername, currentProfileName);
     showState("stateProfile");
   }
 });
 
 // ── Profile rendering ─────────────────────────────────────────────────────────
-function renderProfile(user, username) {
+function renderProfile(user, username, profileName) {
   const base = location.href.replace(/index\.html.*$/, "");
   const mapUrl = `${base}foodmapA.html?user=${username}`;
+  const displayName = profileName || (username.charAt(0).toUpperCase() + username.slice(1));
   document.getElementById("profileAvatar").src = user.photoURL || "";
-  document.getElementById("profileName").textContent = user.displayName || username;
+  document.getElementById("profileUsername").textContent = `@${username}`;
+  document.getElementById("pnameDisplay").textContent = displayName;
   document.getElementById("mapUrlText").textContent = `…/foodmapA.html?user=${username}`;
   document.getElementById("mapUrlLink").href = mapUrl;
   document.getElementById("btnViewMap").href = mapUrl;
+  window._currentMapUrl = mapUrl;
 }
 
 function copyMapUrl() {
@@ -680,7 +776,8 @@ function _runUnameCheck(inputId, statusId, btnId) {
 }
 
 async function claimUsername() {
-  const username = document.getElementById("unameInput").value.trim().toLowerCase();
+  const username    = document.getElementById("unameInput").value.trim().toLowerCase();
+  const profileName = document.getElementById("profileNameInput").value.trim();
   const btn = document.getElementById("unameBtn");
   if (!username || btn.disabled) return;
   btn.disabled = true;
@@ -688,17 +785,35 @@ async function claimUsername() {
   try {
     const batch = db.batch();
     batch.set(db.collection("usernames").doc(username), { uid: currentUser.uid });
-    batch.update(db.collection("users").doc(currentUser.uid), { username });
+    batch.update(db.collection("users").doc(currentUser.uid), { username, profileName: profileName || username });
     await batch.commit();
-    currentUsername = username;
-    renderProfile(currentUser, username);
+    currentUsername    = username;
+    currentProfileName = profileName || username;
+    renderProfile(currentUser, currentUsername, currentProfileName);
     showState("stateProfile");
-    toast(`✓ 你的地图已创建！Your map is live at ?user=${username}`);
+    toast(`✓ 你的地图已创建！?user=${username}`);
   } catch(e) {
     document.getElementById("unameStatus").textContent = "保存失败 · " + e.message;
     btn.disabled = false;
     btn.textContent = "认领我的地图 → Claim my map";
   }
+}
+
+// ── Profile name edit ────────────────────────────────────────────────────────
+function togglePnameEdit(open) {
+  document.getElementById("pnameRow").style.display     = open ? "none" : "";
+  document.getElementById("pnameEditRow").classList.toggle("open", open);
+  if (open) document.getElementById("pnameEditInput").value = currentProfileName || "";
+}
+
+async function saveProfileName() {
+  const val = document.getElementById("pnameEditInput").value.trim();
+  if (!val) return;
+  await db.collection("users").doc(currentUser.uid).update({ profileName: val });
+  currentProfileName = val;
+  renderProfile(currentUser, currentUsername, currentProfileName);
+  togglePnameEdit(false);
+  toast("✓ 地图名字已更新");
 }
 
 // ── Change username ───────────────────────────────────────────────────────────
@@ -727,9 +842,9 @@ async function saveChangeUsername() {
     batch.update(db.collection("users").doc(currentUser.uid), { username: newName });
     await batch.commit();
     currentUsername = newName;
-    renderProfile(currentUser, newName);
+    renderProfile(currentUser, currentUsername, currentProfileName);
     toggleChangeUname(false);
-    toast(`✓ 用户名已更新 · Username changed to "${newName}"`);
+    toast(`✓ 链接已更新 · URL changed to ?user=${newName}`);
   } catch(e) {
     document.getElementById("changeUnameStatus").textContent = "失败 · " + e.message;
     btn.disabled = false;

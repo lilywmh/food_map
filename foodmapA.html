@@ -2148,20 +2148,23 @@ async function loadMapData() {
       const usnap = await db.collection("usernames").doc(urlUser.toLowerCase()).get();
       if (!usnap.exists) throw new Error(`User "${urlUser}" not found`);
       uid = usnap.data().uid;
-      // Get display name
       const profile = await db.collection("users").doc(uid).get();
-      ownerName = profile.data()?.displayName || urlUser;
+      const pdata = profile.data() || {};
+      ownerName = pdata.profileName || (pdata.username
+        ? pdata.username.charAt(0).toUpperCase() + pdata.username.slice(1)
+        : urlUser);
     } else {
       // Fallback: load from config/publicMap (default map)
       const cfg = await db.collection("config").doc("publicMap").get();
       if (!cfg.exists) throw new Error("No public map configured yet");
       uid = cfg.data().uid;
       const profile = await db.collection("users").doc(uid).get();
-      ownerName = profile.data()?.displayName || "Lily";
+      const pdata = profile.data() || {};
+      ownerName = pdata.profileName || pdata.username || "Lily";
     }
 
     // Update page title + map heading
-    const firstName = ownerName.split(" ")[0];
+    const firstName = ownerName;
     document.title = `${firstName}'s Food Map · Notebook`;
     const titleEl = document.querySelector(".title-main");
     if (titleEl) titleEl.childNodes[0].textContent = `${firstName}'s Food Map`;
