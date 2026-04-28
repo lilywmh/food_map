@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Food Map Editor</title>
 <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Patrick+Hand&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <style>
 /* ─── Reset ─── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -293,6 +296,56 @@ a { color: inherit; }
 .toast.show { opacity: 1; transform: translateY(0); }
 
 
+/* ─── Auth overlay (sign-in screen) ─── */
+.auth-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  background: #f5efe6;
+  display: flex; align-items: center; justify-content: center;
+}
+.auth-card {
+  background: #fdf8f2; border: 1.5px solid #e2d8cc; border-radius: 20px;
+  padding: 40px 36px 32px; text-align: center;
+  box-shadow: 0 8px 36px rgba(61,44,30,.12);
+  max-width: 340px; width: 90%;
+  position: relative;
+}
+.auth-card::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0;
+  height: 3px; border-radius: 20px 20px 0 0;
+  background: linear-gradient(90deg,#9b6e52,#c17a5e,#b87aa0,#6e8c72);
+}
+.auth-logo { font-size: 36px; margin-bottom: 14px; }
+.auth-title { font-size: 20px; color: #5a3e2b; font-weight: 600; margin-bottom: 6px; }
+.auth-sub { font-size: 13px; color: #a8907a; margin-bottom: 28px; line-height: 1.5; }
+.btn-google {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 12px; border-radius: 12px;
+  border: 1.5px solid #e2d8cc; background: #fdf8f2;
+  font-size: 14px; color: #3d2c1e; transition: all .15s;
+  box-shadow: 0 2px 8px rgba(61,44,30,.08);
+}
+.btn-google:hover { background: #f0e8dc; border-color: #9b6e52; transform: translateY(-1px); }
+.btn-google img { width: 18px; height: 18px; }
+
+/* ─── User bar (replaces token bar) ─── */
+.user-bar {
+  background: #fdf8f2; border: 1px solid #e2d8cc; border-radius: 12px;
+  padding: 8px 14px; display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px; flex-shrink: 0;
+}
+.user-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1.5px solid #e2d8cc; object-fit: cover; flex-shrink: 0;
+  background: #f0e8dc;
+}
+.user-name { font-size: 13px; color: #5a3e2b; font-weight: 600; flex: 1; }
+.user-email { font-size: 11px; color: #a8907a; }
+.btn-signout {
+  font-size: 11px; color: #b89f8a; background: none; border: none;
+  cursor: pointer; padding: 4px 8px; border-radius: 8px; transition: all .12s;
+}
+.btn-signout:hover { background: #f0e8dc; color: #9b6e52; }
+
 /* ─── Responsive ─── */
 @media (max-width: 700px) {
   .main-layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
@@ -350,10 +403,13 @@ a { color: inherit; }
   <!-- RIGHT: Editor -->
   <main class="editor-panel" id="editorPanel">
 
-    <div class="token-bar">
-      <span class="token-lbl">GitHub Token</span>
-      <input type="password" class="token-input" id="tokenInput" placeholder="ghp_xxxx  (only needed for Push)">
-      <span class="token-hint">for publish only</span>
+    <div class="user-bar" id="userBar">
+      <img class="user-avatar" id="userAvatar" src="" alt="">
+      <div>
+        <div class="user-name" id="userName">—</div>
+        <div class="user-email" id="userEmail">—</div>
+      </div>
+      <button class="btn-signout" onclick="signOutUser()">Sign out</button>
     </div>
 
     <div class="ed-card" id="edCard">
@@ -460,7 +516,7 @@ a { color: inherit; }
 
     <div class="action-row" id="actionRow" style="display:none">
       <button class="btn-export" onclick="exportJ()">↓ Export JSON</button>
-      <button class="btn-push"   onclick="pushGH()">↑ Push to GitHub</button>
+      <button class="btn-push"   onclick="saveToCloud()">☁ Save to Cloud</button>
     </div>
 
   </main>
@@ -510,18 +566,38 @@ a { color: inherit; }
   </div>
 </div>
 
+<!-- ── AUTH OVERLAY ── -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <div class="auth-logo">🍴</div>
+    <div class="auth-title">Food Diary Editor</div>
+    <div class="auth-sub">Sign in to access and edit<br>your personal food map</div>
+    <button class="btn-google" onclick="signInGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+      Continue with Google
+    </button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-const OWNER    = "lilywmh";
-const REPO     = "food_map";
-const PATH     = "foodmap.json";
-const RAW      = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/${PATH}`;
+// ── Firebase ─────────────────────────────────────────────────────────────────
+firebase.initializeApp({
+  apiKey:            "AIzaSyCLk5D8ELPtfsfREnBkFq1QyxPNAfllr6Q",
+  authDomain:        "foodmap-32f34.firebaseapp.com",
+  projectId:         "foodmap-32f34",
+  storageBucket:     "foodmap-32f34.firebasestorage.app",
+  messagingSenderId: "205830770210",
+  appId:             "1:205830770210:web:8a2ef938e22c2b8b83c47b"
+});
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
 const EMOJI = {"日料":"🍱","韩料":"🥩","中餐":"🍜","泰餐":"🍛","越南":"🍲","咖啡":"☕","甜点":"🍨","西餐":"🍽️","墨西哥":"🌮","海鲜":"🦞"};
 
 let DATA = [], cur = -1, curR = 0, curB = "", curC = "", curTier = 1, searchTerm = "";
-
-function getToken() { return document.getElementById("tokenInput").value.trim(); }
+let currentUID = null;
 
 // ── Maps link helpers ─────────────────────────────────────────────────────────
 function onMapsUrlInput() {
@@ -542,19 +618,49 @@ function clearMapsUrl() {
   updateGmapsLink();
 }
 
+// ── Auth ──────────────────────────────────────────────────────────────────────
+function signInGoogle() {
+  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => toast("Sign in failed: " + e.message));
+}
+function signOutUser() {
+  if (cur >= 0) saveCurrent();
+  auth.signOut();
+}
+
+auth.onAuthStateChanged(async user => {
+  const overlay = document.getElementById("authOverlay");
+  if (!user) {
+    overlay.style.display = "flex";
+    currentUID = null;
+    DATA = []; cur = -1;
+    return;
+  }
+  overlay.style.display = "none";
+  currentUID = user.uid;
+  // Update user bar
+  document.getElementById("userAvatar").src = user.photoURL || "";
+  document.getElementById("userName").textContent  = user.displayName || "—";
+  document.getElementById("userEmail").textContent = user.email || "—";
+  // Ensure user profile doc exists
+  await db.collection("users").doc(user.uid).set(
+    { displayName: user.displayName, email: user.email, photoURL: user.photoURL },
+    { merge: true }
+  );
+  loadData();
+});
+
 // ── Load ──────────────────────────────────────────────────────────────────────
 async function loadData() {
   try {
-    const r = await fetch(RAW + "?t=" + Date.now());
-    DATA = await r.json();
+    const snap = await db.collection("users").doc(currentUID).collection("restaurants").get();
+    DATA = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
     document.getElementById("edLoading").style.display = "none";
     document.getElementById("edEmpty").style.display = "flex";
     renderList();
     updateProgress();
     if (!localStorage.getItem("foodmap_editor_seen")) openModal();
   } catch(e) {
-    document.getElementById("edLoading").textContent =
-      "Load failed — open this page via the GitHub Pages URL, not directly from a local file.";
+    document.getElementById("edLoading").textContent = "Load failed: " + e.message;
   }
 }
 
@@ -640,7 +746,7 @@ function render(i) {
   // Tier buttons
   updateTierBtns();
 
-  document.getElementById("deleteBtn").style.display = e._isNew ? "inline" : "none";
+  document.getElementById("deleteBtn").style.display = "inline";
 
   document.getElementById("cityInput").value = e.city || "";
   document.getElementById("gmUrlInput").value = e.google_maps_url || "";
@@ -722,16 +828,23 @@ function addNew() {
   document.getElementById("searchBox").value = "";
   selectEntry(DATA.length - 1);
   setTimeout(() => document.getElementById("nameInput")?.focus(), 120);
-  toast("New restaurant added — fill in the details, then push to GitHub");
+  toast("New restaurant added — fill in details, then Save to Cloud");
 }
 
-function deleteEntry() {
-  if (!DATA[cur]?._isNew) return;
+async function deleteEntry() {
+  const entry = DATA[cur];
+  if (!entry) return;
+  // If already saved to Firestore, delete the doc
+  if (entry._id && !entry._isNew) {
+    try {
+      await db.collection("users").doc(currentUID).collection("restaurants").doc(entry._id).delete();
+    } catch(e) { toast("Delete failed: " + e.message); return; }
+  }
   DATA.splice(cur, 1);
   cur = -1;
   renderList();
   updateProgress();
-  if (DATA.length > 0) selectEntry(Math.min(cur, DATA.length - 1));
+  if (DATA.length > 0) selectEntry(Math.min(0, DATA.length - 1));
   else {
     document.getElementById("edMain").style.display  = "none";
     document.getElementById("edEmpty").style.display = "flex";
@@ -740,48 +853,44 @@ function deleteEntry() {
   toast("Deleted");
 }
 
-// ── Export / Push ─────────────────────────────────────────────────────────────
-function getMerged() {
+// ── Export / Save ─────────────────────────────────────────────────────────────
+function getClean() {
   saveCurrent();
   return DATA.map(d => { const r = Object.assign({}, d); delete r._isNew; return r; });
 }
 
 function exportJ() {
-  const blob = new Blob([JSON.stringify(getMerged(), null, 2)], {type:"application/json"});
+  const blob = new Blob([JSON.stringify(getClean(), null, 2)], {type:"application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "foodmap_updated.json";
+  a.download = "foodmap_backup.json";
   a.click();
   toast("JSON exported ↓");
 }
 
-async function pushGH() {
-  const token = getToken();
-  if (!token) { toast("Please enter your GitHub Token first"); document.getElementById("tokenInput").focus(); return; }
-  toast("Pushing…");
-  const merged  = getMerged();
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(merged, null, 2))));
+async function saveToCloud() {
+  if (!currentUID) { toast("Not signed in"); return; }
+  saveCurrent();
+  toast("Saving…");
   try {
-    const infoR = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
-      headers: {"Authorization":"token "+token, "Accept":"application/vnd.github.v3+json"}
-    });
-    const info = await infoR.json();
-    if (!info.sha) { toast("Could not fetch file — check the Token has 'repo' scope"); return; }
-    const putR = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
-      method: "PUT",
-      headers: {"Authorization":"token "+token, "Content-Type":"application/json", "Accept":"application/vnd.github.v3+json"},
-      body: JSON.stringify({ message: "Update food map " + new Date().toISOString().slice(0,10), content, sha: info.sha })
-    });
-    if (putR.ok) {
-      DATA.forEach(d => delete d._isNew);
-      renderList();
-      render(cur);
-      toast(`✓ Pushed — ${merged.length} restaurants on the map`);
-    } else {
-      const err = await putR.json();
-      toast("Push failed: " + (err.message || putR.status));
+    const coll  = db.collection("users").doc(currentUID).collection("restaurants");
+    const batch = db.batch();
+    for (const d of DATA) {
+      const { _isNew, _id, ...data } = d;
+      // Remove undefined values (Firestore rejects them)
+      Object.keys(data).forEach(k => data[k] === undefined && delete data[k]);
+      const ref = _id ? coll.doc(_id) : coll.doc();
+      if (!_id) d._id = ref.id;
+      batch.set(ref, data);
     }
-  } catch(e) { toast("Push failed: " + e.message); }
+    await batch.commit();
+    // Write public map pointer so foodmapA.html knows whose data to load
+    await db.collection("config").doc("publicMap").set({ uid: currentUID }, { merge: true });
+    DATA.forEach(d => delete d._isNew);
+    renderList();
+    if (cur >= 0) render(cur);
+    toast(`✓ Saved — ${DATA.length} restaurants on your map`);
+  } catch(e) { toast("Save failed: " + e.message); }
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
@@ -821,7 +930,7 @@ document.getElementById("modal").addEventListener("click", e => {
   if (e.target === e.currentTarget) closeModal();
 });
 
-loadData();
+// loadData() is now called by auth.onAuthStateChanged after sign-in
 </script>
 </body>
 </html>

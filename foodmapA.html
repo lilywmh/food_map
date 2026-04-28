@@ -21,6 +21,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Kalam:wght@300;400;700&family=Patrick+Hand&family=Klee+One:wght@400;600&family=Noto+Serif+SC:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <style>
   :root {
     --paper: #f4ecdb;
@@ -1783,7 +1785,17 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const JSON_URL = 'https://raw.githubusercontent.com/lilywmh/food_map/main/foodmap.json';
+// ── Firebase ─────────────────────────────────────────────────────────────────
+firebase.initializeApp({
+  apiKey:            "AIzaSyCLk5D8ELPtfsfREnBkFq1QyxPNAfllr6Q",
+  authDomain:        "foodmap-32f34.firebaseapp.com",
+  projectId:         "foodmap-32f34",
+  storageBucket:     "foodmap-32f34.firebasestorage.app",
+  messagingSenderId: "205830770210",
+  appId:             "1:205830770210:web:8a2ef938e22c2b8b83c47b"
+});
+const db = firebase.firestore();
+
 const _splashStart = Date.now(); // track when page opened for minimum splash duration
 
 const EMOJI = {"日料":"🍱","韩料":"🥩","中餐":"🍜","泰餐":"🍛","越南":"🍲","咖啡":"☕","甜点":"🍨","西餐":"🍽️","墨西哥":"🌮","":"🍴"};
@@ -2008,10 +2020,14 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
 const layer = L.layerGroup().addTo(map);
 
 // ─── DATA LOAD ───
-fetch(JSON_URL)
-  .then(r => r.json())
-  .then(data => {
-    DATA = data;
+async function loadMapData() {
+  try {
+    // Get the map owner's UID from the config doc
+    const cfg  = await db.collection("config").doc("publicMap").get();
+    const uid  = cfg.exists ? cfg.data().uid : null;
+    if (!uid) throw new Error("No public map configured yet");
+    const snap = await db.collection("users").doc(uid).collection("restaurants").get();
+    DATA = snap.docs.map(d => d.data());
     initFilters();
     friendStamps = getFriendStamps();
     render();
@@ -2022,12 +2038,13 @@ fetch(JSON_URL)
       const myStamps = JSON.parse(localStorage.getItem('foodmap_user_stamps') || '[]');
       renderMatchCard(computeMatch(myStamps, friendStamps));
     }
-  })
-  .catch(err => {
+  } catch(err) {
     hideSplash();
     toast(T[lang].toastLoadFail);
     console.error(err);
-  });
+  }
+}
+loadMapData();
 
 // ─── INIT FILTERS ───
 function initFilters() {
