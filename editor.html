@@ -1,213 +1,623 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Food Map 批注工具</title>
-<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Zen+Maru+Gothic:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Food Map Editor</title>
+<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Patrick+Hand&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Zen Maru Gothic",sans-serif;background:#f5efe6;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px}
-h1{font-family:"Klee One",cursive;font-size:22px;color:#5a3e2b;margin-bottom:4px;letter-spacing:1px}
-.sub{font-size:12px;color:#a8907a;margin-bottom:20px}
-.topbar{width:100%;max-width:680px;display:flex;gap:10px;margin-bottom:14px;align-items:center}
-.search-wrap{position:relative;flex:1}
-.search-box{width:100%;background:#fdf8f2;border:1px solid #e2d8cc;border-radius:24px;padding:9px 16px;font-family:"Klee One",cursive;font-size:14px;color:#3d2c1e;outline:none}
-.search-box:focus{border-color:#9b6e52}
-.btn-add{font-family:"Klee One",cursive;font-size:13px;padding:9px 18px;border-radius:24px;border:1.5px dashed #6e8c72;color:#6e8c72;background:transparent;cursor:pointer;white-space:nowrap}
-.btn-add:hover{background:#f0f7f2}
-.search-results{position:absolute;top:100%;left:0;right:0;background:#fdf8f2;border:1px solid #e2d8cc;border-radius:12px;box-shadow:0 4px 16px rgba(90,62,43,.1);z-index:10;max-height:240px;overflow-y:auto;margin-top:4px}
-.sr-item{padding:10px 16px;cursor:pointer;font-family:"Klee One",cursive;font-size:14px;color:#3d2c1e;border-bottom:.5px solid #f0e8dc}
-.sr-item:last-child{border-bottom:none}
-.sr-item:hover{background:#f5efe6}
-.sr-city{font-size:11px;color:#a8907a;margin-top:2px}
-.token-bar{width:100%;max-width:680px;background:#fdf8f2;border:1px solid #e2d8cc;border-radius:12px;padding:10px 16px;margin-bottom:14px;display:flex;gap:10px;align-items:center}
-.token-bar label{font-size:11px;color:#b89f8a;white-space:nowrap;letter-spacing:.5px}
-.token-bar input{flex:1;background:#f7f2ea;border:1px solid #e2d8cc;border-radius:8px;padding:7px 12px;font-family:"Klee One",cursive;font-size:13px;color:#3d2c1e;outline:none}
-.bar{width:100%;max-width:680px;height:4px;background:#e2d8cc;border-radius:4px;margin-bottom:6px;overflow:hidden}
-.fill{height:100%;background:linear-gradient(90deg,#9b6e52,#b87aa0);transition:width .4s}
-.pl{font-size:12px;color:#a8907a;text-align:right;max-width:680px;width:100%;margin-bottom:16px}
-.card{width:100%;max-width:680px;background:#fdf8f2;border-radius:18px;border:1px solid #e2d8cc;padding:28px;box-shadow:0 2px 20px rgba(90,62,43,.07);position:relative}
-.card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:18px 18px 0 0;background:linear-gradient(90deg,#9b6e52,#c17a5e,#b87aa0,#6e8c72)}
-.hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
-.sn{font-family:"Klee One",cursive;flex:1;padding-right:12px}
-.sn input{width:100%;background:#f7f2ea;border:1px solid #e2d8cc;border-radius:10px;padding:8px 12px;font-family:"Klee One",cursive;font-size:18px;color:#3d2c1e;outline:none}
-.sn input:focus{border-color:#9b6e52}
-.badge-row{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.tb{font-family:"Klee One",cursive;font-size:12px;padding:3px 10px;border-radius:12px;white-space:nowrap;cursor:pointer;user-select:none}
-.t1{background:#f5ebe6;color:#9b5e42;border:.5px solid #dbbba8}
-.t2{background:#eceaf5;color:#6a5a8a;border:.5px solid #c8c0dc}
-.delete-btn{font-size:12px;color:#c17a5e;background:none;border:none;cursor:pointer;text-decoration:underline;font-family:"Zen Maru Gothic",sans-serif}
-.city-row{display:flex;gap:8px;margin-bottom:18px;align-items:center}
-.city-row input{flex:1;background:#f7f2ea;border:1px solid #e2d8cc;border-radius:8px;padding:7px 12px;font-family:"Klee One",cursive;font-size:13px;color:#3d2c1e;outline:none}
-.city-row input:focus{border-color:#9b6e52}
-.city-label{font-size:11px;color:#b89f8a;white-space:nowrap}
-.gmaps-link{font-size:12px;color:#7a9e87;text-decoration:none;white-space:nowrap}
-.gmaps-link:hover{text-decoration:underline}
-.fg{margin-bottom:16px}
-label{display:block;font-size:11px;color:#b89f8a;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px}
-input[type=text],textarea{width:100%;background:#f7f2ea;border:1px solid #e2d8cc;border-radius:10px;padding:10px 14px;font-family:"Klee One",cursive;font-size:15px;color:#3d2c1e;outline:none;transition:border-color .2s}
-input[type=text]:focus,textarea:focus{border-color:#9b6e52;background:#fdf8f2}
-textarea{resize:vertical;min-height:80px;line-height:1.7}
-.r2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.pg{display:flex;gap:6px;padding:6px 0;align-items:center}
-.sb{background:none;border:none;font-size:22px;cursor:pointer;color:#e2d8cc;transition:color .15s,transform .1s;padding:0 2px}
-.sb.on{color:#b87aa0}
-.sb:hover{transform:scale(1.2)}
-.rv{font-family:"Klee One",cursive;font-size:13px;color:#9b6e52;margin-left:8px}
-.pills{display:flex;gap:7px;flex-wrap:wrap;padding:4px 0}
-.pill{font-family:"Klee One",cursive;font-size:13px;padding:4px 13px;border-radius:20px;border:1px solid #d6c8b8;color:#7a6352;background:transparent;cursor:pointer;transition:all .18s}
-.pill:hover{background:#ede4d8}
-.pill.ob{background:#9b6e52;border-color:#9b6e52;color:#fdf8f2}
-.pill.og{background:#6e8c72;border-color:#6e8c72;color:#f2f7f3}
-.ci{margin-top:8px}
-.nav{display:flex;align-items:center;justify-content:space-between;margin-top:22px;gap:12px}
-.btn{font-family:"Klee One",cursive;font-size:14px;padding:10px 24px;border-radius:24px;border:none;cursor:pointer;transition:all .18s}
-.bp{background:transparent;border:1px solid #d6c8b8;color:#9b6e52}
-.bp:hover{background:#f0e8dc}
-.bn{background:#9b6e52;color:#fdf8f2;box-shadow:0 2px 8px rgba(155,110,82,.25)}
-.bn:hover{background:#8a5e44}
-.skip{font-size:12px;color:#b89f8a;background:none;border:none;cursor:pointer;text-decoration:underline;font-family:"Zen Maru Gothic",sans-serif}
-.exp{width:100%;max-width:680px;margin-top:14px;display:flex;gap:8px;justify-content:flex-end}
-.be{font-family:"Klee One",cursive;font-size:13px;padding:8px 20px;border-radius:20px;border:1.5px dashed #b89f8a;color:#9b6e52;background:transparent;cursor:pointer;transition:all .18s}
-.be:hover{background:#f0e8dc}
-.bpush{border-color:#6e8c72;color:#6e8c72}
-.bpush:hover{background:#f0f7f2}
-.toast{position:fixed;bottom:24px;right:24px;background:#3d2c1e;color:#fdf8f2;font-family:"Klee One",cursive;font-size:13px;padding:10px 20px;border-radius:20px;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;z-index:99}
-.toast.show{opacity:1;transform:translateY(0)}
-.hint{font-size:11px;color:#c8b9a8;margin-top:4px;font-style:italic}
-.loading{text-align:center;padding:40px;font-family:"Klee One",cursive;color:#9b6e52;font-size:16px}
-.new-badge{background:#6e8c72;color:#fff;font-size:10px;padding:2px 6px;border-radius:8px;margin-left:6px;vertical-align:middle}
+/* ─── Reset ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: "Klee One", "Patrick Hand", sans-serif; background: #f5efe6; color: #3d2c1e; }
+button { font-family: inherit; cursor: pointer; }
+input, textarea { font-family: inherit; color: inherit; }
+a { color: inherit; }
+
+/* ─── Header ─── */
+.app-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 20px;
+  background: #fdf8f2;
+  border-bottom: 1px solid #e2d8cc;
+  flex-shrink: 0; z-index: 10; position: relative;
+}
+.back-link {
+  font-size: 12px; color: #9b6e52; text-decoration: none;
+  padding: 5px 12px; border: 1px solid #e2d8cc; border-radius: 20px;
+  white-space: nowrap; transition: all .15s; flex-shrink: 0;
+  display: flex; align-items: center; gap: 5px;
+}
+.back-link:hover { background: #f0e8dc; border-color: #9b6e52; }
+.app-title { flex: 1; text-align: center; }
+.app-title strong { font-size: 17px; color: #5a3e2b; letter-spacing: .4px; }
+.app-title span { font-size: 11px; color: #a8907a; display: block; margin-top: 1px; }
+.header-btns { display: flex; gap: 7px; align-items: center; flex-shrink: 0; }
+.icon-btn {
+  width: 32px; height: 32px; border: 1px solid #e2d8cc;
+  border-radius: 50%; background: #fdf8f2;
+  font-size: 14px; color: #9b6e52;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.icon-btn:hover { background: #f0e8dc; border-color: #9b6e52; }
+.icon-btn.list-toggle { display: none; }
+
+/* ─── Main Layout ─── */
+.main-layout {
+  display: grid;
+  grid-template-columns: 272px 1fr;
+  height: calc(100dvh - 53px);
+  overflow: hidden;
+}
+
+/* ─── List Panel ─── */
+.list-panel {
+  display: flex; flex-direction: column;
+  border-right: 1px solid #e2d8cc;
+  background: #faf5ef;
+  overflow: hidden;
+}
+.list-top {
+  padding: 12px 12px 10px;
+  border-bottom: 1px solid #e2d8cc;
+  display: flex; flex-direction: column; gap: 8px;
+  flex-shrink: 0;
+}
+.search-wrap { position: relative; }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 11px; opacity: .45; pointer-events: none; }
+.list-search {
+  width: 100%; background: #fdf8f2;
+  border: 1px solid #e2d8cc; border-radius: 20px;
+  padding: 7px 12px 7px 28px; font-size: 13px; outline: none;
+  transition: border-color .2s;
+}
+.list-search:focus { border-color: #9b6e52; }
+.btn-add-new {
+  font-size: 13px; padding: 8px 12px; border-radius: 20px;
+  border: 1.5px dashed #6e8c72; color: #6e8c72;
+  background: transparent; width: 100%; transition: all .15s;
+}
+.btn-add-new:hover { background: #f0f7f2; border-style: solid; }
+.list-progress { display: flex; align-items: center; gap: 7px; }
+.prog-bar { flex: 1; height: 3px; background: #e2d8cc; border-radius: 2px; overflow: hidden; }
+.prog-fill { height: 100%; background: linear-gradient(90deg,#9b6e52,#b87aa0); transition: width .4s; }
+.prog-label { font-size: 10px; color: #b89f8a; white-space: nowrap; font-family: "Patrick Hand", sans-serif; }
+
+.restaurant-list { flex: 1; overflow-y: auto; }
+.restaurant-list::-webkit-scrollbar { width: 4px; }
+.restaurant-list::-webkit-scrollbar-thumb { background: #e2d8cc; border-radius: 2px; }
+
+.rest-item {
+  padding: 10px 14px 10px 12px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all .12s;
+  position: relative;
+  display: flex; align-items: center; gap: 8px;
+}
+.rest-item:hover { background: rgba(155,110,82,.06); }
+.rest-item.active { background: rgba(155,110,82,.1); border-left-color: #9b6e52; }
+.rest-emoji { font-size: 16px; flex-shrink: 0; line-height: 1; }
+.rest-info { flex: 1; min-width: 0; }
+.rest-name {
+  font-size: 13px; font-weight: 600; color: #3d2c1e;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: flex; align-items: center; gap: 5px;
+}
+.rest-name .nbadge { font-size: 9px; background: #6e8c72; color: #fff; padding: 1px 5px; border-radius: 5px; flex-shrink: 0; }
+.rest-meta { font-size: 11px; color: #a8907a; margin-top: 1px; }
+.rest-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.rest-dot.done { background: #6e8c72; }
+.rest-dot.empty { background: #e2d8cc; }
+
+.list-empty { padding: 24px 14px; font-size: 13px; color: #b89f8a; text-align: center; line-height: 1.6; }
+
+/* ─── Editor Panel ─── */
+.editor-panel { overflow-y: auto; padding: 20px 24px 32px; display: flex; flex-direction: column; }
+.editor-panel::-webkit-scrollbar { width: 6px; }
+.editor-panel::-webkit-scrollbar-thumb { background: #e2d8cc; border-radius: 3px; }
+
+/* Token bar */
+.token-bar {
+  background: #fdf8f2; border: 1px solid #e2d8cc; border-radius: 12px;
+  padding: 10px 16px; display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px; flex-shrink: 0;
+}
+.token-lbl { font-size: 10px; color: #b89f8a; white-space: nowrap; letter-spacing: .6px; text-transform: uppercase; }
+.token-input {
+  flex: 1; background: #f7f2ea; border: 1px solid #e2d8cc; border-radius: 8px;
+  padding: 6px 12px; font-size: 13px; outline: none; transition: border-color .2s;
+}
+.token-input:focus { border-color: #9b6e52; }
+.token-hint { font-size: 10px; color: #c8b9a8; white-space: nowrap; }
+
+/* Editor card */
+.ed-card {
+  background: #fdf8f2; border-radius: 16px; border: 1px solid #e2d8cc;
+  padding: 22px 24px; box-shadow: 0 2px 16px rgba(90,62,43,.06);
+  position: relative; flex: 1;
+}
+.ed-card::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0;
+  height: 3px; border-radius: 16px 16px 0 0;
+  background: linear-gradient(90deg,#9b6e52,#c17a5e,#b87aa0,#6e8c72);
+}
+.ed-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%; min-height: 260px; color: #b89f8a; text-align: center;
+}
+.ed-empty .big { font-size: 36px; margin-bottom: 10px; }
+.ed-empty p { font-size: 14px; line-height: 1.6; }
+
+/* Name + tier row */
+.ed-hd { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 18px; }
+.ed-name-wrap { flex: 1; min-width: 0; }
+.ed-name-input {
+  width: 100%; background: #f7f2ea; border: 1px solid #e2d8cc;
+  border-radius: 10px; padding: 8px 12px; font-size: 19px;
+  outline: none; transition: border-color .2s;
+}
+.ed-name-input:focus { border-color: #9b6e52; background: #fdf8f2; }
+.new-badge { background: #6e8c72; color: #fff; font-size: 10px; padding: 2px 7px; border-radius: 8px; margin-left: 7px; vertical-align: middle; }
+.tier-controls { display: flex; gap: 6px; align-items: center; flex-shrink: 0; flex-wrap: wrap; }
+.tier-btn {
+  font-size: 12px; padding: 5px 13px; border-radius: 20px;
+  border: 1.5px solid #dbbba8; color: #b89f8a; background: transparent;
+  transition: all .15s; white-space: nowrap;
+}
+.tier-btn.t1-on { background: #f5ebe6; color: #9b5e42; border-color: #dbbba8; font-weight: 600; }
+.tier-btn.t2-on { background: #eceaf5; color: #6a5a8a; border-color: #c8c0dc; font-weight: 600; }
+.tier-btn:not(.t1-on):not(.t2-on):hover { border-color: #b89f8a; color: #7a6352; }
+.del-btn { font-size: 12px; color: #c17a5e; background: none; border: none; cursor: pointer; text-decoration: underline; white-space: nowrap; }
+
+/* Sections */
+.ed-sec { margin-bottom: 18px; }
+.ed-lbl { display: block; font-size: 10px; color: #b89f8a; letter-spacing: .8px; text-transform: uppercase; margin-bottom: 7px; font-family: "Patrick Hand", sans-serif; }
+.city-row { display: flex; gap: 8px; align-items: center; }
+.city-input {
+  flex: 1; background: #f7f2ea; border: 1px solid #e2d8cc; border-radius: 8px;
+  padding: 8px 12px; font-size: 13px; outline: none; transition: border-color .2s;
+}
+.city-input:focus { border-color: #9b6e52; }
+/* Maps flow */
+.maps-search-btn {
+  font-size: 12px; color: #7a9e87; text-decoration: none;
+  padding: 7px 13px; border: 1px solid #c5dac9; border-radius: 8px;
+  white-space: nowrap; transition: all .15s; flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.maps-search-btn:hover { background: #f0f7f2; border-color: #7a9e87; color: #5a7a5e; }
+.maps-paste-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.maps-paste {
+  flex: 1; background: #f7f2ea; border: 1.5px dashed #c8b9a8; border-radius: 8px;
+  padding: 7px 12px; font-size: 12px; outline: none; color: #3d2c1e;
+  transition: border-color .2s, background .2s;
+}
+.maps-paste::placeholder { color: #c8b9a8; font-style: italic; }
+.maps-paste:focus { border-color: #9b6e52; border-style: solid; background: #fdf8f2; }
+.maps-linked-row {
+  display: flex; align-items: center; gap: 10px; margin-top: 8px;
+  background: rgba(110,140,114,.1); border: 1px solid #c5dac9;
+  border-radius: 8px; padding: 8px 13px;
+}
+.maps-linked-check { color: #6e8c72; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.maps-linked-label { font-size: 12px; color: #5a7a5e; flex: 1; }
+.maps-linked-view { font-size: 12px; color: #7a9e87; text-decoration: none; flex-shrink: 0; }
+.maps-linked-view:hover { text-decoration: underline; }
+.maps-linked-clear { font-size: 11px; color: #b89f8a; background: none; border: none; cursor: pointer; padding: 0; flex-shrink: 0; }
+.maps-linked-clear:hover { color: #9b6e52; }
+
+.r2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.ed-input {
+  width: 100%; background: #f7f2ea; border: 1px solid #e2d8cc; border-radius: 10px;
+  padding: 9px 13px; font-size: 14px; outline: none; transition: border-color .2s;
+}
+.ed-input:focus { border-color: #9b6e52; background: #fdf8f2; }
+.ed-textarea {
+  width: 100%; background: #f7f2ea; border: 1px solid #e2d8cc; border-radius: 10px;
+  padding: 10px 13px; font-size: 14px; outline: none; resize: vertical;
+  min-height: 88px; line-height: 1.7; transition: border-color .2s;
+}
+.ed-textarea:focus { border-color: #9b6e52; background: #fdf8f2; }
+.field-hint { font-size: 11px; color: #c8b9a8; margin-top: 5px; font-style: italic; }
+
+.pills { display: flex; gap: 6px; flex-wrap: wrap; padding: 2px 0; }
+.pill {
+  font-size: 13px; padding: 4px 13px; border-radius: 20px;
+  border: 1px solid #d6c8b8; color: #7a6352; background: transparent;
+  cursor: pointer; transition: all .18s;
+}
+.pill:hover { background: #ede4d8; border-color: #b89f8a; }
+.pill.ob { background: #9b6e52; border-color: #9b6e52; color: #fdf8f2; }
+.pill.og { background: #6e8c72; border-color: #6e8c72; color: #f2f7f3; }
+.ci-input {
+  width: 100%; background: #f7f2ea; border: 1px solid #e2d8cc; border-radius: 8px;
+  padding: 7px 12px; font-size: 13px; outline: none; margin-top: 8px; transition: border-color .2s;
+}
+.ci-input:focus { border-color: #9b6e52; }
+
+.star-row { display: flex; gap: 3px; align-items: center; padding: 3px 0; }
+.star-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: #e2d8cc; transition: color .15s, transform .1s; padding: 0 1px; }
+.star-btn.on { color: #b87aa0; }
+.star-btn:hover { transform: scale(1.18); }
+.star-val { font-size: 13px; color: #9b6e52; margin-left: 7px; }
+
+/* Action row */
+.action-row { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 14px; flex-shrink: 0; }
+.btn-export, .btn-push {
+  font-size: 13px; padding: 9px 22px; border-radius: 20px; transition: all .18s;
+}
+.btn-export { border: 1.5px dashed #b89f8a; color: #9b6e52; background: transparent; }
+.btn-export:hover { background: #f0e8dc; border-style: solid; }
+.btn-push { border: 1.5px solid #6e8c72; color: #6e8c72; background: transparent; }
+.btn-push:hover { background: #f0f7f2; }
+
+/* ─── Instruction Modal ─── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(61,44,30,.42);
+  z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .22s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: auto; }
+.modal-card {
+  width: min(500px, calc(100vw - 24px));
+  background: #fdf8f2; border: 1.5px solid #e2d8cc; border-radius: 18px;
+  padding: 28px 24px 22px; box-shadow: 0 8px 36px rgba(61,44,30,.18);
+  position: relative; animation: mIn .25s cubic-bezier(.2,0,0,1) both;
+}
+@keyframes mIn { from { transform: scale(.9) translateY(14px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+.modal-card::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0;
+  height: 3px; border-radius: 18px 18px 0 0;
+  background: linear-gradient(90deg,#9b6e52,#c17a5e,#b87aa0,#6e8c72);
+}
+.modal-close { position: absolute; top: 12px; right: 14px; width: 26px; height: 26px; border: none; background: none; font-size: 16px; color: #b89f8a; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all .12s; }
+.modal-close:hover { background: rgba(61,44,30,.08); color: #3d2c1e; }
+.modal-title { font-size: 21px; color: #5a3e2b; margin-bottom: 3px; }
+.modal-sub { font-size: 12px; color: #a8907a; margin-bottom: 20px; }
+.modal-steps { display: flex; flex-direction: column; gap: 13px; margin-bottom: 18px; }
+.modal-step { display: flex; align-items: flex-start; gap: 12px; }
+.step-icon { width: 34px; height: 34px; border-radius: 50%; background: #f5ebe6; border: 1px solid #dbbba8; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+.step-body strong { font-size: 14px; color: #3d2c1e; display: block; margin-bottom: 2px; }
+.step-body span { font-size: 12px; color: #a8907a; line-height: 1.5; }
+.modal-note { background: rgba(110,140,114,.1); border: 1px solid #c5dac9; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #5a7a5e; line-height: 1.55; margin-bottom: 18px; }
+.modal-btn { width: 100%; padding: 12px; background: #9b6e52; color: #fdf8f2; border: none; border-radius: 12px; font-size: 15px; letter-spacing: .2px; transition: all .15s; box-shadow: 0 2px 8px rgba(155,110,82,.22); }
+.modal-btn:hover { background: #8a5e44; transform: translateY(-1px); }
+
+/* ─── Toast ─── */
+.toast { position: fixed; bottom: 20px; right: 20px; background: #3d2c1e; color: #fdf8f2; font-size: 13px; padding: 10px 20px; border-radius: 20px; opacity: 0; transform: translateY(8px); transition: all .3s; pointer-events: none; z-index: 9999; }
+.toast.show { opacity: 1; transform: translateY(0); }
+
+
+/* ─── Responsive ─── */
+@media (max-width: 700px) {
+  .main-layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .list-panel {
+    border-right: none; border-bottom: 1px solid #e2d8cc;
+    max-height: 0; overflow: hidden; transition: max-height .35s;
+    flex-shrink: 0;
+  }
+  .list-panel.open { max-height: 320px; }
+  .icon-btn.list-toggle { display: flex; }
+  .editor-panel { padding: 16px 14px 28px; }
+  .ed-card { padding: 18px 16px; }
+  .r2 { grid-template-columns: 1fr; }
+  .action-row { justify-content: stretch; }
+  .btn-export, .btn-push { flex: 1; text-align: center; }
+}
 </style>
 </head>
 <body>
 
-<h1>&#9670; Food Map 批注工具 &#9670;</h1>
-<p class="sub">填写批注 · 添加新店 · 推送到 GitHub 即时更新地图</p>
-
-<div class="token-bar">
-  <label>GitHub Token</label>
-  <input type="password" id="tokenInput" placeholder="ghp_xxxx（推送时需要）">
-</div>
-
-<div class="topbar">
-  <div class="search-wrap">
-    <input class="search-box" id="searchBox" placeholder="🔍 搜索餐厅名字快速跳转..." oninput="onSearch()" onblur="hideResults()">
-    <div class="search-results" id="searchResults" style="display:none"></div>
+<!-- ── HEADER ── -->
+<header class="app-header">
+  <a class="back-link" href="foodmapA.html">← Food Map</a>
+  <div class="app-title">
+    <strong>◆ Food Diary Editor</strong>
+    <span>Browse · Record · Publish</span>
   </div>
-  <button class="btn-add" onclick="addNew()">+ 添加新店</button>
+  <div class="header-btns">
+    <button class="icon-btn list-toggle" id="listToggle" onclick="toggleList()" title="Browse all">📋</button>
+    <button class="icon-btn" onclick="openModal()" title="How to use">?</button>
+  </div>
+</header>
+
+<!-- ── MAIN LAYOUT ── -->
+<div class="main-layout">
+
+  <!-- LEFT: Restaurant List -->
+  <aside class="list-panel" id="listPanel">
+    <div class="list-top">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="list-search" id="searchBox" placeholder="Search restaurants or city..." oninput="onSearch()">
+      </div>
+      <button class="btn-add-new" onclick="addNew()">＋ Add New Restaurant</button>
+      <div class="list-progress">
+        <div class="prog-bar"><div class="prog-fill" id="pf"></div></div>
+        <div class="prog-label" id="pl">0/0</div>
+      </div>
+    </div>
+    <div class="restaurant-list" id="restaurantList">
+      <div class="list-empty">Loading…</div>
+    </div>
+  </aside>
+
+  <!-- RIGHT: Editor -->
+  <main class="editor-panel" id="editorPanel">
+
+    <div class="token-bar">
+      <span class="token-lbl">GitHub Token</span>
+      <input type="password" class="token-input" id="tokenInput" placeholder="ghp_xxxx  (only needed for Push)">
+      <span class="token-hint">for publish only</span>
+    </div>
+
+    <div class="ed-card" id="edCard">
+      <div id="edLoading" style="text-align:center;padding:48px 20px;color:#a8907a;">Loading your food list…</div>
+      <div id="edMain" style="display:none">
+
+        <!-- Name + Tier -->
+        <div class="ed-hd">
+          <div class="ed-name-wrap">
+            <input type="text" class="ed-name-input" id="nameInput" placeholder="Restaurant name…">
+            <span class="new-badge" id="newBadge" style="display:none">NEW</span>
+          </div>
+          <div class="tier-controls">
+            <button class="tier-btn" id="tierBtn1" onclick="setTier(1)">⭐ Favourite</button>
+            <button class="tier-btn" id="tierBtn2" onclick="setTier(2)">✓ Visited</button>
+            <button class="del-btn" id="deleteBtn" onclick="deleteEntry()" style="display:none">Delete</button>
+          </div>
+        </div>
+
+        <!-- City + Maps -->
+        <div class="ed-sec">
+          <label class="ed-lbl">Location</label>
+          <input type="text" class="city-input" id="cityInput" placeholder="City · e.g. Los Angeles, Tokyo…" style="width:100%">
+          <!-- State A: no link yet -->
+          <div class="maps-paste-row" id="mapsPasteRow">
+            <a class="maps-search-btn" id="gmapsLink" href="#" target="_blank">🔍 Search on Google Maps ↗</a>
+            <input type="text" class="maps-paste" id="gmUrlInput"
+                   placeholder="paste the Maps link here"
+                   oninput="onMapsUrlInput()">
+          </div>
+          <!-- State B: linked -->
+          <div class="maps-linked-row" id="mapsLinkedRow" style="display:none">
+            <span class="maps-linked-check">✓</span>
+            <span class="maps-linked-label">Linked to Google Maps</span>
+            <a class="maps-linked-view" id="mapsLinkedView" href="#" target="_blank">View ↗</a>
+            <button class="maps-linked-clear" onclick="clearMapsUrl()">× Remove</button>
+          </div>
+        </div>
+
+        <!-- Cuisine -->
+        <div class="ed-sec">
+          <label class="ed-lbl">Cuisine</label>
+          <div class="pills" id="cg">
+            <button class="pill" data-cval="日料"   onclick="selC(this)">🍱 Japanese</button>
+            <button class="pill" data-cval="韩料"   onclick="selC(this)">🥩 Korean</button>
+            <button class="pill" data-cval="中餐"   onclick="selC(this)">🥢 Chinese</button>
+            <button class="pill" data-cval="泰餐"   onclick="selC(this)">🌿 Thai</button>
+            <button class="pill" data-cval="越南"   onclick="selC(this)">🍜 Vietnamese</button>
+            <button class="pill" data-cval="西餐"   onclick="selC(this)">🍽 Western</button>
+            <button class="pill" data-cval="咖啡"   onclick="selC(this)">☕ Café</button>
+            <button class="pill" data-cval="甜点"   onclick="selC(this)">🍰 Dessert</button>
+            <button class="pill" data-cval="海鲜"   onclick="selC(this)">🦞 Seafood</button>
+            <button class="pill" data-cval="墨西哥" onclick="selC(this)">🌮 Mexican</button>
+          </div>
+          <input type="text" class="ci-input" id="ci" placeholder="Or type your own cuisine…" oninput="onCI()">
+        </div>
+
+        <!-- Dish + Budget -->
+        <div class="r2">
+          <div class="ed-sec">
+            <label class="ed-lbl">Top Dish to Order</label>
+            <input type="text" class="ed-input" id="di" placeholder="The one thing to get…">
+          </div>
+          <div class="ed-sec">
+            <label class="ed-lbl">Budget / Person</label>
+            <div class="pills" id="bg">
+              <button class="pill" data-v="1" onclick="selB(this)">$ Casual</button>
+              <button class="pill" data-v="2" onclick="selB(this)">$$ Treat</button>
+              <button class="pill" data-v="3" onclick="selB(this)">$$$ Celebration</button>
+              <button class="pill" data-v="4" onclick="selB(this)">$$$$ Splurge</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rating -->
+        <div class="ed-sec">
+          <label class="ed-lbl">Rating</label>
+          <div class="star-row">
+            <button class="star-btn" onclick="setR(1)">♥</button>
+            <button class="star-btn" onclick="setR(2)">♥</button>
+            <button class="star-btn" onclick="setR(3)">♥</button>
+            <button class="star-btn" onclick="setR(4)">♥</button>
+            <button class="star-btn" onclick="setR(5)">♥</button>
+            <span class="star-val" id="rv"></span>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="ed-sec">
+          <label class="ed-lbl">Your Notes</label>
+          <textarea class="ed-textarea" id="ni" placeholder="What would you tell a friend about this place?"></textarea>
+          <div class="field-hint">One sentence is plenty — say what you'd most want to remember.</div>
+        </div>
+
+
+      </div>
+
+      <!-- Empty state (no selection) -->
+      <div class="ed-empty" id="edEmpty" style="display:none">
+        <span class="big">🍴</span>
+        <p>Select a restaurant from the left<br>or add a new one to get started.</p>
+      </div>
+    </div>
+
+    <div class="action-row" id="actionRow" style="display:none">
+      <button class="btn-export" onclick="exportJ()">↓ Export JSON</button>
+      <button class="btn-push"   onclick="pushGH()">↑ Push to GitHub</button>
+    </div>
+
+  </main>
 </div>
 
-<div class="bar"><div class="fill" id="pf"></div></div>
-<div class="pl" id="pl"></div>
-
-<div class="card">
-  <div class="loading" id="loading">数据加载中...</div>
-  <div id="main" style="display:none">
-    <div class="hd">
-      <div class="sn" id="snWrap"></div>
-      <div class="badge-row">
-        <div class="tb" id="tb" onclick="toggleTier()" title="点击切换精选/去过"></div>
-        <button class="delete-btn" id="deleteBtn" onclick="deleteEntry()" style="display:none">删除</button>
+<!-- ── INSTRUCTION MODAL ── -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">◆ Food Diary Editor</div>
+    <div class="modal-sub">Your personal food record — edit, annotate, and publish to the map</div>
+    <div class="modal-steps">
+      <div class="modal-step">
+        <div class="step-icon">📋</div>
+        <div class="step-body">
+          <strong>Browse your restaurant list</strong>
+          <span>All your places are in the left panel. Click any to open and edit its details.</span>
+        </div>
       </div>
-    </div>
-
-    <div class="city-row">
-      <span class="city-label">📍 城市</span>
-      <input type="text" id="cityInput" placeholder="如 Los Angeles, Tokyo...">
-      <a class="gmaps-link" id="gmapsLink" href="#" target="_blank">Google Maps →</a>
-    </div>
-
-    <div class="fg">
-      <label>菜系类型</label>
-      <div class="pills" id="cg">
-        <button class="pill" onclick="selC(this,'日料')">🍣 日料</button>
-        <button class="pill" onclick="selC(this,'韩料')">🥩 韩料</button>
-        <button class="pill" onclick="selC(this,'中餐')">🥢 中餐</button>
-        <button class="pill" onclick="selC(this,'泰餐')">🌿 泰餐</button>
-        <button class="pill" onclick="selC(this,'越南')">🍜 越南</button>
-        <button class="pill" onclick="selC(this,'西餐')">🍽 西餐</button>
-        <button class="pill" onclick="selC(this,'咖啡')">☕ 咖啡</button>
-        <button class="pill" onclick="selC(this,'甜点')">🍰 甜点</button>
-        <button class="pill" onclick="selC(this,'海鲜')">🦞 海鲜</button>
-        <button class="pill" onclick="selC(this,'墨西哥')">🌮 墨西哥</button>
+      <div class="modal-step">
+        <div class="step-icon">✏️</div>
+        <div class="step-body">
+          <strong>Fill in the details</strong>
+          <span>Add cuisine type, rating (1–5 ♥), your top dish recommendation, budget, and a personal note.</span>
+        </div>
       </div>
-      <input type="text" id="ci" placeholder="或直接输入..." class="ci" oninput="onCI()">
-    </div>
-
-    <div class="r2">
-      <div class="fg">
-        <label>推荐一道菜</label>
-        <input type="text" id="di" placeholder="最值得点的那道...">
+      <div class="modal-step">
+        <div class="step-icon">➕</div>
+        <div class="step-body">
+          <strong>Add new restaurants</strong>
+          <span>Eaten somewhere new? Click <em>"Add New Restaurant"</em> and fill in what you remember.</span>
+        </div>
       </div>
-      <div class="fg">
-        <label>预算 / 人</label>
-        <div class="pills" id="bg">
-          <button class="pill" data-v="1" onclick="selB(this)">$ 便饭</button>
-          <button class="pill" data-v="2" onclick="selB(this)">$$ 犒劳</button>
-          <button class="pill" data-v="3" onclick="selB(this)">$$$ 庆祝</button>
-          <button class="pill" data-v="4" onclick="selB(this)">$$$$ 奢侈</button>
+      <div class="modal-step">
+        <div class="step-icon">🚀</div>
+        <div class="step-body">
+          <strong>Publish to the map</strong>
+          <span>Enter your GitHub Token and click <em>"Push to GitHub"</em> — your food map updates instantly. Or export JSON to back up locally.</span>
         </div>
       </div>
     </div>
-
-    <div class="fg">
-      <label>评分</label>
-      <div class="pg">
-        <button class="sb" onclick="setR(1)">&#9829;</button>
-        <button class="sb" onclick="setR(2)">&#9829;</button>
-        <button class="sb" onclick="setR(3)">&#9829;</button>
-        <button class="sb" onclick="setR(4)">&#9829;</button>
-        <button class="sb" onclick="setR(5)">&#9829;</button>
-        <span class="rv" id="rv"></span>
-      </div>
+    <div class="modal-note">
+      💡 <strong>Tip:</strong> Changes auto-save when you switch between restaurants.
+      Use <strong>← →</strong> arrow keys to navigate · <strong>N</strong> to add new.
     </div>
-
-    <div class="fg">
-      <label>你的笔记</label>
-      <textarea id="ni" placeholder="写下最想告诉朋友的那句话..."></textarea>
-      <div class="hint">一句话就够，说你最想说的。</div>
-    </div>
-
-    <div class="nav">
-      <button class="btn bp" onclick="go(-1)">&#8592; 上一家</button>
-      <button class="skip" onclick="skip()">跳过</button>
-      <button class="btn bn" onclick="go(1)">下一家 &#8594;</button>
-    </div>
+    <button class="modal-btn" onclick="closeModal()">Got it — let's go →</button>
   </div>
-</div>
-
-<div class="exp">
-  <button class="be" onclick="exportJ()">&#8595; 导出 JSON</button>
-  <button class="be bpush" onclick="pushGH()">&#8593; 推送到 GitHub</button>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const OWNER = "lilywmh";
-const REPO  = "food_map";
-const PATH  = "foodmap.json";
-const RAW   = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/${PATH}`;
+const OWNER    = "lilywmh";
+const REPO     = "food_map";
+const PATH     = "foodmap.json";
+const RAW      = `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/${PATH}`;
+const EMOJI = {"日料":"🍱","韩料":"🥩","中餐":"🍜","泰餐":"🍛","越南":"🍲","咖啡":"☕","甜点":"🍨","西餐":"🍽️","墨西哥":"🌮","海鲜":"🦞"};
 
-let DATA = [], cur = 0, curR = 0, curB = "", curC = "", curTier = 1;
+let DATA = [], cur = -1, curR = 0, curB = "", curC = "", curTier = 1, searchTerm = "";
 
 function getToken() { return document.getElementById("tokenInput").value.trim(); }
 
+// ── Maps link helpers ─────────────────────────────────────────────────────────
+function onMapsUrlInput() {
+  const url = document.getElementById("gmUrlInput").value.trim();
+  const isValid = url && (url.includes("google.com/maps") || url.includes("maps.app.goo.gl") || url.includes("goo.gl/maps"));
+  if (isValid) {
+    document.getElementById("mapsPasteRow").style.display = "none";
+    document.getElementById("mapsLinkedRow").style.display = "flex";
+    document.getElementById("mapsLinkedView").href = url;
+  }
+  updateGmapsLink();
+}
+
+function clearMapsUrl() {
+  document.getElementById("gmUrlInput").value = "";
+  document.getElementById("mapsPasteRow").style.display = "flex";
+  document.getElementById("mapsLinkedRow").style.display = "none";
+  updateGmapsLink();
+}
+
+// ── Load ──────────────────────────────────────────────────────────────────────
 async function loadData() {
   try {
     const r = await fetch(RAW + "?t=" + Date.now());
     DATA = await r.json();
-    document.getElementById("loading").style.display = "none";
-    document.getElementById("main").style.display = "block";
-    render(0);
+    document.getElementById("edLoading").style.display = "none";
+    document.getElementById("edEmpty").style.display = "flex";
+    renderList();
+    updateProgress();
+    if (!localStorage.getItem("foodmap_editor_seen")) openModal();
   } catch(e) {
-    document.getElementById("loading").textContent = "加载失败。请确认已通过 GitHub Pages 链接打开（不能直接双击本地文件）。";
+    document.getElementById("edLoading").textContent =
+      "Load failed — open this page via the GitHub Pages URL, not directly from a local file.";
   }
 }
 
 function escH(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+// ── List panel ────────────────────────────────────────────────────────────────
+function renderList() {
+  const term = searchTerm.toLowerCase();
+  const list = document.getElementById("restaurantList");
+  const items = DATA
+    .map((d, i) => ({d, i}))
+    .filter(({d}) => !term ||
+      (d.name||"").toLowerCase().includes(term) ||
+      (d.city||"").toLowerCase().includes(term) ||
+      (d.cuisine||"").toLowerCase().includes(term));
+
+  if (!items.length) {
+    list.innerHTML = `<div class="list-empty">${term ? "No matches — try a different search." : "No restaurants yet.<br>Click <strong>Add New</strong> to start."}</div>`;
+    return;
+  }
+
+  list.innerHTML = items.map(({d, i}) => {
+    const done = !!(d.note || d.cuisine || d.dish || d.rating);
+    const em   = EMOJI[d.cuisine] || "🍴";
+    return `<div class="rest-item${i === cur ? " active" : ""}" data-idx="${i}" onclick="selectEntry(${i})">
+      <span class="rest-emoji">${em}</span>
+      <div class="rest-info">
+        <div class="rest-name">${escH(d.name || "(Unnamed)")}${d._isNew ? '<span class="nbadge">NEW</span>' : ""}</div>
+        <div class="rest-meta">${escH(d.city || "—")}${d.tier === 1 ? " · ⭐" : ""}</div>
+      </div>
+      <div class="rest-dot ${done ? "done" : "empty"}"></div>
+    </div>`;
+  }).join("");
+}
+
+function updateProgress() {
+  const done = DATA.filter(d => d.note || d.cuisine || d.dish).length;
+  const pct  = DATA.length ? (done / DATA.length * 100).toFixed(0) : 0;
+  document.getElementById("pf").style.width = pct + "%";
+  document.getElementById("pl").textContent = `${done}/${DATA.length}`;
+}
+
+function onSearch() {
+  searchTerm = document.getElementById("searchBox").value.trim();
+  renderList();
+}
+
+// ── Select / render entry ────────────────────────────────────────────────────
+function selectEntry(i) {
+  if (cur >= 0) saveCurrent();
+  cur = i;
+  render(i);
+  renderList();
+  // Scroll active item into view
+  setTimeout(() => {
+    const el = document.querySelector(".rest-item.active");
+    if (el) el.scrollIntoView({block: "nearest", behavior: "smooth"});
+    document.getElementById("editorPanel").scrollTo({top: 0, behavior: "smooth"});
+  }, 60);
+  // Close mobile list
+  document.getElementById("listPanel").classList.remove("open");
 }
 
 function render(i) {
@@ -219,61 +629,56 @@ function render(i) {
   curB    = String(e.budget || "");
   curC    = e.cuisine || "";
 
-  // Name input
-  document.getElementById("snWrap").innerHTML =
-    `<input type="text" id="nameInput" value="${escH(e.name)}" placeholder="餐厅名字...">`
-    + (e._isNew ? '<span class="new-badge">NEW</span>' : '');
+  document.getElementById("edLoading").style.display = "none";
+  document.getElementById("edEmpty").style.display   = "none";
+  document.getElementById("edMain").style.display    = "block";
+  document.getElementById("actionRow").style.display = "flex";
 
-  // Tier badge
-  const tb = document.getElementById("tb");
-  tb.textContent = curTier === 1 ? "⭐ 精选" : "✓ 去过";
-  tb.className   = "tb " + (curTier === 1 ? "t1" : "t2");
+  document.getElementById("nameInput").value = e.name || "";
+  document.getElementById("newBadge").style.display = e._isNew ? "inline" : "none";
 
-  // Delete button only for new entries
+  // Tier buttons
+  updateTierBtns();
+
   document.getElementById("deleteBtn").style.display = e._isNew ? "inline" : "none";
 
-  // City
   document.getElementById("cityInput").value = e.city || "";
-
-  // Google Maps link — use saved URL or generate search URL
-  const gmLink = document.getElementById("gmapsLink");
-  const q = encodeURIComponent((e.name||'') + (e.city ? ' '+e.city : ''));
-  gmLink.href = e.google_maps_url || `https://www.google.com/maps/search/${q}`;
-
-  // Fields
-  document.getElementById("di").value = e.dish || "";
-  document.getElementById("ni").value = e.note || "";
+  document.getElementById("gmUrlInput").value = e.google_maps_url || "";
+  onMapsUrlInput();  // sync linked/paste state
+  updateGmapsLink();
+  document.getElementById("di").value = e.dish  || "";
+  document.getElementById("ni").value = e.note  || "";
   document.getElementById("ci").value = "";
 
   renderStars(curR);
   document.querySelectorAll("#bg .pill").forEach(p => p.classList.toggle("ob", p.dataset.v === curB));
-  document.querySelectorAll("#cg .pill").forEach(p => {
-    // Extract text after emoji+space
-    const label = p.textContent.replace(/^\S+\s/, "").trim();
-    p.classList.toggle("og", label === curC);
-  });
+  document.querySelectorAll("#cg .pill").forEach(p => p.classList.toggle("og", p.dataset.cval === curC));
+}
 
-  const annotated = DATA.filter(d => d.note || d.cuisine || d.dish).length;
-  const newCount  = DATA.filter(d => d._isNew).length;
-  document.getElementById("pf").style.width = ((i+1)/DATA.length*100).toFixed(0)+"%";
-  document.getElementById("pl").textContent =
-    `${i+1} / ${DATA.length}  ·  ${annotated} 家已批注` +
-    (newCount ? `  ·  ${newCount} 家新店待推送` : "");
+function updateTierBtns() {
+  const b1 = document.getElementById("tierBtn1");
+  const b2 = document.getElementById("tierBtn2");
+  b1.className = "tier-btn" + (curTier === 1 ? " t1-on" : "");
+  b2.className = "tier-btn" + (curTier === 2 ? " t2-on" : "");
 }
 
 function renderStars(v) {
-  document.querySelectorAll(".sb").forEach((b,i) => b.classList.toggle("on", i < v));
+  document.querySelectorAll(".star-btn").forEach((b, i) => b.classList.toggle("on", i < v));
   document.getElementById("rv").textContent = v > 0 ? v + " / 5" : "";
 }
 
-function setR(v) { curR = v; renderStars(v); }
-
-function toggleTier() {
-  curTier = curTier === 1 ? 2 : 1;
-  const tb = document.getElementById("tb");
-  tb.textContent = curTier === 1 ? "⭐ 精选" : "✓ 去过";
-  tb.className   = "tb " + (curTier === 1 ? "t1" : "t2");
+function updateGmapsLink() {
+  const name = (document.getElementById("nameInput")?.value || "").trim();
+  const city = (document.getElementById("cityInput")?.value || "").trim();
+  const link = document.getElementById("gmapsLink");
+  if (!link) return;
+  const q = encodeURIComponent([name, city].filter(Boolean).join(" "));
+  link.href = q ? `https://www.google.com/maps/search/${q}` : "#";
 }
+
+// ── Field interactions ────────────────────────────────────────────────────────
+function setR(v)    { curR = v; renderStars(v); }
+function setTier(t) { curTier = t; updateTierBtns(); }
 
 function selB(el) {
   curB = el.dataset.v;
@@ -281,8 +686,8 @@ function selB(el) {
   el.classList.add("ob");
 }
 
-function selC(el, v) {
-  curC = v;
+function selC(el) {
+  curC = el.dataset.cval;
   document.querySelectorAll("#cg .pill").forEach(p => p.classList.remove("og"));
   el.classList.add("og");
   document.getElementById("ci").value = "";
@@ -293,91 +698,52 @@ function onCI() {
   document.querySelectorAll("#cg .pill").forEach(p => p.classList.remove("og"));
 }
 
+// ── Save ──────────────────────────────────────────────────────────────────────
 function saveCurrent() {
   if (!DATA[cur]) return;
-  const nameEl = document.getElementById("nameInput");
+  const gmUrl = (document.getElementById("gmUrlInput")?.value || "").trim();
   DATA[cur] = Object.assign({}, DATA[cur], {
-    name:    nameEl ? nameEl.value.trim() : DATA[cur].name,
-    city:    document.getElementById("cityInput").value.trim(),
-    dish:    document.getElementById("di").value.trim(),
-    note:    document.getElementById("ni").value.trim(),
-    rating:  curR,
-    budget:  curB,
-    cuisine: curC,
-    tier:    curTier
+    name:    (document.getElementById("nameInput")?.value  || "").trim(),
+    city:    (document.getElementById("cityInput")?.value  || "").trim(),
+    dish:    (document.getElementById("di")?.value         || "").trim(),
+    note:    (document.getElementById("ni")?.value         || "").trim(),
+    rating:  curR, budget: curB, cuisine: curC, tier: curTier,
+    google_maps_url: gmUrl || undefined
   });
+  if (!DATA[cur].google_maps_url) delete DATA[cur].google_maps_url;
+  updateProgress();
 }
 
-function go(d) {
-  saveCurrent();
-  const next = cur + d;
-  if (next >= 0 && next < DATA.length) {
-    render(next);
-    window.scrollTo({top:0, behavior:"smooth"});
-  } else if (next >= DATA.length) {
-    toast("已到最后一家！记得推送到 GitHub ↑");
-  }
-}
-
-function skip() {
-  saveCurrent();
-  if (cur < DATA.length-1) { render(cur+1); window.scrollTo({top:0,behavior:"smooth"}); }
-}
-
-// ── Add new restaurant ──────────────────────────────────────────────────────
+// ── Add / Delete ──────────────────────────────────────────────────────────────
 function addNew() {
   saveCurrent();
-  DATA.push({
-    name:"", city:"", area:"", cuisine:"",
-    budget:"", rating:0, dish:"", note:"",
-    tier:1, lat:null, lng:null, google_maps_url:"",
-    _isNew: true
-  });
-  render(DATA.length - 1);
-  window.scrollTo({top:0, behavior:"smooth"});
-  setTimeout(() => { const n = document.getElementById("nameInput"); if(n) n.focus(); }, 120);
-  toast("新店已添加，填好信息后推送到 GitHub");
+  DATA.push({ name:"", city:"", area:"", cuisine:"", budget:"", rating:0, dish:"", note:"", tier:1, lat:null, lng:null, _isNew:true });
+  searchTerm = "";
+  document.getElementById("searchBox").value = "";
+  selectEntry(DATA.length - 1);
+  setTimeout(() => document.getElementById("nameInput")?.focus(), 120);
+  toast("New restaurant added — fill in the details, then push to GitHub");
 }
 
 function deleteEntry() {
-  if (!DATA[cur] || !DATA[cur]._isNew) return;
+  if (!DATA[cur]?._isNew) return;
   DATA.splice(cur, 1);
-  render(Math.min(cur, DATA.length-1));
-  toast("已删除");
+  cur = -1;
+  renderList();
+  updateProgress();
+  if (DATA.length > 0) selectEntry(Math.min(cur, DATA.length - 1));
+  else {
+    document.getElementById("edMain").style.display  = "none";
+    document.getElementById("edEmpty").style.display = "flex";
+    document.getElementById("actionRow").style.display = "none";
+  }
+  toast("Deleted");
 }
 
-// ── Search ──────────────────────────────────────────────────────────────────
-function onSearch() {
-  const q = document.getElementById("searchBox").value.trim().toLowerCase();
-  const res = document.getElementById("searchResults");
-  if (!q) { res.style.display="none"; return; }
-  const matches = DATA.map((d,i)=>({d,i})).filter(({d})=>(d.name||"").toLowerCase().includes(q)).slice(0,8);
-  if (!matches.length) { res.style.display="none"; return; }
-  res.innerHTML = matches.map(({d,i})=>
-    `<div class="sr-item" onmousedown="jumpTo(${i})">
-      ${escH(d.name)}${d._isNew?'<span class="new-badge">NEW</span>':''}
-      <div class="sr-city">${escH(d.city||'城市未知')}</div>
-    </div>`
-  ).join("");
-  res.style.display = "block";
-}
-
-function jumpTo(i) {
-  saveCurrent();
-  document.getElementById("searchBox").value = "";
-  document.getElementById("searchResults").style.display = "none";
-  render(i);
-  window.scrollTo({top:0, behavior:"smooth"});
-}
-
-function hideResults() {
-  setTimeout(()=>{ document.getElementById("searchResults").style.display="none"; }, 150);
-}
-
-// ── Export / Push ───────────────────────────────────────────────────────────
+// ── Export / Push ─────────────────────────────────────────────────────────────
 function getMerged() {
   saveCurrent();
-  return DATA.map(d => { const r = Object.assign({},d); delete r._isNew; return r; });
+  return DATA.map(d => { const r = Object.assign({}, d); delete r._isNew; return r; });
 }
 
 function exportJ() {
@@ -386,54 +752,73 @@ function exportJ() {
   a.href = URL.createObjectURL(blob);
   a.download = "foodmap_updated.json";
   a.click();
-  toast("导出成功 ↓");
+  toast("JSON exported ↓");
 }
 
 async function pushGH() {
   const token = getToken();
-  if (!token) { toast("请先填写 GitHub Token"); document.getElementById("tokenInput").focus(); return; }
-  toast("推送中...");
-  const merged = getMerged();
+  if (!token) { toast("Please enter your GitHub Token first"); document.getElementById("tokenInput").focus(); return; }
+  toast("Pushing…");
+  const merged  = getMerged();
   const content = btoa(unescape(encodeURIComponent(JSON.stringify(merged, null, 2))));
   try {
     const infoR = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
       headers: {"Authorization":"token "+token, "Accept":"application/vnd.github.v3+json"}
     });
     const info = await infoR.json();
-    if (!info.sha) { toast("获取文件失败，检查 Token 是否有 repo 权限"); return; }
+    if (!info.sha) { toast("Could not fetch file — check the Token has 'repo' scope"); return; }
     const putR = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`, {
       method: "PUT",
       headers: {"Authorization":"token "+token, "Content-Type":"application/json", "Accept":"application/vnd.github.v3+json"},
-      body: JSON.stringify({
-        message: "Update food map " + new Date().toISOString().slice(0,10),
-        content,
-        sha: info.sha
-      })
+      body: JSON.stringify({ message: "Update food map " + new Date().toISOString().slice(0,10), content, sha: info.sha })
     });
     if (putR.ok) {
       DATA.forEach(d => delete d._isNew);
+      renderList();
       render(cur);
-      toast(`推送成功 ✓  共 ${merged.length} 家餐厅`);
+      toast(`✓ Pushed — ${merged.length} restaurants on the map`);
     } else {
       const err = await putR.json();
-      toast("推送失败: " + (err.message || putR.status));
+      toast("Push failed: " + (err.message || putR.status));
     }
-  } catch(e) { toast("推送失败: " + e.message); }
+  } catch(e) { toast("Push failed: " + e.message); }
 }
 
+// ── Toast ─────────────────────────────────────────────────────────────────────
 function toast(msg) {
   const t = document.getElementById("toast");
   t.textContent = msg;
   t.classList.add("show");
-  setTimeout(()=>t.classList.remove("show"), 2500);
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove("show"), 2800);
 }
 
-// Keyboard shortcuts
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function openModal()  { document.getElementById("modal").classList.add("open"); }
+function closeModal() { document.getElementById("modal").classList.remove("open"); localStorage.setItem("foodmap_editor_seen","1"); }
+
+// ── Mobile list toggle ────────────────────────────────────────────────────────
+function toggleList() { document.getElementById("listPanel").classList.toggle("open"); }
+
+// ── Live update search link as user types name/city ──────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+  ["nameInput","cityInput"].forEach(id => {
+    document.getElementById(id)?.addEventListener("input", updateGmapsLink);
+  });
+});
+
+// ── Keyboard shortcuts ────────────────────────────────────────────────────────
 document.addEventListener("keydown", e => {
-  if (e.target.tagName==="TEXTAREA"||e.target.tagName==="INPUT") return;
-  if (e.key==="ArrowRight") go(1);
-  if (e.key==="ArrowLeft")  go(-1);
-  if (e.key==="n"||e.key==="N") addNew();
+  if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return;
+  if (e.key === "ArrowRight" || e.key === "j") { if (cur < DATA.length - 1) selectEntry(cur + 1); }
+  if (e.key === "ArrowLeft"  || e.key === "k") { if (cur > 0) selectEntry(cur - 1); }
+  if (e.key === "n" || e.key === "N") addNew();
+  if (e.key === "?" || e.key === "h") openModal();
+});
+
+// ── Modal click-outside ───────────────────────────────────────────────────────
+document.getElementById("modal").addEventListener("click", e => {
+  if (e.target === e.currentTarget) closeModal();
 });
 
 loadData();

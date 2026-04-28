@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Lily 的美食地图 · Notebook</title>
+<title>Lily's Food Map · Notebook</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Kalam:wght@300;400;700&family=Patrick+Hand&family=Klee+One:wght@400;600&family=Noto+Serif+SC:wght@400;500&display=swap" rel="stylesheet">
@@ -226,26 +226,33 @@
   /* ─── DRAWER (sidebar) ─── */
   .drawer-toggle {
     position: absolute;
-    top: 16px;
-    left: 16px;
+    top: 16px; left: 16px;
     z-index: 600;
-    width: 42px; height: 42px;
+    height: 38px;
+    padding: 0 13px 0 10px;
+    gap: 6px;
     background: var(--paper);
     border: 1.5px solid var(--ink);
     border-radius: 8px;
     box-shadow: 2px 3px 0 rgba(58,50,42,0.2);
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
+    font-size: 1rem;
     transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .drawer-toggle .btn-label {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.82rem;
+    color: var(--ink);
+    letter-spacing: 0.04em;
   }
   .drawer-toggle:hover { transform: translate(-1px, -1px); box-shadow: 3px 4px 0 rgba(58,50,42,0.25); }
   .drawer-toggle::before {
     content: '';
     position: absolute;
-    top: -6px; left: 8px;
-    width: 22px; height: 8px;
+    top: -6px; left: 10px;
+    width: 28px; height: 8px;
     background: var(--tape-yellow);
     opacity: 0.85;
     transform: rotate(-3deg);
@@ -538,17 +545,6 @@
     gap: 10px;
     margin-bottom: 4px;
   }
-  .pop::before {
-    /* Tape on top */
-    content: '';
-    position: absolute;
-    top: -6px; left: 50%;
-    transform: translateX(-50%) rotate(-2deg);
-    width: 70px; height: 14px;
-    background: var(--tape-yellow);
-    opacity: 0.85;
-    box-shadow: 0 2px 3px rgba(0,0,0,0.1);
-  }
   .pop-name {
     font-family: 'Klee One', serif;
     font-size: 1.1rem;
@@ -698,59 +694,44 @@
   }
   .city-dd:focus, .city-dd:hover { border-color: var(--ink); color: var(--ink); }
 
-  /* Circular vintage stamp */
+  /* ── Oval vintage stamp (Luke Family Farm logo style reference) ── */
   .been-stamp {
-    position: relative;
-    font-family: 'Caveat', cursive;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--stamp-red);
-    border: 2.5px solid var(--stamp-red);
-    border-radius: 50%;
-    width: 78px;
-    height: 78px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    text-align: center;
-    line-height: 1.05;
+    flex-shrink: 0;
+    width: 90px;
+    height: 62px;
     opacity: 0;
     pointer-events: none;
-    transform: rotate(-16deg) scale(0.45);
-    background: rgba(244,236,219,0.22);
-    box-shadow: inset 0 0 0 1.2px rgba(194,90,72,0.35);
-    transition: opacity 0.25s, transform 0.25s;
-    flex-shrink: 0;
+    /* No transition — animation owns opacity/transform to prevent conflict flash */
+    transform: rotate(-13deg) scale(1);
+    transform-origin: center center;
   }
-  .been-stamp::before {
-    content: '';
-    position: absolute;
-    inset: 7px;
-    border: 1.6px dashed rgba(194,90,72,0.75);
-    border-radius: 50%;
-  }
-  .been-stamp.visible { opacity: 0.72; transform: rotate(-16deg) scale(1); }
-  .been-stamp.pop { animation: stampPress 0.5s cubic-bezier(0.18, 0.9, 0.25, 1.2); }
+  .been-stamp.visible { opacity: 0.8; }
 
-  @keyframes stampPress {
-    0% { opacity: 0; transform: translateY(-14px) rotate(-16deg) scale(1.28); filter: blur(0.2px); }
-    45% { opacity: 0.82; transform: translateY(1px) rotate(-16deg) scale(0.93); filter: blur(0); }
-    70% { opacity: 0.76; transform: translateY(0) rotate(-16deg) scale(1.04); }
-    100% { opacity: 0.72; transform: translateY(0) rotate(-16deg) scale(1); }
+  .been-stamp.pop {
+    animation: stampDown 0.38s ease-out forwards;
   }
-
-  .pin-wrap.stamp-pop {
-    animation: pinHop 0.5s ease-out;
+  /* Ink-blot appear: blur sharpens as ink "dries" — zero positional movement */
+  @keyframes stampDown {
+    0%   { opacity: 0;    filter: blur(2.5px); }
+    28%  { opacity: 0.95; filter: blur(0.4px); }
+    100% { opacity: 0.8;  filter: blur(0); }
   }
-
+  /* Pin hops straight up-down — no bounce */
+  .pin-wrap.stamp-pop { animation: pinHop 0.38s ease-out; }
   @keyframes pinHop {
-    0% { transform: translateY(0); }
-    28% { transform: translateY(-10px); }
-    60% { transform: translateY(2px); }
+    0%   { transform: translateY(0); }
+    40%  { transform: translateY(-7px); }
+    70%  { transform: translateY(-2px); }
     100% { transform: translateY(0); }
+  }
+
+  /* Confetti bits spawned by JS */
+  .confetti-bit {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    border-radius: 2px;
+    will-change: transform, opacity;
   }
 
   /* ─── STATS PANEL (bottom-right) ─── */
@@ -800,16 +781,24 @@
     position: absolute;
     top: 16px; right: 16px;
     z-index: 600;
-    width: 42px; height: 42px;
+    height: 38px;
+    padding: 0 13px 0 10px;
+    gap: 6px;
     background: var(--paper);
     border: 1.5px solid var(--ink);
     border-radius: 8px;
     box-shadow: 2px 3px 0 rgba(58,50,42,0.2);
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
+    font-size: 1rem;
     transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .share-btn .btn-label {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.82rem;
+    color: var(--ink);
+    letter-spacing: 0.04em;
   }
   .share-btn:hover { transform: translate(1px, -1px); box-shadow: 1px 4px 0 rgba(58,50,42,0.28); }
   .share-btn::before {
@@ -1228,6 +1217,43 @@
   }
   .soft-btn:hover { border-color: var(--ink); color: var(--ink); transform: translateY(-1px); }
 
+  /* ─── PORTAL LINK ─── */
+  .portal-link {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.74rem;
+    letter-spacing: 0.06em;
+    padding: 3px 9px;
+    border: 1.5px dashed var(--rule);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--ink-faded);
+    text-decoration: none;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .portal-link:hover { border-color: var(--moss); color: var(--moss); border-style: solid; }
+
+  /* ─── LANG TOGGLE ─── */
+  .lang-toggle {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.74rem;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    padding: 3px 9px;
+    border: 1.5px solid var(--ink-light);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--ink-light);
+    transition: all 0.15s;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .lang-toggle:hover { border-color: var(--ink); color: var(--ink); background: rgba(58,50,42,0.06); }
+
   /* ─── RESPONSIVE ─── */
 
   /* Tablet / large phone */
@@ -1268,7 +1294,8 @@
     .drawer::before { display: none; }
 
     /* Larger touch target for toggle */
-    .drawer-toggle { width: 46px; height: 46px; top: 12px; left: 12px; font-size: 1.2rem; }
+    .drawer-toggle { height: 42px; top: 12px; left: 12px; padding: 0 11px 0 9px; }
+    .share-btn     { height: 42px; top: 12px; right: 12px; padding: 0 11px 0 9px; }
 
     /* Show zoom controls for touch */
     .leaflet-control-zoom { display: flex !important; flex-direction: column; }
@@ -1312,19 +1339,270 @@
     .stats .row { font-size: 1rem; }
     .stats .row strong { font-size: 1.2rem; }
   }
+
+  /* ─── SPLASH / LOADING PAGE ─── */
+  .splash {
+    position: fixed; inset: 0;
+    z-index: 10000;
+    background: var(--paper);
+    background-image:
+      radial-gradient(circle at 22% 32%, rgba(160,130,90,0.07) 0, transparent 60%),
+      radial-gradient(circle at 78% 68%, rgba(120,90,60,0.05) 0, transparent 50%),
+      repeating-linear-gradient(0deg, transparent 0 2px, rgba(180,150,110,0.025) 2px 3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.65s ease-in-out;
+  }
+  .splash.hidden { opacity: 0; pointer-events: none; }
+  .splash-card {
+    text-align: center;
+    animation: splashIn 0.85s ease-out both;
+  }
+  @keyframes splashIn {
+    from { opacity: 0; transform: translateY(22px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .splash-seal {
+    color: var(--stamp-red);
+    margin-bottom: 18px;
+    display: inline-block;
+    animation: splashSeal 1s ease-out both 0.1s;
+  }
+  @keyframes splashSeal {
+    from { opacity: 0; transform: scale(0.65) rotate(-10deg); }
+    to   { opacity: 1; transform: scale(1)    rotate(-4deg); }
+  }
+  .splash-title {
+    font-family: 'Caveat', cursive;
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+    line-height: 1;
+    margin-bottom: 5px;
+    animation: splashFadeUp 0.7s ease-out both 0.3s;
+  }
+  .splash-subtitle {
+    font-family: 'Klee One', serif;
+    font-size: 0.95rem;
+    color: var(--ink-light);
+    letter-spacing: 0.28em;
+    margin-bottom: 34px;
+    animation: splashFadeUp 0.7s ease-out both 0.45s;
+  }
+  @keyframes splashFadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .splash-divider {
+    width: 52px; height: 1px;
+    background: var(--rule);
+    margin: 10px auto 14px;
+    animation: splashFadeUp 0.5s ease-out both 0.5s;
+  }
+  .splash-desc {
+    display: flex; flex-direction: column; gap: 6px;
+    margin-bottom: 30px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.88rem;
+    color: var(--ink-light);
+    letter-spacing: 0.06em;
+    line-height: 1.5;
+    animation: splashFadeUp 0.7s ease-out both 0.55s;
+  }
+  .splash-dots {
+    display: flex; gap: 9px; justify-content: center;
+    animation: splashFadeUp 0.5s ease-out both 0.75s;
+  }
+  .splash-dots span {
+    width: 8px; height: 8px;
+    background: var(--stamp-red);
+    border-radius: 50%;
+    animation: dotBounce 1.1s ease-in-out infinite;
+  }
+  .splash-dots span:nth-child(2) { animation-delay: 0.18s; }
+  .splash-dots span:nth-child(3) { animation-delay: 0.36s; }
+  @keyframes dotBounce {
+    0%, 80%, 100% { transform: scale(0.55); opacity: 0.35; }
+    40%           { transform: scale(1.1);  opacity: 1; }
+  }
+
+  /* ─── SHARE INSTRUCTIONS MODAL ─── */
+  .share-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(58,50,42,0.46);
+    z-index: 8000;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.22s;
+  }
+  .share-modal-overlay.open { opacity: 1; pointer-events: auto; }
+  .share-modal-card {
+    width: min(390px, calc(100vw - 28px));
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    padding: 28px 24px 22px;
+    position: relative;
+    box-shadow: 6px 6px 0 rgba(58,50,42,0.18);
+    background-image: repeating-linear-gradient(0deg, transparent 0 26px, rgba(150,120,80,0.09) 26px 27px);
+    transform: rotate(-0.4deg);
+    animation: modalIn 0.28s cubic-bezier(0.2,0,0,1) both;
+  }
+  @keyframes modalIn {
+    from { transform: rotate(-0.4deg) scale(0.88) translateY(18px); opacity: 0; }
+    to   { transform: rotate(-0.4deg) scale(1)    translateY(0);    opacity: 1; }
+  }
+  .share-modal-card::before {
+    content: '';
+    position: absolute; top: -9px; left: 22px;
+    width: 54px; height: 13px;
+    background: var(--tape-pink); opacity: 0.9;
+    transform: rotate(-1.5deg);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+  .share-modal-close {
+    position: absolute; top: 10px; right: 12px;
+    width: 26px; height: 26px; border-radius: 50%;
+    font-size: 1rem; color: var(--ink-light);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.12s;
+  }
+  .share-modal-close:hover { background: rgba(58,50,42,0.08); color: var(--ink); }
+  .share-modal-title {
+    font-family: 'Caveat', cursive;
+    font-size: 1.75rem; font-weight: 700;
+    color: var(--ink); line-height: 1;
+    margin-bottom: 3px;
+  }
+  .share-modal-tagline {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.83rem; color: var(--ink-light);
+    margin-bottom: 20px; letter-spacing: 0.04em;
+  }
+  .share-steps { display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px; }
+  .share-step { display: flex; align-items: flex-start; gap: 12px; }
+  .share-step-num {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--stamp-red); color: white;
+    font-family: 'Caveat', cursive; font-size: 1rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .share-step-text { display: flex; flex-direction: column; gap: 2px; }
+  .share-step-text strong {
+    font-family: 'Klee One', serif;
+    font-size: 0.93rem; font-weight: 600; color: var(--ink);
+  }
+  .share-step-text span {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.78rem; color: var(--ink-light); line-height: 1.4;
+  }
+  .share-modal-hint {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.84rem; color: var(--ink-light);
+    padding: 8px 12px;
+    background: rgba(255,250,240,0.65);
+    border: 1px dashed var(--rule); border-radius: 6px;
+    margin-bottom: 14px; min-height: 34px;
+  }
+  .share-modal-hint strong { color: var(--stamp-red); }
+  .share-modal-btn {
+    width: 100%; padding: 11px;
+    background: var(--stamp-red); color: white;
+    border-radius: 8px;
+    font-family: 'Caveat', cursive; font-size: 1.12rem; font-weight: 600;
+    letter-spacing: 0.04em;
+    box-shadow: 0 3px 0 #8b3e30;
+    transition: all 0.15s;
+  }
+  .share-modal-btn:hover  { transform: translateY(-1px); box-shadow: 0 4px 0 #8b3e30; }
+  .share-modal-btn:active { transform: translateY(1px);  box-shadow: 0 1px 0 #8b3e30; }
+  .share-modal-btn.copied { background: var(--moss); box-shadow: 0 3px 0 #4a6a4a; }
 </style>
 </head>
 <body>
+
+<!-- ══ SPLASH / LOADING PAGE ══ -->
+<div class="splash" id="splash">
+  <div class="splash-card">
+    <div class="splash-seal">
+      <svg viewBox="0 0 124 86" width="124" height="86" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <path id="sp-top" d="M 12,43 A 50,30 0 0,1 112,43"/>
+          <path id="sp-bot" d="M 12,43 A 50,30 0 0,0 112,43"/>
+        </defs>
+        <ellipse cx="62" cy="43" rx="59" ry="40" fill="none" stroke="currentColor" stroke-width="2.4"/>
+        <line x1="2" y1="43" x2="9" y2="43" stroke="currentColor" stroke-width="2.4"/>
+        <line x1="115" y1="43" x2="122" y2="43" stroke="currentColor" stroke-width="2.4"/>
+        <ellipse cx="62" cy="43" rx="50" ry="31" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 2"/>
+        <text fill="currentColor" font-size="10.5" font-family="'Patrick Hand',sans-serif" font-weight="bold" letter-spacing="2.5">
+          <textPath href="#sp-top" startOffset="50%" text-anchor="middle">LILY'S FOOD MAP</textPath>
+        </text>
+        <text fill="currentColor" font-size="9.5" font-family="'Patrick Hand',sans-serif" letter-spacing="2">
+          <textPath href="#sp-bot" startOffset="50%" text-anchor="middle">✦ A NOTEBOOK ✦</textPath>
+        </text>
+        <text x="62" y="51" text-anchor="middle" fill="currentColor" font-size="20" font-family="serif">✿</text>
+      </svg>
+    </div>
+    <div class="splash-title">Lily's Food Map</div>
+    <div class="splash-subtitle">美食手账 · 吃过的地方</div>
+    <div class="splash-divider"></div>
+    <div class="splash-desc">
+      <span>📍 记录每一家吃过的餐厅</span>
+      <span>🗺 地图追踪你的美食足迹</span>
+      <span>🎯 与朋友发现口味契合度</span>
+    </div>
+    <div class="splash-dots"><span></span><span></span><span></span></div>
+  </div>
+</div>
+
+<!-- ══ SHARE INSTRUCTIONS MODAL ══ -->
+<div class="share-modal-overlay" id="shareModal">
+  <div class="share-modal-card">
+    <button class="share-modal-close" id="shareModalClose">✕</button>
+    <div class="share-modal-title" data-i18n="shareModalTitle">📤 分享你的口味</div>
+    <div class="share-modal-tagline" data-i18n="shareModalTagline">发给朋友，一起发现你们的美食契合度</div>
+    <div class="share-steps">
+      <div class="share-step">
+        <div class="share-step-num">1</div>
+        <div class="share-step-text">
+          <strong data-i18n="step1Title">打卡你去过的餐厅</strong>
+          <span data-i18n="step1Hint">打开餐厅气泡，点击「🖃 去过?」盖章</span>
+        </div>
+      </div>
+      <div class="share-step">
+        <div class="share-step-num">2</div>
+        <div class="share-step-text">
+          <strong data-i18n="step2Title">生成链接，发给朋友</strong>
+          <span data-i18n="step2Hint">朋友打开你的链接，打卡他 / 她去过的店</span>
+        </div>
+      </div>
+      <div class="share-step">
+        <div class="share-step-num">3</div>
+        <div class="share-step-text">
+          <strong data-i18n="step3Title">查看口味契合度 %</strong>
+          <span data-i18n="step3Hint">自动算出你们共同喜爱的美食和城市！</span>
+        </div>
+      </div>
+    </div>
+    <div class="share-modal-hint" id="shareModalHint"></div>
+    <button class="share-modal-btn" id="shareModalGenerate" data-i18n="shareGenerate">生成分享链接 →</button>
+  </div>
+</div>
 
 <div class="app">
 
   <!-- ROW 1: TITLE -->
   <div class="titlebar">
     <div>
-      <div class="title-main">Lily's Food Map<span class="ch">· 美食地图</span></div>
+      <div class="title-main">Lily's Food Map<span class="ch" data-i18n="titleCh">· 美食地图</span></div>
       <div class="title-sub">A NOTEBOOK OF EATEN PLACES &nbsp;·&nbsp; <span class="vol">VOL. 01</span></div>
     </div>
     <div class="title-spacer"></div>
+    <a class="portal-link" href="editor.html" target="_blank">✏️ <span data-i18n="portalBtn">更新地图</span></a>
+    <button class="lang-toggle" id="langToggle">EN</button>
     <div class="title-stat" id="titleStat">— places · — cities</div>
     <div class="signature">— by Lily ✿</div>
   </div>
@@ -1339,30 +1617,30 @@
 
     <div class="tb-group" id="tierFilter">
       <span class="tb-label">Tier</span>
-      <button class="chip on" data-tier="1">⭐ 会再去</button>
-      <button class="chip tier2 on" data-tier="2">👣 去过</button>
+      <button class="chip on" data-tier="1" data-i18n="tier1">⭐ 会再去</button>
+      <button class="chip tier2 on" data-tier="2" data-i18n="tier2">👣 去过</button>
     </div>
 
     <div class="tb-sep"></div>
 
     <div class="tb-group">
-      <span class="tb-label">城市</span>
+      <span class="tb-label" data-i18n="cityLabel">城市</span>
       <select class="city-dd" id="cityFilter">
-        <option value="all">全部城市</option>
+        <option value="all" data-i18n="cityAll">全部城市</option>
       </select>
     </div>
 
     <div class="tb-sep"></div>
 
     <div class="tb-group" id="cuisineFilter">
-      <span class="tb-label">菜系</span>
-      <button class="chip on" data-cuisine="all">全部</button>
+      <span class="tb-label" data-i18n="cuisineLabel">菜系</span>
+      <button class="chip on" data-cuisine="all" data-i18n="cuisineAll">全部</button>
     </div>
 
     <div class="tb-sep"></div>
 
     <div class="tb-group" id="budgetFilter">
-      <span class="tb-label">价位</span>
+      <span class="tb-label" data-i18n="budgetLabel">价位</span>
       <button class="chip budget" data-budget="1">$</button>
       <button class="chip budget" data-budget="2">$$</button>
       <button class="chip budget" data-budget="3">$$$</button>
@@ -1372,38 +1650,38 @@
     <div class="tb-sep"></div>
 
     <div class="tb-group" id="ratingFilter">
-      <span class="tb-label">评分</span>
+      <span class="tb-label" data-i18n="ratingLabel">评分</span>
       <button class="chip star" data-rating="5">5★</button>
       <button class="chip star" data-rating="4">4★+</button>
     </div>
 
     <div class="tb-sep"></div>
 
-    <button class="random-btn" id="randomBtn" title="随机推荐">🎲 今天吃这家？</button>
-    <button class="soft-btn" id="resetFiltersBtn" title="清空筛选并回到初始视图">↺ 重置筛选</button>
+    <button class="random-btn" id="randomBtn" data-i18n="randomBtn">🎲 今天吃这家？</button>
+    <button class="soft-btn" id="resetFiltersBtn" data-i18n="resetBtn">↺ 重置筛选</button>
   </div>
 
   <!-- ROW 3: MAP -->
   <div class="map-wrap">
-    <button class="drawer-toggle" id="drawerToggle" title="打开本子">📒</button>
+    <button class="drawer-toggle" id="drawerToggle">📒 <span class="btn-label" data-i18n="drawerLabel">美食本</span></button>
     <div class="backdrop" id="backdrop"></div>
 
     <div class="drawer" id="drawer">
       <div class="drawer-head">
         <button class="close" id="drawerClose">✕</button>
-        <h2>The Notebook</h2>
-        <div class="sub">Lily's eaten list · 已去过的地方</div>
+        <h2 data-i18n="drawerTitle">The Notebook</h2>
+        <div class="sub" data-i18n="drawerSub">Lily's eaten list · 已去过的地方</div>
       </div>
       <div class="drawer-tabs">
-        <button class="drawer-tab on" data-tab="cities">城市 City</button>
-        <button class="drawer-tab" data-tab="timeline">按月回顾 Timeline</button>
-        <button class="drawer-tab" data-tab="stamped">🖃 打卡<span class="tab-badge" id="stampBadge"></span></button>
+        <button class="drawer-tab on" data-tab="cities" data-i18n="tabCities">城市 City</button>
+        <button class="drawer-tab" data-tab="timeline" data-i18n="tabTimeline">按月回顾 Timeline</button>
+        <button class="drawer-tab" data-tab="stamped"><span data-i18n="tabStamped">🖃 打卡</span><span class="tab-badge" id="stampBadge"></span></button>
       </div>
       <div class="drawer-body" id="drawerBody"></div>
     </div>
 
     <!-- Share button (top-right of map) -->
-    <button class="share-btn" id="shareBtn" title="分享我的打卡">📤</button>
+    <button class="share-btn" id="shareBtn">📤 <span class="btn-label" data-i18n="shareLabel">分享口味</span></button>
 
     <div id="map"></div>
 
@@ -1411,9 +1689,9 @@
     <div class="match-card" id="matchCard"></div>
 
     <div class="stats" id="statsBox">
-      <h3>tally</h3>
-      <div class="row"><strong id="statN">—</strong>places eaten</div>
-      <div class="row"><strong id="statC">—</strong><span>cities visited</span></div>
+      <h3 data-i18n="statsTitle">tally</h3>
+      <div class="row"><strong id="statN">—</strong><span data-i18n="statsPlaces"> places eaten</span></div>
+      <div class="row"><strong id="statC">—</strong><span data-i18n="statsCities">cities visited</span></div>
     </div>
   </div>
 </div>
@@ -1422,9 +1700,11 @@
 
 <script>
 const JSON_URL = 'https://raw.githubusercontent.com/lilywmh/food_map/main/foodmap.json';
+const _splashStart = Date.now(); // track when page opened for minimum splash duration
 
-const BUDGET_MAP = {"1":"$ 便饭","2":"$$ 犒劳","3":"$$$ 庆祝","4":"$$$$ 奢侈"};
 const EMOJI = {"日料":"🍱","韩料":"🥩","中餐":"🍜","泰餐":"🍛","越南":"🍲","咖啡":"☕","甜点":"🍨","西餐":"🍽️","墨西哥":"🌮","":"🍴"};
+const CUISINE_EN = {"日料":"Japanese","韩料":"Korean","中餐":"Chinese","泰餐":"Thai","越南":"Vietnamese","咖啡":"Café","甜点":"Dessert","西餐":"Western","墨西哥":"Mexican"};
+function cuisineName(c) { return (lang === 'en' && CUISINE_EN[c]) ? CUISINE_EN[c] : (c || ''); }
 const CITY_CENTERS = {
   "Los Angeles":[34.052,-118.243],"San Diego":[32.715,-117.157],"San Francisco":[37.779,-122.419],
   "Seattle":[47.606,-122.332],"Chicago":[41.878,-87.630],"Las Vegas":[36.114,-115.172],
@@ -1441,6 +1721,130 @@ let activeRating = null;
 let searchTerm = '';
 let markerByName = new Map();
 let friendStamps = null; // set when ?friend= URL param is present
+let lang = localStorage.getItem('foodmap_lang') || 'zh';
+
+const T = {
+  zh: {
+    searchPh: '搜店名 / 菜名…',
+    tier1: '⭐ 会再去', tier2: '👣 去过',
+    cityLabel: '城市', cityAll: '全部城市',
+    cuisineLabel: '菜系', cuisineAll: '全部',
+    budgetLabel: '价位', ratingLabel: '评分',
+    randomBtn: '🎲 今天吃这家？', resetBtn: '↺ 重置筛选',
+    drawerLabel: '美食本', shareLabel: '分享口味',
+    drawerTitle: 'The Notebook', drawerSub: "Lily's eaten list · 已去过的地方",
+    tabCities: '城市 City', tabTimeline: '按月回顾 Timeline', tabStamped: '🖃 打卡',
+    statsTitle: '吃吃记录', statsPlaces: ' 家吃过', statsCities: '个城市',
+    titleStat: (n, c) => `${n} 家吃过 · ${c} 个城市`,
+    budget: {"1":"$ 便饭","2":"$$ 犒劳","3":"$$$ 庆祝","4":"$$$$ 奢侈"},
+    popDishLbl: '推荐菜 · pick',
+    popStamp: '🖃 去过?', popUndoStamp: '↶ 取消打卡', popShare: '🔗 分享',
+    popGoBack: '↻ 想再去', popSkip: '✗ 不会再去', popNeutral: '— 看心情',
+    mcLabel: '口味契合度',
+    mcShared: n => `共同打卡 <strong>${n}</strong> 家`,
+    mcEmpty: '还没有共同打卡的店，<br>先去多吃几家吧 🍴',
+    cityCount: n => `${n} places`,
+    drawerEmpty: '没有匹配的店～试试调一下筛选？',
+    tlEmpty: 'Timeline 还没有打卡记录 ✦', tlEmptyHint: '打卡后会按日期出现在这里。',
+    tlUndated: '✦ Undated',
+    stampEmpty: '还没有打卡记录 ✦',
+    stampEmptyHint: '打开任意餐厅的气泡，<br>点击「🖃 去过?」就会出现在这里。',
+    stampNoDate: '日期未记录',
+    stampEditDate: '修改记录日期', stampRemove: '删除打卡',
+    stampSave: '保存', stampCancel: '取消',
+    stampEmptyFilter: '这天还没有打卡记录',
+    calTitle: (y, m) => `筛选日历 · ${y} / ${m}`,
+    calHint: '点日期仅用于筛选，不会修改记录日期',
+    calDow: ['日','一','二','三','四','五','六'],
+    calClear: '✕ 清除筛选',
+    toastStamped: '🖃 盖章成功！', toastUndoStamp: '已取消打卡',
+    toastReset: '筛选已重置', toastNoMatch: '没有匹配的店哦～',
+    toastRandomPick: (name, city) => `🎲 ${name} · ${city}`,
+    toastLinkCopied: '链接已复制 ✿',
+    toastShareCopied: '🔗 口味链接已复制，快发给朋友！',
+    toastNoStamps: '还没有打卡记录哦 — 先去盖几个章吧 🖃',
+    toastLoadFail: '数据加载失败 — 请检查网络',
+    toastDateSaved: '打卡日期已更新', toastDateMissing: '请先选择日期',
+    toastDeleted: '已删除打卡记录',
+    shareModalTitle: '📤 分享你的口味',
+    shareModalTagline: '发给朋友，一起发现你们的美食契合度',
+    step1Title: '打卡你去过的餐厅', step1Hint: '打开餐厅气泡，点击「🖃 去过?」盖章',
+    step2Title: '生成链接，发给朋友', step2Hint: '朋友打开你的链接，打卡他 / 她去过的店',
+    step3Title: '查看口味契合度 %', step3Hint: '自动算出你们共同喜爱的美食和城市！',
+    shareHintStamps: n => `你已经打卡了 <strong>${n}</strong> 家餐厅 ✦`,
+    shareHintNone: '还没有打卡记录 — 先去盖几个章吧 🍴',
+    shareGenerate: '生成分享链接 →', shareCopied: '✓ 链接已复制！发给朋友吧',
+    confirmDelete: name => `确定删除「${name}」的打卡记录吗？`,
+    splashSubtitle: '美食手账 · 吃过的地方',
+    splashDesc: ['📍 记录每一家吃过的餐厅','🗺 地图追踪你的美食足迹','🎯 与朋友发现口味契合度'],
+    titleCh: '· 美食地图',
+    cityOther: '其他',
+    promptCopy: '复制链接发给朋友：',
+    promptCopy2: '复制链接：',
+    portalBtn: '更新地图',
+    docTitle: 'Lily 的美食地图 · Notebook',
+  },
+  en: {
+    searchPh: 'Search name / dish…',
+    tier1: '⭐ Would return', tier2: '👣 Visited',
+    cityLabel: 'City', cityAll: 'All Cities',
+    cuisineLabel: 'Cuisine', cuisineAll: 'All',
+    budgetLabel: 'Budget', ratingLabel: 'Rating',
+    randomBtn: '🎲 Surprise me!', resetBtn: '↺ Reset',
+    drawerLabel: 'Notebook', shareLabel: 'Share',
+    drawerTitle: 'The Notebook', drawerSub: "Lily's eaten list",
+    tabCities: 'By City', tabTimeline: 'Timeline', tabStamped: '🖃 Check-ins',
+    statsTitle: 'tally', statsPlaces: ' places eaten', statsCities: 'cities visited',
+    titleStat: (n, c) => `${n} places · ${c} cities`,
+    budget: {"1":"$ Casual","2":"$$ Treat","3":"$$$ Celebration","4":"$$$$ Splurge"},
+    popDishLbl: 'Recommended · pick',
+    popStamp: '🖃 Been here?', popUndoStamp: '↶ Undo check-in', popShare: '🔗 Share',
+    popGoBack: '↻ Would return', popSkip: '✗ Skip next time', popNeutral: '— Maybe',
+    mcLabel: 'Taste Match',
+    mcShared: n => `<strong>${n}</strong> shared places`,
+    mcEmpty: 'No shared check-ins yet.<br>Go eat more! 🍴',
+    cityCount: n => `${n} places`,
+    drawerEmpty: 'No matches — try adjusting filters?',
+    tlEmpty: 'No check-ins yet ✦', tlEmptyHint: 'Check in and they\'ll appear here by date.',
+    tlUndated: '✦ Undated',
+    stampEmpty: 'No check-ins yet ✦',
+    stampEmptyHint: 'Open any restaurant popup,<br>tap "🖃 Been here?" to check in.',
+    stampNoDate: 'Date not recorded',
+    stampEditDate: 'Edit date', stampRemove: 'Remove',
+    stampSave: 'Save', stampCancel: 'Cancel',
+    stampEmptyFilter: 'No check-ins on this day',
+    calTitle: (y, m) => `Filter · ${y} / ${m}`,
+    calHint: 'Tap a date to filter — does not change check-in dates',
+    calDow: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+    calClear: '✕ Clear filter',
+    toastStamped: '🖃 Stamped!', toastUndoStamp: 'Check-in removed',
+    toastReset: 'Filters reset', toastNoMatch: 'No matching places~',
+    toastRandomPick: (name, city) => `🎲 ${name} · ${city}`,
+    toastLinkCopied: 'Link copied ✿',
+    toastShareCopied: '🔗 Link copied — share with a friend!',
+    toastNoStamps: 'No check-ins yet — stamp a few first 🖃',
+    toastLoadFail: 'Failed to load data — check your connection',
+    toastDateSaved: 'Check-in date updated', toastDateMissing: 'Please select a date first',
+    toastDeleted: 'Check-in deleted',
+    shareModalTitle: '📤 Share Your Taste',
+    shareModalTagline: 'Send to a friend to discover your food match',
+    step1Title: 'Check in to your restaurants', step1Hint: 'Open any popup and tap "🖃 Been here?"',
+    step2Title: 'Generate a link and share it', step2Hint: 'Your friend opens the link and checks in their places',
+    step3Title: 'See your taste match %', step3Hint: 'Automatically calculates your shared favourites!',
+    shareHintStamps: n => `You've checked in to <strong>${n}</strong> restaurants ✦`,
+    shareHintNone: 'No check-ins yet — stamp a few first 🍴',
+    shareGenerate: 'Generate share link →', shareCopied: '✓ Copied! Share with your friend',
+    confirmDelete: name => `Remove check-in for "${name}"?`,
+    splashSubtitle: 'A food diary · places I\'ve eaten',
+    splashDesc: ['📍 Log every restaurant you\'ve visited','🗺 Track your food footprint on the map','🎯 Discover taste matches with friends'],
+    titleCh: '',
+    cityOther: 'Other',
+    promptCopy: 'Copy link to share with a friend:',
+    promptCopy2: 'Copy link:',
+    portalBtn: 'Edit Map',
+    docTitle: "Lily's Food Map · Notebook",
+  }
+};
 
 // ─── STAMP STORAGE ───
 function hasUserStamped(name) {
@@ -1528,13 +1932,16 @@ fetch(JSON_URL)
     friendStamps = getFriendStamps();
     render();
     updateStats();
+    updateStampBadge();
+    hideSplash();
     if (friendStamps) {
       const myStamps = JSON.parse(localStorage.getItem('foodmap_user_stamps') || '[]');
       renderMatchCard(computeMatch(myStamps, friendStamps));
     }
   })
   .catch(err => {
-    toast('数据加载失败 — 请检查网络');
+    hideSplash();
+    toast(T[lang].toastLoadFail);
     console.error(err);
   });
 
@@ -1558,7 +1965,7 @@ function initFilters() {
     const b = document.createElement('button');
     b.className = 'chip';
     b.dataset.cuisine = c;
-    b.textContent = (EMOJI[c] || '🍴') + ' ' + c;
+    b.textContent = (EMOJI[c] || '🍴') + ' ' + cuisineName(c);
     cf.appendChild(b);
   });
 }
@@ -1613,7 +2020,7 @@ function render() {
 
   // Update title stat
   const cities = new Set(visible.map(d => d.city).filter(Boolean));
-  document.getElementById('titleStat').textContent = `${visible.length} places · ${cities.size} cities`;
+  document.getElementById('titleStat').textContent = T[lang].titleStat(visible.length, cities.size);
   renderDrawerBody();
 }
 
@@ -1621,28 +2028,53 @@ function buildPopup(item) {
   const gmUrl = item.url || `https://www.google.com/maps/search/${encodeURIComponent(item.name)}/@${item.lat},${item.lng},17z`;
   const encName = encodeURIComponent(item.name);
   const stamped = hasUserStamped(item.name);
+  const t = T[lang];
   const tag = item.rating >= 4.5
-    ? '<span class="pop-tag go-back">↻ 想再去</span>'
-    : (item.rating <= 2.5 ? '<span class="pop-tag skip">✗ 不会再去</span>' : '<span class="pop-tag">— 看心情</span>');
+    ? `<span class="pop-tag go-back">${t.popGoBack}</span>`
+    : (item.rating <= 2.5 ? `<span class="pop-tag skip">${t.popSkip}</span>` : `<span class="pop-tag">${t.popNeutral}</span>`);
   return `<div class="pop">
     <div class="pop-top">
       <div class="pop-name">${item.name}</div>
-      <div class="been-stamp${stamped ? ' visible' : ''}" id="been-stamp-${encName}">BEEN<br>HERE</div>
+      <div class="been-stamp${stamped ? ' visible' : ''}" id="been-stamp-${encName}" aria-hidden="true">
+        <svg viewBox="0 0 90 62" width="90" height="62" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+          <defs>
+            <path id="sa" d="M 9,31 A 36,22 0 0,1 81,31"/>
+            <path id="sb" d="M 9,31 A 36,22 0 0,0 81,40"/>
+          </defs>
+          <!-- Outer oval border -->
+          <ellipse cx="45" cy="31" rx="45" ry="31" fill="rgba(244,236,219,0.18)" stroke="#c25a48" stroke-width="2.2"/>
+          <!-- Side tick marks (like the reference logo) -->
+          <line x1="1.5" y1="31" x2="6.5" y2="31" stroke="#c25a48" stroke-width="2"/>
+          <line x1="83.5" y1="31" x2="88.5" y2="31" stroke="#c25a48" stroke-width="2"/>
+          <!-- Inner oval border (dashed) -->
+          <ellipse cx="45" cy="31" rx="33" ry="19" fill="none" stroke="#c25a48" stroke-width="1.1" stroke-dasharray="2.8 1.6"/>
+          <!-- Top curved text: LILY'S FOOD MAP -->
+          <text fill="#c25a48" font-size="8.2" font-family="'Patrick Hand',sans-serif" font-weight="bold" letter-spacing="1.8">
+            <textPath href="#sa" startOffset="50%" text-anchor="middle">LILY'S FOOD MAP</textPath>
+          </text>
+          <!-- Bottom curved text: BEEN HERE -->
+          <text fill="#c25a48" font-size="7.8" font-family="'Patrick Hand',sans-serif" letter-spacing="2">
+            <textPath href="#sb" startOffset="50%" text-anchor="middle">✦ BEEN HERE ✦</textPath>
+          </text>
+          <!-- Centre botanical ornament -->
+          <text x="45" y="36" text-anchor="middle" fill="#c25a48" font-size="14" font-family="serif" opacity="0.88">✿</text>
+        </svg>
+      </div>
     </div>
     <div class="pop-meta">
       <span class="pop-hearts">${hearts(item.rating)}</span>
-      ${item.cuisine ? `<span class="pop-cuisine">${EMOJI[item.cuisine]||'🍴'} ${item.cuisine}</span>` : ''}
+      ${item.cuisine ? `<span class="pop-cuisine">${EMOJI[item.cuisine]||'🍴'} ${cuisineName(item.cuisine)}</span>` : ''}
       <span>${item.city || ''}</span>
     </div>
-    ${item.dish ? `<div class="pop-dish"><span class="pop-dish-lbl">推荐菜 · pick</span>${item.dish}</div>` : ''}
+    ${item.dish ? `<div class="pop-dish"><span class="pop-dish-lbl">${t.popDishLbl}</span>${item.dish}</div>` : ''}
     ${item.note ? `<div class="pop-note">${item.note}</div>` : ''}
     <div class="pop-tags">${tag}</div>
     <div class="pop-footer">
-      <span class="pop-budget">${BUDGET_MAP[item.budget] || ''}</span>
+      <span class="pop-budget">${t.budget[item.budget] || ''}</span>
       <div class="pop-actions">
         <a class="pop-act" href="${gmUrl}" target="_blank">📍 Maps</a>
-        <button class="pop-act" onclick="shareItem('${encName}')">🔗 分享</button>
-        <button class="pop-act${stamped ? ' stamped' : ''}" id="seal-btn-${encName}" onclick="${stamped ? `undoSeal('${encName}')` : `doSeal('${encName}')`}">${stamped ? '↶ 取消打卡' : '🖃 去过?'}</button>
+        <button class="pop-act" onclick="shareItem('${encName}')">${t.popShare}</button>
+        <button class="pop-act${stamped ? ' stamped' : ''}" id="seal-btn-${encName}" onclick="${stamped ? `undoSeal('${encName}')` : `doSeal('${encName}')`}">${stamped ? t.popUndoStamp : t.popStamp}</button>
       </div>
     </div>
   </div>`;
@@ -1650,10 +2082,73 @@ function buildPopup(item) {
 
 function shareItem(encName) {
   const url = location.origin + location.pathname + '?focus=' + encName;
-  navigator.clipboard?.writeText(url).then(() => toast('链接已复制 ✿'));
+  navigator.clipboard?.writeText(url).then(() => toast(T[lang].toastLinkCopied));
 }
 window.shareItem = shareItem;
 
+function spawnConfetti(anchorEl) {
+  const rect = anchorEl.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  const palette = [
+    '#f3df7e', '#efb4c2', '#a9c8d8',
+    '#b6d3b1', '#c25a48', '#f4ecdb'
+  ];
+
+  const N = 14;
+
+  for (let i = 0; i < N; i++) {
+    const el = document.createElement('span');
+    el.className = 'confetti-bit';
+
+    const angle = (-110 + Math.random() * 220) * Math.PI / 180;
+    const dist  = 35 + Math.random() * 45;
+    const tx    = Math.cos(angle) * dist;
+    const ty    = Math.sin(angle) * dist - 10;
+
+    const w     = 4 + Math.random() * 4;
+    const h     = Math.random() > 0.6 ? w * 1.6 : w;
+
+    const rot   = Math.random() * 180 - 90;
+    const dur   = 0.5 + Math.random() * 0.2;
+    const delay = Math.random() * 40;
+
+    const color = palette[Math.floor(Math.random() * palette.length)];
+
+    Object.assign(el.style, {
+      position: 'fixed',
+      left: cx + 'px',
+      top: cy + 'px',
+      width: w + 'px',
+      height: h + 'px',
+      background: color,
+      borderRadius: h === w ? '50%' : '1px',
+      transform: 'translate(-50%,-50%)',
+      opacity: '0',   // start invisible — prevents stacking flash
+    });
+
+    document.body.appendChild(el);
+
+    // Two rAFs ensure the initial opacity:0 is painted before transitioning
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const moveDur = `${dur}s cubic-bezier(.22,.7,.25,1) ${delay}ms`;
+      const fadeIn  = `opacity 0.1s ease-out ${delay}ms`;
+      el.style.transition = `transform ${moveDur}, ${fadeIn}`;
+      el.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty + 20}px)) rotate(${rot}deg)`;
+      el.style.opacity = '1';
+
+      // fade out after 60 % of travel completes
+      const fadeOutAt = dur * 0.62 * 1000 + delay;
+      setTimeout(() => {
+        el.style.transition = 'opacity 0.28s ease-out';
+        el.style.opacity = '0';
+      }, fadeOutAt);
+    }));
+
+    setTimeout(() => el.remove(), (dur + delay / 1000 + 0.35) * 1000);
+  }
+}
 function doSeal(encName) {
   const name = decodeURIComponent(encName);
   if (hasUserStamped(name)) return;
@@ -1664,13 +2159,17 @@ function doSeal(encName) {
   const stamp = document.getElementById('been-stamp-' + encName);
   if (stamp) {
     stamp.classList.add('visible', 'pop');
-    setTimeout(() => stamp.classList.remove('pop'), 460);
+    // Remove animation class once it's done, then fire confetti
+    setTimeout(() => {
+      stamp.classList.remove('pop');
+      spawnConfetti(stamp);
+    }, 300);
   }
 
   const btn = document.getElementById('seal-btn-' + encName);
   if (btn) {
     btn.classList.add('stamped', 'just-stamped');
-    btn.textContent = '↶ 取消打卡';
+    btn.textContent = T[lang].popUndoStamp;
     btn.setAttribute('onclick', `undoSeal('${encName}')`);
     setTimeout(() => btn.classList.remove('just-stamped'), 600);
   }
@@ -1686,7 +2185,7 @@ function doSeal(encName) {
   }
 
   if (drawerTab === 'stamped' || drawerTab === 'timeline') renderDrawerBody();
-  toast('🖃 盖章成功！');
+  toast(T[lang].toastStamped);
 }
 window.doSeal = doSeal;
 function undoSeal(encName) {
@@ -1702,12 +2201,12 @@ function undoSeal(encName) {
   const btn = document.getElementById('seal-btn-' + encName);
   if (btn) {
     btn.classList.remove('stamped', 'just-stamped');
-    btn.textContent = '🖃 去过?';
+    btn.textContent = T[lang].popStamp;
     btn.setAttribute('onclick', `doSeal('${encName}')`);
   }
 
   if (drawerTab === 'stamped' || drawerTab === 'timeline') renderDrawerBody();
-  toast('已取消打卡');
+  toast(T[lang].toastUndoStamp);
 }
 window.undoSeal = undoSeal;
 
@@ -1734,24 +2233,25 @@ function computeMatch(myStamps, friendArr) {
   });
   const topCuisines = Object.entries(cCount)
     .sort((a, b) => b[1] - a[1]).slice(0, 3)
-    .map(([c]) => (EMOJI[c] || '🍴') + ' ' + c);
+    .map(([c]) => (EMOJI[c] || '🍴') + ' ' + cuisineName(c));
 
   return { pct, shared, topCuisines };
 }
 
 function renderMatchCard(match) {
   const card = document.getElementById('matchCard');
+  const t = T[lang];
   const listHTML = match.shared.length
     ? match.shared.map(name =>
         `<div class="mc-item" data-name="${name.replace(/"/g,'&quot;')}">${name}</div>`
       ).join('')
-    : `<div class="mc-empty">还没有共同打卡的店，<br>先去多吃几家吧 🍴</div>`;
+    : `<div class="mc-empty">${t.mcEmpty}</div>`;
 
   card.innerHTML = `
     <button class="mc-close" id="matchClose">✕</button>
-    <div class="mc-label">口味契合度</div>
+    <div class="mc-label">${t.mcLabel}</div>
     <div class="mc-pct">${match.pct}<span>%</span></div>
-    <div class="mc-shared">共同打卡 <strong>${match.shared.length}</strong> 家</div>
+    <div class="mc-shared">${t.mcShared(match.shared.length)}</div>
     ${match.topCuisines.length ? `<div class="mc-cuisines">${match.topCuisines.join(' · ')}</div>` : ''}
     ${match.shared.length ? '<hr class="mc-divider" />' : ''}
     <div class="mc-list">${listHTML}</div>
@@ -1775,14 +2275,14 @@ function closeMatchCard() {
 
 function shareMyStamps() {
   const stamps = JSON.parse(localStorage.getItem('foodmap_user_stamps') || '[]');
-  if (!stamps.length) { toast('还没有打卡记录哦 — 先去盖几个章吧 🖃'); return; }
+  if (!stamps.length) { toast(T[lang].toastNoStamps); return; }
   // encodeURIComponent handles Chinese chars; btoa encodes to URL-safe ASCII
   const encoded = btoa(encodeURIComponent(JSON.stringify(stamps)));
   const url = location.origin + location.pathname + '?friend=' + encoded;
   if (navigator.clipboard) {
-    navigator.clipboard.writeText(url).then(() => toast('🔗 口味链接已复制，快发给朋友！'));
+    navigator.clipboard.writeText(url).then(() => toast(T[lang].toastShareCopied));
   } else {
-    prompt('复制链接发给朋友：', url);
+    prompt(T[lang].promptCopy, url);
   }
 }
 
@@ -1836,39 +2336,41 @@ function renderCalendarHTML() {
     cells += `<div class="${cls}" data-date="${ds}">${d}${stampDays.has(ds) ? '<span class="cal-dot"></span>' : ''}</div>`;
   }
 
+  const tc = T[lang];
+  const dow = tc.calDow;
   return `<div class="cal">
     <div class="cal-head">
       <button class="cal-nav" data-dir="-1" ${atMinMonth ? 'disabled' : ''}>◄</button>
-      <span class="cal-title">筛选日历 · ${calYear} / ${mm}</span>
+      <span class="cal-title">${tc.calTitle(calYear, mm)}</span>
       <button class="cal-nav" data-dir="1" ${atCurrentMonth ? 'disabled' : ''}>►</button>
     </div>
-    <div class="cal-filter-row"><span>点日期仅用于筛选，不会修改记录日期</span></div>
+    <div class="cal-filter-row"><span>${tc.calHint}</span></div>
     <div class="cal-grid">
-      <div class="cal-dow">日</div><div class="cal-dow">一</div><div class="cal-dow">二</div>
-      <div class="cal-dow">三</div><div class="cal-dow">四</div><div class="cal-dow">五</div>
-      <div class="cal-dow">六</div>
+      ${dow.map(d => `<div class="cal-dow">${d}</div>`).join('')}
       ${cells}
     </div>
   </div>`;
 }
 
 function stampCard(name, dateStr, item) {
+  const ts = T[lang];
+  const locale = lang === 'zh' ? 'zh-CN' : 'en-US';
   const label = dateStr
-    ? new Date(dateStr + 'T12:00:00').toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })
-    : '日期未记录';
+    ? new Date(dateStr + 'T12:00:00').toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })
+    : ts.stampNoDate;
   const em = item ? (EMOJI[item.cuisine] || '🍴') : '🍴';
   return `<div class="stamp-card" data-name="${name.replace(/"/g, '&quot;')}">
     <div class="stamp-card-date">${label}</div>
     <div class="stamp-card-name">${em} ${name}</div>
     ${item?.city ? `<div class="stamp-card-city">${item.city}</div>` : ''}
     <div class="stamp-card-actions">
-      <button class="stamp-mini-act" data-edit-date="${name.replace(/"/g, '&quot;')}">修改记录日期</button>
-      <button class="stamp-mini-act danger" data-remove-stamp="${name.replace(/"/g, '&quot;')}">删除打卡</button>
+      <button class="stamp-mini-act" data-edit-date="${name.replace(/"/g, '&quot;')}">${ts.stampEditDate}</button>
+      <button class="stamp-mini-act danger" data-remove-stamp="${name.replace(/"/g, '&quot;')}">${ts.stampRemove}</button>
     </div>
     <div class="stamp-date-editor" data-date-editor="${name.replace(/"/g, '&quot;')}" hidden>
       <input class="stamp-date-input" type="date" data-date-input="${name.replace(/"/g, '&quot;')}" value="${dateStr || ''}" />
-      <button class="stamp-mini-act primary" data-save-date="${name.replace(/"/g, '&quot;')}">保存</button>
-      <button class="stamp-mini-act" data-cancel-date="${name.replace(/"/g, '&quot;')}">取消</button>
+      <button class="stamp-mini-act primary" data-save-date="${name.replace(/"/g, '&quot;')}">${ts.stampSave}</button>
+      <button class="stamp-mini-act" data-cancel-date="${name.replace(/"/g, '&quot;')}">${ts.stampCancel}</button>
     </div>
   </div>`;
 }
@@ -1876,10 +2378,11 @@ function stampCard(name, dateStr, item) {
 function renderStampedBody(body) {
   const stamps = JSON.parse(localStorage.getItem('foodmap_user_stamps') || '[]');
 
+  const ts = T[lang];
   if (!stamps.length) {
     body.innerHTML = `<div class="stamp-empty">
-      <span class="big">还没有打卡记录 ✦</span>
-      打开任意餐厅的气泡，<br>点击「🖃 去过?」就会出现在这里。
+      <span class="big">${ts.stampEmpty}</span>
+      ${ts.stampEmptyHint}
     </div>`;
     return;
   }
@@ -1895,12 +2398,12 @@ function renderStampedBody(body) {
   const filterRow = selectedCalDay
     ? `<div class="cal-filter-row">
          <span>📅 ${selectedCalDay}</span>
-         <button class="cal-clear">✕ 清除筛选</button>
+         <button class="cal-clear">${ts.calClear}</button>
        </div>` : '';
 
   const listHTML = sorted.length
     ? sorted.map(({ name, date, item }) => stampCard(name, date, item)).join('')
-    : '<div class="stamp-empty-filter">这天还没有打卡记录</div>';
+    : `<div class="stamp-empty-filter">${ts.stampEmptyFilter}</div>`;
 
   body.innerHTML = renderCalendarHTML() + filterRow + listHTML;
 
@@ -1934,12 +2437,12 @@ function renderStampedBody(body) {
     el.addEventListener('click', (e) => {
       e.stopPropagation();
       const name = el.dataset.removeStamp;
-      if (!confirm(`确定删除「${name}」的打卡记录吗？`)) return;
+      if (!confirm(T[lang].confirmDelete(name))) return;
       removeUserStamp(name);
       removeStampDate(name);
       updateStampBadge();
       renderDrawerBody();
-      toast('已删除打卡记录');
+      toast(T[lang].toastDeleted);
     });
   });
   body.querySelectorAll('[data-edit-date]').forEach(el => {
@@ -1969,10 +2472,10 @@ function renderStampedBody(body) {
       const name = el.dataset.saveDate;
       const input = body.querySelector(`[data-date-input="${CSS.escape(name)}"]`);
       const next = input?.value || '';
-      if (!next) { toast('请先选择日期'); return; }
+      if (!next) { toast(T[lang].toastDateMissing); return; }
       setStampDate(name, next);
       renderDrawerBody();
-      toast('打卡日期已更新');
+      toast(T[lang].toastDateSaved);
     });
   });
 }
@@ -1983,16 +2486,16 @@ function renderDrawerBody() {
   if (drawerTab === 'cities') {
     const byCity = {};
     visible.forEach(d => {
-      const c = d.city || '其他';
+      const c = d.city || T[lang].cityOther;
       (byCity[c] = byCity[c] || []).push(d);
     });
     const order = Object.keys(byCity).sort((a, b) => byCity[b].length - byCity[a].length);
     body.innerHTML = order.map(city => `
       <div class="city-group">
-        <div class="city-head">${city} <span class="count">${byCity[city].length} places</span></div>
+        <div class="city-head">${city} <span class="count">${T[lang].cityCount(byCity[city].length)}</span></div>
         ${byCity[city].sort((a, b) => (b.rating||0)-(a.rating||0)).map(d => placeCard(d)).join('')}
       </div>
-    `).join('') || `<div style="font-family:'Patrick Hand',cursive;color:var(--ink-faded);padding:20px;text-align:center;">没有匹配的店～试试调一下筛选？</div>`;
+    `).join('') || `<div style="font-family:'Patrick Hand',cursive;color:var(--ink-faded);padding:20px;text-align:center;">${T[lang].drawerEmpty}</div>`;
   } else if (drawerTab === 'stamped') {
     renderStampedBody(body);
     return;
@@ -2007,8 +2510,8 @@ function renderDrawerBody() {
 
     if (!stampedInView.length) {
       body.innerHTML = `<div class="stamp-empty">
-        <span class="big">Timeline 还没有打卡记录 ✦</span>
-        打卡后会按日期出现在这里。
+        <span class="big">${T[lang].tlEmpty}</span>
+        ${T[lang].tlEmptyHint}
       </div>`;
     } else {
       const buckets = {};
@@ -2018,11 +2521,11 @@ function renderDrawerBody() {
       });
       const order = Object.keys(buckets).sort((a, b) => b.localeCompare(a));
       body.innerHTML = '<div class="timeline">' + order.map(month => `
-        <div class="tl-month">${month === 'Undated' ? '✦ Undated' : month}</div>
+        <div class="tl-month">${month === 'Undated' ? T[lang].tlUndated : month}</div>
         ${buckets[month].map(d => `
           <div class="tl-item" data-name="${d.name}">
             <div class="name">${d.name}</div>
-            <div class="city">${(EMOJI[d.cuisine]||'🍴')} ${d.cuisine || ''} · ${d.city || ''}</div>
+            <div class="city">${(EMOJI[d.cuisine]||'🍴')} ${cuisineName(d.cuisine)} · ${d.city || ''}</div>
             ${d.checkinDate ? `<div class="checkin-badge">📅 ${d.checkinDate}</div>` : ''}
           </div>
         `).join('')}
@@ -2041,8 +2544,8 @@ function placeCard(d) {
     <div class="name">${d.name}</div>
     <div class="meta">
       <span class="hearts">${hearts(d.rating)}</span>
-      <span>${EMOJI[d.cuisine]||'🍴'} ${d.cuisine || ''}</span>
-      <span>${BUDGET_MAP[d.budget] || ''}</span>
+      <span>${EMOJI[d.cuisine]||'🍴'} ${cuisineName(d.cuisine)}</span>
+      <span>${T[lang].budget[d.budget] || ''}</span>
     </div>
   </div>`;
 }
@@ -2138,15 +2641,15 @@ document.getElementById('resetFiltersBtn').addEventListener('click', () => {
   document.querySelectorAll('#ratingFilter .chip').forEach(x => x.classList.remove('on'));
   selectedCalDay = null;
   render();
-  toast('筛选已重置');
+  toast(T[lang].toastReset);
 });
 
 // ─── RANDOM ───
 document.getElementById('randomBtn').addEventListener('click', () => {
   const v = visibleData();
-  if (!v.length) { toast('没有匹配的店哦～'); return; }
+  if (!v.length) { toast(T[lang].toastNoMatch); return; }
   const pick = v[Math.floor(Math.random() * v.length)];
-  toast(`🎲 ${pick.name} · ${pick.city || ''}`);
+  toast(T[lang].toastRandomPick(pick.name, pick.city || ''));
   focusPlace(pick.name);
 });
 
@@ -2157,8 +2660,120 @@ window.addEventListener('resize', () => {
   _resizeTimer = setTimeout(render, 250);
 });
 
-// ─── SHARE BUTTON ───
-document.getElementById('shareBtn').addEventListener('click', shareMyStamps);
+// ─── SPLASH ───
+function hideSplash() {
+  const el = document.getElementById('splash');
+  if (!el) return;
+  // Show splash for at least 2.2s so animations play through fully
+  const elapsed = Date.now() - _splashStart;
+  const wait = Math.max(0, 3000 - elapsed);
+  setTimeout(() => {
+    el.classList.add('hidden');
+    setTimeout(() => el.remove(), 700);
+  }, wait);
+}
+
+// ─── SHARE MODAL ───
+function openShareModal() {
+  const stamps = JSON.parse(localStorage.getItem('foodmap_user_stamps') || '[]');
+  const t = T[lang];
+  const hint = document.getElementById('shareModalHint');
+  hint.innerHTML = stamps.length ? t.shareHintStamps(stamps.length) : t.shareHintNone;
+  const btn = document.getElementById('shareModalGenerate');
+  btn.textContent = t.shareGenerate;
+  btn.classList.remove('copied');
+  document.getElementById('shareModal').classList.add('open');
+}
+function closeShareModal() {
+  document.getElementById('shareModal').classList.remove('open');
+}
+document.getElementById('shareModalClose').addEventListener('click', closeShareModal);
+document.getElementById('shareModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeShareModal();
+});
+document.getElementById('shareModalGenerate').addEventListener('click', () => {
+  const stamps = JSON.parse(localStorage.getItem('foodmap_user_stamps') || '[]');
+  if (!stamps.length) { toast(T[lang].toastNoStamps); return; }
+  const encoded = btoa(encodeURIComponent(JSON.stringify(stamps)));
+  const url = location.origin + location.pathname + '?friend=' + encoded;
+  const btn = document.getElementById('shareModalGenerate');
+  const copy = () => {
+    btn.textContent = T[lang].shareCopied;
+    btn.classList.add('copied');
+    setTimeout(closeShareModal, 1600);
+  };
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(copy).catch(() => { prompt(T[lang].promptCopy2, url); });
+  } else {
+    prompt(T[lang].promptCopy2, url);
+  }
+});
+
+// ─── LANG TOGGLE ───
+function setLang(l) {
+  lang = l;
+  localStorage.setItem('foodmap_lang', l);
+  document.documentElement.lang = l;
+  const t = T[l];
+
+  // Toggle button label: shows the opposite language (click to switch to it)
+  const toggleBtn = document.getElementById('langToggle');
+  if (toggleBtn) toggleBtn.textContent = l === 'zh' ? 'EN' : '中';
+
+  // All data-i18n elements (textContent only)
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (key in t) el.textContent = t[key];
+  });
+
+  // Elements with HTML markup (need innerHTML, not textContent)
+  const titleSubEl = document.querySelector('.title-sub');
+  if (titleSubEl) titleSubEl.innerHTML = l === 'zh'
+    ? '美食手账 · 吃过的地方 &nbsp;·&nbsp; <span class="vol">VOL. 01</span>'
+    : 'A NOTEBOOK OF EATEN PLACES &nbsp;·&nbsp; <span class="vol">VOL. 01</span>';
+
+  // Search placeholder
+  const searchEl = document.getElementById('searchInput');
+  if (searchEl) searchEl.placeholder = t.searchPh;
+
+  // City "all" option
+  const allOpt = document.querySelector('#cityFilter option[value="all"]');
+  if (allOpt) allOpt.textContent = t.cityAll;
+
+  // Cuisine filter chips — re-label with translated cuisine names
+  document.querySelectorAll('#cuisineFilter .chip[data-cuisine]:not([data-cuisine="all"])').forEach(btn => {
+    const c = btn.dataset.cuisine;
+    btn.textContent = (EMOJI[c] || '🍴') + ' ' + (l === 'en' && CUISINE_EN[c] ? CUISINE_EN[c] : c);
+  });
+
+  // Document title
+  document.title = t.docTitle;
+
+  // Splash (shown during initial load)
+  const splashSub = document.querySelector('.splash-subtitle');
+  if (splashSub) splashSub.textContent = t.splashSubtitle;
+  document.querySelectorAll('.splash-desc span').forEach((el, i) => {
+    if (t.splashDesc[i]) el.textContent = t.splashDesc[i];
+  });
+
+  // Update titleStat and re-render if data is already loaded
+  if (DATA.length) {
+    const vis = visibleData();
+    const visCities = new Set(vis.map(d => d.city).filter(Boolean));
+    document.getElementById('titleStat').textContent = t.titleStat(vis.length, visCities.size);
+    render(); // rebuilds all popups and drawer with new lang
+  }
+}
+
+document.getElementById('langToggle').addEventListener('click', () => {
+  setLang(lang === 'zh' ? 'en' : 'zh');
+});
+
+// Apply saved language preference immediately (before data loads)
+setLang(lang);
+
+// ─── SHARE BUTTON → opens modal ───
+document.getElementById('shareBtn').addEventListener('click', openShareModal);
 updateStampBadge();
 
 // ─── DEEP LINK (?focus= and/or ?friend=) ───
