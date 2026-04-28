@@ -295,6 +295,50 @@ a { color: inherit; }
 .toast { position: fixed; bottom: 20px; right: 20px; background: #3d2c1e; color: #fdf8f2; font-size: 13px; padding: 10px 20px; border-radius: 20px; opacity: 0; transform: translateY(8px); transition: all .3s; pointer-events: none; z-index: 9999; }
 .toast.show { opacity: 1; transform: translateY(0); }
 
+/* ─── Username setup modal ─── */
+.username-overlay {
+  position: fixed; inset: 0; z-index: 3000;
+  background: rgba(61,44,30,.5);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .22s;
+}
+.username-overlay.open { opacity: 1; pointer-events: auto; }
+.username-card {
+  width: min(420px, calc(100vw - 24px));
+  background: #fdf8f2; border: 1.5px solid #e2d8cc; border-radius: 18px;
+  padding: 30px 26px 24px; position: relative;
+  box-shadow: 0 8px 36px rgba(61,44,30,.18);
+  animation: mIn .25s cubic-bezier(.2,0,0,1) both;
+}
+.username-card::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0;
+  height: 3px; border-radius: 18px 18px 0 0;
+  background: linear-gradient(90deg,#9b6e52,#c17a5e,#b87aa0,#6e8c72);
+}
+.username-title { font-size: 19px; color: #5a3e2b; font-weight: 600; margin-bottom: 5px; }
+.username-sub   { font-size: 13px; color: #a8907a; margin-bottom: 22px; line-height: 1.5; }
+.username-row   { display: flex; align-items: center; gap: 0; margin-bottom: 8px; }
+.username-prefix {
+  padding: 10px 12px; background: #f0e8dc; border: 1px solid #e2d8cc;
+  border-right: none; border-radius: 10px 0 0 10px;
+  font-size: 13px; color: #a8907a; white-space: nowrap;
+}
+.username-input {
+  flex: 1; padding: 10px 12px; border: 1px solid #e2d8cc;
+  border-radius: 0 10px 10px 0; font-size: 14px; outline: none;
+  background: #fdf8f2; transition: border-color .2s;
+}
+.username-input:focus { border-color: #9b6e52; }
+.username-hint  { font-size: 11px; color: #c8b9a8; margin-bottom: 18px; font-style: italic; }
+.username-error { font-size: 12px; color: #c17a5e; margin-bottom: 14px; min-height: 16px; }
+.username-btn {
+  width: 100%; padding: 12px; background: #9b6e52; color: #fdf8f2;
+  border: none; border-radius: 12px; font-size: 15px; transition: all .15s;
+  box-shadow: 0 2px 8px rgba(155,110,82,.22);
+}
+.username-btn:hover { background: #8a5e44; transform: translateY(-1px); }
+.username-btn:disabled { opacity: .5; transform: none; cursor: default; }
+
 
 /* ─── Auth overlay (sign-in screen) ─── */
 .auth-overlay {
@@ -566,6 +610,22 @@ a { color: inherit; }
   </div>
 </div>
 
+<!-- ── USERNAME SETUP MODAL ── -->
+<div class="username-overlay" id="usernameOverlay">
+  <div class="username-card">
+    <div class="username-title">✦ Create your Food Map</div>
+    <div class="username-sub">Choose a username — this becomes your map's public URL</div>
+    <div class="username-row">
+      <span class="username-prefix">foodmap / </span>
+      <input class="username-input" id="usernameInput" placeholder="yourname"
+             maxlength="20" oninput="onUsernameInput()">
+    </div>
+    <div class="username-hint">Letters, numbers, hyphens only · 3–20 characters</div>
+    <div class="username-error" id="usernameError"></div>
+    <button class="username-btn" id="usernameBtn" onclick="saveUsername()" disabled>Claim my map →</button>
+  </div>
+</div>
+
 <!-- ── AUTH OVERLAY ── -->
 <div class="auth-overlay" id="authOverlay">
   <div class="auth-card">
@@ -673,13 +733,69 @@ auth.onAuthStateChanged(async user => {
   document.getElementById("userAvatar").src = user.photoURL || "";
   document.getElementById("userName").textContent  = user.displayName || "—";
   document.getElementById("userEmail").textContent = user.email || "—";
-  // Ensure user profile doc exists
-  await db.collection("users").doc(user.uid).set(
+  // Ensure user profile doc exists, then check for username
+  const profileRef = db.collection("users").doc(user.uid);
+  await profileRef.set(
     { displayName: user.displayName, email: user.email, photoURL: user.photoURL },
     { merge: true }
   );
-  loadData();
+  const profile = await profileRef.get();
+  if (!profile.data()?.username) {
+    // First time — prompt for username
+    document.getElementById("usernameOverlay").classList.add("open");
+  } else {
+    loadData();
+  }
 });
+
+// ── Username setup ────────────────────────────────────────────────────────────
+let _usernameCheckTimer = null;
+
+function onUsernameInput() {
+  const val = document.getElementById("usernameInput").value.trim().toLowerCase();
+  const btn = document.getElementById("usernameBtn");
+  const err = document.getElementById("usernameError");
+  err.textContent = "";
+  btn.disabled = true;
+  if (!val) return;
+  if (!/^[a-z0-9-]{3,20}$/.test(val)) {
+    err.textContent = "3–20 characters, letters / numbers / hyphens only";
+    return;
+  }
+  // Debounce uniqueness check
+  clearTimeout(_usernameCheckTimer);
+  err.textContent = "Checking…";
+  _usernameCheckTimer = setTimeout(async () => {
+    const snap = await db.collection("usernames").doc(val).get();
+    if (snap.exists) {
+      err.textContent = `"${val}" is already taken`;
+    } else {
+      err.textContent = "";
+      btn.disabled = false;
+    }
+  }, 500);
+}
+
+async function saveUsername() {
+  const username = document.getElementById("usernameInput").value.trim().toLowerCase();
+  const btn = document.getElementById("usernameBtn");
+  if (!username || btn.disabled) return;
+  btn.disabled = true;
+  btn.textContent = "Saving…";
+  try {
+    const batch = db.batch();
+    batch.set(db.collection("usernames").doc(username), { uid: currentUID });
+    batch.update(db.collection("users").doc(currentUID), { username });
+    await batch.commit();
+    document.getElementById("usernameOverlay").classList.remove("open");
+    toast(`✓ Your map is live at ?user=${username}`);
+    loadData();
+  } catch(e) {
+    document.getElementById("usernameError").textContent = "Save failed: " + e.message;
+    btn.disabled = false;
+    btn.textContent = "Claim my map →";
+  }
+}
 
 // ── Load ──────────────────────────────────────────────────────────────────────
 async function loadData() {
@@ -928,8 +1044,10 @@ async function saveToCloud() {
       batch.set(ref, data);
     }
     await batch.commit();
-    // Write public map pointer so foodmapA.html knows whose data to load
-    await db.collection("config").doc("publicMap").set({ uid: currentUID }, { merge: true });
+    // Write public map pointer (legacy) + username-based pointer
+    const profile = await db.collection("users").doc(currentUID).get();
+    const username = profile.data()?.username || null;
+    await db.collection("config").doc("publicMap").set({ uid: currentUID, username }, { merge: true });
     DATA.forEach(d => delete d._isNew);
     renderList();
     if (cur >= 0) render(cur);

@@ -2139,10 +2139,35 @@ const layer = L.layerGroup().addTo(map);
 // ─── DATA LOAD ───
 async function loadMapData() {
   try {
-    // Get the map owner's UID from the config doc
-    const cfg  = await db.collection("config").doc("publicMap").get();
-    const uid  = cfg.exists ? cfg.data().uid : null;
-    if (!uid) throw new Error("No public map configured yet");
+    let uid = null;
+    let ownerName = "Lily";
+
+    // Check ?user=username in URL
+    const urlUser = new URLSearchParams(location.search).get("user");
+    if (urlUser) {
+      const usnap = await db.collection("usernames").doc(urlUser.toLowerCase()).get();
+      if (!usnap.exists) throw new Error(`User "${urlUser}" not found`);
+      uid = usnap.data().uid;
+      // Get display name
+      const profile = await db.collection("users").doc(uid).get();
+      ownerName = profile.data()?.displayName || urlUser;
+    } else {
+      // Fallback: load from config/publicMap (default map)
+      const cfg = await db.collection("config").doc("publicMap").get();
+      if (!cfg.exists) throw new Error("No public map configured yet");
+      uid = cfg.data().uid;
+      const profile = await db.collection("users").doc(uid).get();
+      ownerName = profile.data()?.displayName || "Lily";
+    }
+
+    // Update page title + map heading
+    const firstName = ownerName.split(" ")[0];
+    document.title = `${firstName}'s Food Map · Notebook`;
+    const titleEl = document.querySelector(".title-main");
+    if (titleEl) titleEl.childNodes[0].textContent = `${firstName}'s Food Map`;
+    const sigEl = document.querySelector(".signature");
+    if (sigEl) sigEl.textContent = `— by ${firstName} ✿`;
+
     const snap = await db.collection("users").doc(uid).collection("restaurants").get();
     DATA = snap.docs.map(d => d.data());
     initFilters();
