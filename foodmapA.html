@@ -2531,9 +2531,10 @@ function closeMatchCard() {
 function shareMyStamps() {
   const stamps = JSON.parse(localStorage.getItem('foodmap_user_stamps') || '[]');
   if (!stamps.length) { toast(T[lang].toastNoStamps); return; }
-  // encodeURIComponent handles Chinese chars; btoa encodes to URL-safe ASCII
   const encoded = btoa(encodeURIComponent(JSON.stringify(stamps)));
-  const url = location.origin + location.pathname + '?friend=' + encoded;
+  const urlUser = new URLSearchParams(location.search).get("user");
+  const base = location.origin + location.pathname;
+  const url = base + (urlUser ? `?user=${urlUser}&friend=${encoded}` : `?friend=${encoded}`);
   if (navigator.clipboard) {
     navigator.clipboard.writeText(url).then(() => toast(T[lang].toastShareCopied));
   } else {
@@ -2950,7 +2951,9 @@ document.getElementById('shareModalGenerate').addEventListener('click', () => {
   const stamps = JSON.parse(localStorage.getItem('foodmap_user_stamps') || '[]');
   if (!stamps.length) { toast(T[lang].toastNoStamps); return; }
   const encoded = btoa(encodeURIComponent(JSON.stringify(stamps)));
-  const url = location.origin + location.pathname + '?friend=' + encoded;
+  const urlUser = new URLSearchParams(location.search).get("user");
+  const base = location.origin + location.pathname;
+  const url = base + (urlUser ? `?user=${urlUser}&friend=${encoded}` : `?friend=${encoded}`);
   const btn = document.getElementById('shareModalGenerate');
   const copy = () => {
     btn.textContent = T[lang].shareCopied;
