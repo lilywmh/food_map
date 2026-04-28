@@ -4,6 +4,18 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Lily's Food Map · Notebook</title>
+
+<!-- Social sharing preview -->
+<meta name="description" content="Lily 的私藏美食地图 — 跨城市的餐厅手账，记录每一家吃过的好店。" />
+<meta property="og:type"        content="website" />
+<meta property="og:title"       content="Lily's Food Map · 美食手账" />
+<meta property="og:description" content="私藏餐厅地图 · 跨城市美食记录 · 与朋友发现口味契合度" />
+<meta property="og:url"         content="https://lilywmh.github.io/food_map/foodmapA.html" />
+<meta property="og:image"       content="https://lilywmh.github.io/food_map/og-preview.png" />
+<meta name="twitter:card"       content="summary_large_image" />
+<meta name="twitter:title"      content="Lily's Food Map · 美食手账" />
+<meta name="twitter:description" content="私藏餐厅地图 · 跨城市美食记录 · 与朋友发现口味契合度" />
+<meta name="twitter:image"      content="https://lilywmh.github.io/food_map/og-preview.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Kalam:wght@300;400;700&family=Patrick+Hand&family=Klee+One:wght@400;600&family=Noto+Serif+SC:wght@400;500&display=swap" rel="stylesheet">
@@ -775,6 +787,70 @@
   .stats .row strong { color: var(--stamp-red); font-weight: 700; font-size: 1.7rem; margin-right: 3px; }
   .stats .row span { font-size: 0.95rem; color: var(--ink-light); }
 
+
+  /* ─── MAKE YOUR OWN CTA ─── */
+  .make-own-card {
+    position: absolute;
+    bottom: 24px;
+    left: 22px;
+    z-index: 500;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    padding: 11px 15px 13px;
+    box-shadow: 4px 4px 0 rgba(58,50,42,0.18);
+    transform: rotate(-1deg);
+    border-radius: 3px;
+    max-width: 210px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    text-decoration: none;
+    display: block;
+  }
+  .make-own-card::before {
+    content: '';
+    position: absolute;
+    top: -8px; left: 16px;
+    width: 40px; height: 12px;
+    background: var(--tape-blue);
+    opacity: 0.82;
+    transform: rotate(-2deg);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+  .make-own-card:hover { transform: rotate(-0.5deg) translate(-1px,-2px); box-shadow: 5px 6px 0 rgba(58,50,42,0.22); }
+  .make-own-label {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.68rem;
+    color: var(--ink-faded);
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .make-own-title {
+    font-family: 'Caveat', cursive;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.15;
+    margin-bottom: 5px;
+  }
+  .make-own-desc {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.8rem;
+    color: var(--ink-light);
+    line-height: 1.45;
+    margin-bottom: 8px;
+  }
+  .make-own-arrow {
+    font-family: 'Caveat', cursive;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--stamp-red);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  /* On mobile, hide it (space is tight) */
+  @media (max-width: 600px) { .make-own-card { display: none; } }
 
   /* ─── SHARE BUTTON ─── */
   .share-btn {
@@ -1685,8 +1761,16 @@
 
     <div id="map"></div>
 
-    <!-- Friend match card (bottom-left of map) -->
+    <!-- Friend match card (bottom-left of map, shown when comparing) -->
     <div class="match-card" id="matchCard"></div>
+
+    <!-- Make your own CTA (bottom-left, hidden when match card is visible) -->
+    <a class="make-own-card" id="makeOwnCard" href="editor.html" target="_blank">
+      <div class="make-own-label">想要自己的地图？</div>
+      <div class="make-own-title">Make your own<br>Food Map ✦</div>
+      <div class="make-own-desc">记录你吃过的每一家好店，生成属于你的美食地图</div>
+      <div class="make-own-arrow">开始记录 →</div>
+    </a>
 
     <div class="stats" id="statsBox">
       <h3 data-i18n="statsTitle">tally</h3>
@@ -2265,10 +2349,12 @@ function renderMatchCard(match) {
   });
 
   card.classList.add('visible');
+  document.getElementById('makeOwnCard').style.display = 'none';
 }
 
 function closeMatchCard() {
   document.getElementById('matchCard').classList.remove('visible');
+  document.getElementById('makeOwnCard').style.display = '';
   friendStamps = null;
   render(); // Remove green rings from pins
 }
