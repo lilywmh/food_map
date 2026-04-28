@@ -600,6 +600,28 @@ let DATA = [], cur = -1, curR = 0, curB = "", curC = "", curTier = 1, searchTerm
 let currentUID = null;
 
 // ── Maps link helpers ─────────────────────────────────────────────────────────
+function extractCoordsFromUrl(url) {
+  const m = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  return m ? { lat: parseFloat(m[1]), lng: parseFloat(m[2]) } : null;
+}
+
+async function geocodeByName() {
+  const name = (document.getElementById("nameInput")?.value || "").trim();
+  const city = (document.getElementById("cityInput")?.value  || "").trim();
+  if (!name || cur < 0) return false;
+  const q = encodeURIComponent([name, city].filter(Boolean).join(", "));
+  try {
+    const r    = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`);
+    const data = await r.json();
+    if (data.length) {
+      DATA[cur].lat = parseFloat(data[0].lat);
+      DATA[cur].lng = parseFloat(data[0].lon);
+      return true;
+    }
+  } catch {}
+  return false;
+}
+
 function onMapsUrlInput() {
   const url = document.getElementById("gmUrlInput").value.trim();
   const isValid = url && (url.includes("google.com/maps") || url.includes("maps.app.goo.gl") || url.includes("goo.gl/maps"));
@@ -607,6 +629,16 @@ function onMapsUrlInput() {
     document.getElementById("mapsPasteRow").style.display = "none";
     document.getElementById("mapsLinkedRow").style.display = "flex";
     document.getElementById("mapsLinkedView").href = url;
+    // Try extracting coords from the URL first
+    const coords = extractCoordsFromUrl(url);
+    if (coords && DATA[cur]) {
+      DATA[cur].lat = coords.lat;
+      DATA[cur].lng = coords.lng;
+      toast("📍 Coordinates extracted from link");
+    } else {
+      // Fallback: geocode from name + city
+      geocodeByName().then(ok => { if (ok) toast("📍 Location found automatically"); });
+    }
   }
   updateGmapsLink();
 }
@@ -872,6 +904,18 @@ async function saveToCloud() {
   if (!currentUID) { toast("Not signed in"); return; }
   saveCurrent();
   toast("Saving…");
+  // Geocode any entries missing lat/lng
+  for (const d of DATA) {
+    if (!d.lat && !d.lng && d.name) {
+      const q = encodeURIComponent([d.name, d.city].filter(Boolean).join(", "));
+      try {
+        const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`);
+        const res = await r.json();
+        if (res.length) { d.lat = parseFloat(res[0].lat); d.lng = parseFloat(res[0].lon); }
+        await new Promise(r => setTimeout(r, 300)); // respect Nominatim rate limit (1 req/sec)
+      } catch {}
+    }
+  }
   try {
     const coll  = db.collection("users").doc(currentUID).collection("restaurants");
     const batch = db.batch();

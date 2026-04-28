@@ -22,6 +22,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <style>
   :root {
@@ -789,6 +790,38 @@
   .stats .row strong { color: var(--stamp-red); font-weight: 700; font-size: 1.7rem; margin-right: 3px; }
   .stats .row span { font-size: 0.95rem; color: var(--ink-light); }
 
+
+  /* ─── UPGRADE BANNER ─── */
+  .upgrade-banner {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    z-index: 800;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 11px 20px;
+    display: flex; align-items: center; gap: 12px;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.9rem;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.2, 0, 0, 1);
+  }
+  .upgrade-banner.show { transform: translateY(0); }
+  .upgrade-banner-text { flex: 1; line-height: 1.35; }
+  .upgrade-banner-text strong { color: var(--hl-yellow); }
+  .upgrade-banner-btn {
+    font-family: 'Caveat', cursive;
+    font-size: 1rem; font-weight: 700;
+    background: var(--stamp-red); color: white;
+    border: none; border-radius: 8px;
+    padding: 6px 14px; cursor: pointer; white-space: nowrap;
+    transition: opacity .15s; flex-shrink: 0;
+  }
+  .upgrade-banner-btn:hover { opacity: .85; }
+  .upgrade-banner-close {
+    font-size: 1rem; color: rgba(244,236,219,.5);
+    background: none; border: none; cursor: pointer;
+    flex-shrink: 0; padding: 2px 4px;
+  }
+  .upgrade-banner-close:hover { color: var(--paper); }
 
   /* ─── MAKE YOUR OWN CTA ─── */
   .make-own-card {
@@ -1782,6 +1815,13 @@
   </div>
 </div>
 
+<div class="upgrade-banner" id="upgradeBanner">
+  <div class="upgrade-banner-text">
+    🖃 打卡已保存在本设备 · <strong>绑定 Google 账号</strong>，换设备也不丢失，还能创建你自己的地图
+  </div>
+  <button class="upgrade-banner-btn" onclick="linkGoogleAccount()">绑定 →</button>
+  <button class="upgrade-banner-close" onclick="dismissUpgradeBanner()">✕</button>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1794,7 +1834,8 @@ firebase.initializeApp({
   messagingSenderId: "205830770210",
   appId:             "1:205830770210:web:8a2ef938e22c2b8b83c47b"
 });
-const db = firebase.firestore();
+const auth = firebase.auth();
+const db   = firebase.firestore();
 
 const _splashStart = Date.now(); // track when page opened for minimum splash duration
 
@@ -1950,6 +1991,7 @@ function setUserStamped(name) {
   try {
     const s = JSON.parse(localStorage.getItem('foodmap_user_stamps') || '[]');
     if (!s.includes(name)) { s.push(name); localStorage.setItem('foodmap_user_stamps', JSON.stringify(s)); }
+    onFirstStamp(); // anonymous auth + Firestore sync
   } catch {}
 }
 
@@ -1991,6 +2033,81 @@ function updateStampBadge() {
   const el = document.getElementById('stampBadge');
   if (el) el.textContent = stamps.length || '';
 }
+
+// ─── ANONYMOUS AUTH + FIRESTORE SYNC ───
+let _anonSigningIn = false;
+
+async function ensureAnonymousAuth() {
+  if (auth.currentUser) return auth.currentUser;
+  if (_anonSigningIn) return null;
+  _anonSigningIn = true;
+  try { return await auth.signInAnonymously(); }
+  finally { _anonSigningIn = false; }
+}
+
+async function syncStampsToFirestore() {
+  const user = auth.currentUser;
+  if (!user) return;
+  const stamps = JSON.parse(localStorage.getItem('foodmap_user_stamps') || '[]');
+  const dates  = JSON.parse(localStorage.getItem('foodmap_stamp_dates')  || '{}');
+  await db.collection('users').doc(user.uid).collection('data').doc('stamps').set({ stamps, dates });
+}
+
+async function loadStampsFromFirestore() {
+  const user = auth.currentUser;
+  if (!user) return;
+  try {
+    const doc = await db.collection('users').doc(user.uid).collection('data').doc('stamps').get();
+    if (doc.exists) {
+      const { stamps = [], dates = {} } = doc.data();
+      localStorage.setItem('foodmap_user_stamps', JSON.stringify(stamps));
+      localStorage.setItem('foodmap_stamp_dates',  JSON.stringify(dates));
+    }
+  } catch {}
+}
+
+// On first stamp: trigger anonymous sign-in + sync + show upgrade banner
+async function onFirstStamp() {
+  await ensureAnonymousAuth();
+  await syncStampsToFirestore();
+  if (!localStorage.getItem('foodmap_upgrade_dismissed') && !auth.currentUser?.providerData?.length) {
+    setTimeout(() => document.getElementById('upgradeBanner').classList.add('show'), 800);
+  }
+}
+
+function dismissUpgradeBanner() {
+  document.getElementById('upgradeBanner').classList.remove('show');
+  localStorage.setItem('foodmap_upgrade_dismissed', '1');
+}
+
+async function linkGoogleAccount() {
+  const user = auth.currentUser;
+  if (!user) { toast('先打卡一家餐厅再绑定 :)'); return; }
+  try {
+    await user.linkWithPopup(new firebase.auth.GoogleAuthProvider());
+    await syncStampsToFirestore();
+    dismissUpgradeBanner();
+    toast('✓ Google 账号绑定成功！打卡记录已永久保存');
+    // Update make-own CTA to go directly to editor
+    const cta = document.getElementById('makeOwnCard');
+    if (cta) cta.href = 'editor.html';
+  } catch(e) {
+    if (e.code === 'auth/credential-already-in-use') toast('该 Google 账号已存在，请直接去 editor 登录');
+    else toast('绑定失败：' + e.message);
+  }
+}
+
+// On load: if user already has anonymous session, restore stamps from Firestore
+auth.onAuthStateChanged(async user => {
+  if (user) {
+    await loadStampsFromFirestore();
+    updateStampBadge();
+    // Hide upgrade banner if already linked to Google
+    if (user.providerData && user.providerData.length > 0) {
+      document.getElementById('upgradeBanner').classList.remove('show');
+    }
+  }
+});
 
 // Calendar state
 let calYear = new Date().getFullYear();
