@@ -211,6 +211,17 @@ a { color: inherit; }
 .maps-linked-view:hover { text-decoration: underline; }
 .maps-linked-clear { font-size: 11px; color: #b89f8a; background: none; border: none; cursor: pointer; padding: 0; flex-shrink: 0; }
 .maps-linked-clear:hover { color: #9b6e52; }
+.coord-row { display: flex; align-items: center; gap: 5px; margin-top: 7px; flex-wrap: wrap; }
+.coord-lbl { font-size: 11px; color: #a89880; flex-shrink: 0; }
+.coord-input {
+  font-family: inherit; font-size: 12px; color: #7a6a5a;
+  border: 1px dashed #d4c5b0; border-radius: 5px;
+  background: transparent; padding: 3px 6px; width: 120px; outline: none;
+}
+.coord-input:focus { border-color: #9b6e52; border-style: solid; background: #fdf8f2; }
+.coord-warn { font-size: 11px; flex-shrink: 0; cursor: default; }
+.coord-relookup { font-size: 11px; color: #7a9e87; background: none; border: none; cursor: pointer; padding: 0; flex-shrink: 0; }
+.coord-relookup:hover { text-decoration: underline; color: #5a7a5e; }
 
 .r2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
@@ -593,6 +604,15 @@ a { color: inherit; }
             <a class="maps-linked-view" id="mapsLinkedView" href="#" target="_blank">View ↗</a>
             <button class="maps-linked-clear" onclick="clearMapsUrl()">× Remove</button>
           </div>
+          <!-- Coordinate display / manual override -->
+          <div class="coord-row" id="coordRow" style="display:none">
+            <span class="coord-lbl">📍</span>
+            <input class="coord-input" id="coordLat" placeholder="latitude" type="number" step="0.000001" oninput="onCoordInput()">
+            <span class="coord-lbl">,</span>
+            <input class="coord-input" id="coordLng" placeholder="longitude" type="number" step="0.000001" oninput="onCoordInput()">
+            <span id="coordWarn" class="coord-warn" style="display:none" title="Coordinates look wrong for this city">⚠️</span>
+            <button class="coord-relookup" onclick="reGeocode()">↺ re-lookup</button>
+          </div>
         </div>
 
         <!-- Cuisine -->
@@ -778,10 +798,62 @@ async function geocodeByName() {
     if (data.length) {
       DATA[cur].lat = parseFloat(data[0].lat);
       DATA[cur].lng = parseFloat(data[0].lon);
+      updateCoordFields();
       return true;
     }
   } catch {}
   return false;
+}
+
+function updateCoordFields() {
+  if (cur < 0) return;
+  const e = DATA[cur];
+  const latEl = document.getElementById("coordLat");
+  const lngEl = document.getElementById("coordLng");
+  const row   = document.getElementById("coordRow");
+  if (!latEl) return;
+  if (e.lat != null && e.lng != null) {
+    latEl.value = e.lat;
+    lngEl.value = e.lng;
+    row.style.display = "flex";
+    checkCoordWarning(e.lat, e.lng);
+  } else {
+    latEl.value = ""; lngEl.value = "";
+    row.style.display = "none";
+    document.getElementById("coordWarn").style.display = "none";
+  }
+}
+
+function onCoordInput() {
+  const lat = parseFloat(document.getElementById("coordLat").value);
+  const lng = parseFloat(document.getElementById("coordLng").value);
+  if (!isNaN(lat) && !isNaN(lng) && cur >= 0) {
+    DATA[cur].lat = lat;
+    DATA[cur].lng = lng;
+    checkCoordWarning(lat, lng);
+  }
+}
+
+function checkCoordWarning(lat, lng) {
+  const warn = document.getElementById("coordWarn");
+  if (!warn) return;
+  const city = (document.getElementById("cityInput")?.value || "").toLowerCase();
+  const US_CITIES = ["los angeles","san diego","san francisco","seattle","chicago","las vegas","new york","boston","portland","denver"];
+  const isUSCity = US_CITIES.some(c => city.includes(c));
+  // Show warning if city looks like US but coords are not in North America
+  const looksWrong = isUSCity && (lat < 20 || lat > 55 || lng < -135 || lng > -65);
+  warn.style.display = looksWrong ? "inline" : "none";
+}
+
+async function reGeocode() {
+  toast("🔍 Looking up location…");
+  const ok = await geocodeByName();
+  if (ok) {
+    updateCoordFields();
+    toast("📍 Location updated");
+  } else {
+    toast("⚠️ Not found — paste a Google Maps link instead");
+  }
 }
 
 function onMapsUrlInput() {
@@ -796,6 +868,7 @@ function onMapsUrlInput() {
     if (coords && DATA[cur]) {
       DATA[cur].lat = coords.lat;
       DATA[cur].lng = coords.lng;
+      updateCoordFields();
       toast("📍 Coordinates extracted from link");
     } else {
       // Fallback: geocode from name + city
@@ -1066,6 +1139,7 @@ function render(i) {
   document.getElementById("gmUrlInput").value = e.google_maps_url || "";
   onMapsUrlInput();  // sync linked/paste state
   updateGmapsLink();
+  updateCoordFields();
   document.getElementById("di").value = e.dish  || "";
   document.getElementById("ni").value = e.note  || "";
   document.getElementById("ci").value = "";
