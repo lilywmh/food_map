@@ -286,7 +286,9 @@ a { color: inherit; }
 }
 .modal-overlay.open { opacity: 1; pointer-events: auto; }
 .modal-card {
-  width: min(500px, calc(100vw - 24px));
+  width: min(540px, calc(100vw - 24px));
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
   background: #fdf8f2; border: 1.5px solid #e2d8cc; border-radius: 18px;
   padding: 28px 24px 22px; box-shadow: 0 8px 36px rgba(61,44,30,.18);
   position: relative; animation: mIn .25s cubic-bezier(.2,0,0,1) both;
@@ -309,6 +311,47 @@ a { color: inherit; }
 .modal-note { background: rgba(110,140,114,.1); border: 1px solid #c5dac9; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #5a7a5e; line-height: 1.55; margin-bottom: 18px; }
 .modal-btn { width: 100%; padding: 12px; background: #9b6e52; color: #fdf8f2; border: none; border-radius: 12px; font-size: 15px; letter-spacing: .2px; transition: all .15s; box-shadow: 0 2px 8px rgba(155,110,82,.22); }
 .modal-btn:hover { background: #8a5e44; transform: translateY(-1px); }
+
+/* ── Guide step illustrations ── */
+.guide-steps { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+.guide-step { border: 1px solid #e8ddd0; border-radius: 12px; overflow: hidden; }
+.guide-step-hd { display: flex; gap: 11px; align-items: flex-start; padding: 11px 14px 9px; }
+.guide-num { width: 22px; height: 22px; flex-shrink: 0; background: #9b6e52; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 2px; }
+.guide-step-hd strong { font-size: 13px; color: #3d2c1e; display: block; margin-bottom: 2px; }
+.guide-step-hd p { font-size: 11px; color: #a8907a; line-height: 1.45; margin: 0; }
+.guide-illus { background: #f2ebe0; border-top: 1px solid #e8ddd0; padding: 10px 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* Generic mini-row */
+.gi-row { padding: 4px 8px; border-radius: 5px; font-size: 11px; margin-bottom: 3px; white-space: nowrap; font-family: inherit; }
+.gi-row.dim  { background: rgba(61,44,30,.05); color: #c0a898; }
+.gi-row.sel  { background: #f5ebe6; color: #9b6e52; border: 1px solid #dbbba8; font-weight: 600; }
+.gi-row.hl   { background: rgba(110,140,114,.14); color: #4a6e4e; border: 1.5px dashed #7a9e87; font-weight: 600; }
+
+/* Sidebar mockup */
+.gi-sidebar { min-width: 148px; background: white; border: 1px solid #e2d8cc; border-radius: 8px; padding: 8px 8px 6px; }
+
+/* List + arrow + form */
+.gi-list { min-width: 120px; background: white; border: 1px solid #e2d8cc; border-radius: 8px; padding: 8px; }
+.gi-arrow { font-size: 18px; color: #9b6e52; flex-shrink: 0; }
+.gi-form { flex: 1; min-width: 0; background: white; border: 1px solid #e2d8cc; border-radius: 8px; padding: 8px; }
+.gi-field { font-size: 11px; color: #7a6a5a; padding: 3px 7px; background: #f7f2ea; border: 1px solid #e2d8cc; border-radius: 4px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Location / coord mockup */
+.gi-loc { flex: 1; min-width: 0; background: white; border: 1px solid #e2d8cc; border-radius: 8px; padding: 9px 10px; }
+.gi-lbl { font-size: 9.5px; color: #a8907a; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 5px; }
+.gi-maps-row { display: flex; gap: 5px; margin-bottom: 6px; align-items: center; flex-wrap: wrap; }
+.gi-sm-btn { font-size: 10px; padding: 3px 7px; border: 1px solid #c5dac9; border-radius: 5px; color: #5a7a5e; background: #f0f7f2; white-space: nowrap; flex-shrink: 0; }
+.gi-paste  { font-size: 10px; padding: 3px 7px; border: 1.5px dashed #d4c5b0; border-radius: 5px; color: #b89f8a; font-style: italic; flex: 1; min-width: 80px; }
+.gi-coord-row { display: flex; align-items: center; gap: 5px; padding: 5px 8px; border-radius: 6px; background: rgba(110,140,114,.12); border: 1.5px dashed #7a9e87; }
+.gi-coord-lbl { font-size: 12px; }
+.gi-coord-box { font-size: 10.5px; padding: 2px 6px; border: 1px solid #c5dac9; border-radius: 4px; background: white; color: #4a6e4e; font-weight: 600; }
+.gi-warn { font-size: 12px; }
+
+/* Save row */
+.gi-save { display: flex; gap: 8px; align-items: center; }
+.gi-exp  { font-size: 11px; padding: 6px 12px; border: 1.5px dashed #b89f8a; border-radius: 8px; color: #9b6e52; background: transparent; }
+.gi-save-btn { font-size: 11px; padding: 6px 14px; border: 1.5px solid #6e8c72; border-radius: 8px; color: #fff; background: #6e8c72; font-weight: 600; box-shadow: 0 0 0 3px rgba(110,140,114,.25); }
+.gi-arrow-lbl { font-size: 11px; color: #6e8c72; font-weight: 600; }
 
 /* ─── Toast ─── */
 .toast { position: fixed; bottom: 20px; right: 20px; background: #3d2c1e; color: #fdf8f2; font-size: 13px; padding: 10px 20px; border-radius: 20px; opacity: 0; transform: translateY(8px); transition: all .3s; pointer-events: none; z-index: 9999; }
@@ -701,40 +744,103 @@ a { color: inherit; }
   <div class="modal-card">
     <button class="modal-close" onclick="closeModal()">✕</button>
     <div class="modal-title">◆ Food Diary Editor</div>
-    <div class="modal-sub">Your personal food record — edit, annotate, and publish to the map</div>
-    <div class="modal-steps">
-      <div class="modal-step">
-        <div class="step-icon">📋</div>
-        <div class="step-body">
-          <strong>Browse your restaurant list</strong>
-          <span>All your places are in the left panel. Click any to open and edit its details.</span>
+    <div class="modal-sub">Your personal food map — record every place you've eaten</div>
+
+    <div class="guide-steps">
+
+      <!-- Step 1: Import -->
+      <div class="guide-step">
+        <div class="guide-step-hd">
+          <span class="guide-num">1</span>
+          <div>
+            <strong>First time? Import your existing data</strong>
+            <p>Click <em>↑ Import JSON</em> in the sidebar to load your foodmap.json, then <em>☁ Save to Cloud</em>.</p>
+          </div>
+        </div>
+        <div class="guide-illus">
+          <div class="gi-sidebar">
+            <div class="gi-row dim">🔍 Search restaurants…</div>
+            <div class="gi-row dim">＋ Add New Restaurant</div>
+            <div class="gi-row hl">↑ Import JSON  ← click here</div>
+          </div>
         </div>
       </div>
-      <div class="modal-step">
-        <div class="step-icon">✏️</div>
-        <div class="step-body">
-          <strong>Fill in the details</strong>
-          <span>Add cuisine type, rating (1–5 ♥), your top dish recommendation, budget, and a personal note.</span>
+
+      <!-- Step 2: Select & edit -->
+      <div class="guide-step">
+        <div class="guide-step-hd">
+          <span class="guide-num">2</span>
+          <div>
+            <strong>Click any restaurant to edit it</strong>
+            <p>Fill in cuisine, rating ♥, top dish, budget, and your personal note.</p>
+          </div>
+        </div>
+        <div class="guide-illus">
+          <div class="gi-list">
+            <div class="gi-row dim">Gamja Gol · Los Angeles</div>
+            <div class="gi-row sel">▶ Verve Coffee · San Francisco</div>
+            <div class="gi-row dim">Ichiran · Tokyo</div>
+          </div>
+          <div class="gi-arrow">→</div>
+          <div class="gi-form">
+            <div class="gi-field">☕ Café</div>
+            <div class="gi-field">Rating: ♥♥♥♥♡</div>
+            <div class="gi-field">Dish: Flat White</div>
+            <div class="gi-field">Budget: $ Casual</div>
+          </div>
         </div>
       </div>
-      <div class="modal-step">
-        <div class="step-icon">➕</div>
-        <div class="step-body">
-          <strong>Add new restaurants</strong>
-          <span>Eaten somewhere new? Click <em>"Add New Restaurant"</em> and fill in what you remember.</span>
+
+      <!-- Step 3: Pin location -->
+      <div class="guide-step">
+        <div class="guide-step-hd">
+          <span class="guide-num">3</span>
+          <div>
+            <strong>Link to Google Maps to place the pin</strong>
+            <p>Search the restaurant on Google Maps → copy the link → paste it below. Coordinates are extracted automatically. If the pin lands in the wrong city, edit the 📍 lat/lng directly.</p>
+          </div>
+        </div>
+        <div class="guide-illus">
+          <div class="gi-loc">
+            <div class="gi-lbl">Location</div>
+            <div class="gi-maps-row">
+              <span class="gi-sm-btn">🔍 Search on Google Maps ↗</span>
+              <span class="gi-paste">paste Maps link here</span>
+            </div>
+            <div class="gi-coord-row">
+              <span class="gi-coord-lbl">📍</span>
+              <span class="gi-coord-box">37.775593</span>
+              <span style="font-size:11px;color:#a8907a">,</span>
+              <span class="gi-coord-box">−122.41702</span>
+              <span class="gi-warn">⚠️</span>
+              <span style="font-size:10px;color:#7a9e87;margin-left:2px">↺ re-lookup</span>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="modal-step">
-        <div class="step-icon">🚀</div>
-        <div class="step-body">
-          <strong>Publish to the map</strong>
-          <span>Enter your GitHub Token and click <em>"Push to GitHub"</em> — your food map updates instantly. Or export JSON to back up locally.</span>
+
+      <!-- Step 4: Save -->
+      <div class="guide-step">
+        <div class="guide-step-hd">
+          <span class="guide-num">4</span>
+          <div>
+            <strong>Save to Cloud to publish</strong>
+            <p>Your live map updates instantly. Changes auto-save when you switch restaurants, but always click <em>☁ Save to Cloud</em> to publish.</p>
+          </div>
+        </div>
+        <div class="guide-illus">
+          <div class="gi-save">
+            <span class="gi-exp">↓ Export JSON</span>
+            <span class="gi-save-btn">☁ Save to Cloud</span>
+            <span class="gi-arrow-lbl">← publish here</span>
+          </div>
         </div>
       </div>
+
     </div>
+
     <div class="modal-note">
-      💡 <strong>Tip:</strong> Changes auto-save when you switch between restaurants.
-      Use <strong>← →</strong> arrow keys to navigate · <strong>N</strong> to add new.
+      💡 <strong>Tip:</strong> Use <strong>← →</strong> arrow keys to move between restaurants · <strong>N</strong> to add new · <strong>⚠️</strong> means the coordinates look wrong for that city
     </div>
     <button class="modal-btn" onclick="closeModal()">Got it — let's go →</button>
   </div>
