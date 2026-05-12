@@ -1348,6 +1348,146 @@
   }
   .portal-link:hover { border-color: var(--moss); color: var(--moss); border-style: solid; }
 
+  /* ─── HOME LINK ─── */
+  .home-link {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.8rem;
+    color: var(--ink-faded);
+    text-decoration: none;
+    padding: 3px 9px;
+    border: 1.5px dashed var(--rule);
+    border-radius: 12px;
+    background: transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+    align-self: center;
+    margin-bottom: 3px;
+  }
+  .home-link:hover { color: var(--ink-light); border-color: var(--ink-faded); border-style: solid; }
+
+  /* ─── VIEWER PROFILE CIRCLE ─── */
+  .viewer-profile { position: relative; flex-shrink: 0; align-self: center; margin-bottom: 3px; }
+  .viewer-avatar-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 2px solid var(--rule);
+    background: var(--paper-deep);
+    overflow: hidden;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    box-shadow: 1px 2px 4px rgba(58,50,42,0.12);
+    transition: all 0.15s;
+    padding: 0;
+  }
+  .viewer-avatar-btn:hover { border-color: var(--stamp-blue); transform: scale(1.06); }
+  .viewer-avatar-btn img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  .viewer-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 190px;
+    background: var(--paper);
+    border: 1.5px solid var(--rule);
+    border-radius: 8px;
+    box-shadow: 3px 4px 0 rgba(58,50,42,0.12);
+    padding: 12px 14px 10px;
+    z-index: 2000;
+    animation: vd-in 0.16s ease both;
+  }
+  @keyframes vd-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: none; }
+  }
+  .vd-name { font-family: 'Caveat', cursive; font-size: 1.1rem; font-weight: 700; color: var(--ink); line-height: 1.2; }
+  .vd-handle { font-family: 'Patrick Hand', cursive; font-size: 0.78rem; color: var(--ink-faded); margin-bottom: 8px; }
+  .vd-divider { border: none; border-top: 1px dashed var(--rule); margin: 5px 0; }
+  .vd-link {
+    display: block;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 0.85rem;
+    color: var(--stamp-blue);
+    text-decoration: none;
+    padding: 5px 0;
+    transition: color 0.12s;
+  }
+  .vd-link:hover { color: var(--ink); }
+  .vd-action {
+    display: block; width: 100%; margin-top: 6px;
+    padding: 5px 0;
+    font-family: 'Patrick Hand', cursive; font-size: 0.85rem;
+    color: var(--stamp-red);
+    border: 1.5px solid var(--tape-pink);
+    border-radius: 6px; cursor: pointer; background: none;
+    text-align: center; transition: all 0.15s;
+  }
+  .vd-action:hover { background: var(--tape-pink); color: var(--ink); }
+
+  /* ─── MATCH CARD MODAL (featured / centered on open) ─── */
+  .mc-modal-overlay {
+    position: fixed; inset: 0;
+    z-index: 1500;
+    display: none;
+    align-items: center; justify-content: center;
+    background: rgba(58, 50, 42, 0.22);
+    backdrop-filter: blur(3px);
+  }
+  .mc-modal-overlay.open { display: flex; animation: mc-overlay-in 0.25s ease both; }
+  @keyframes mc-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+  .mc-modal-card {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    padding: 22px 26px 22px;
+    border-radius: 4px;
+    width: 280px; max-width: calc(100vw - 48px);
+    position: relative;
+    box-shadow: 6px 6px 0 rgba(58,50,42,0.18);
+    background-image: repeating-linear-gradient(0deg, transparent 0 24px, rgba(150,120,80,0.09) 24px 25px);
+    animation: mc-modal-pop 0.42s cubic-bezier(0.15, 1.4, 0.4, 1) both;
+    transform: rotate(-1.4deg);
+  }
+  .mc-modal-card::before {
+    content: '';
+    position: absolute; top: -8px; left: 18px;
+    width: 44px; height: 12px;
+    background: var(--tape-pink); opacity: 0.88;
+    transform: rotate(1.5deg); box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+  @keyframes mc-modal-pop {
+    from { opacity: 0; transform: rotate(-1.4deg) scale(0.78) translateY(18px); }
+    to   { opacity: 1; transform: rotate(-1.4deg) scale(1); }
+  }
+  .mc-modal-ok {
+    width: 100%; margin-top: 14px; padding: 8px 0;
+    font-family: 'Patrick Hand', cursive; font-size: 0.95rem;
+    background: var(--ink); color: var(--paper);
+    border: none; border-radius: 5px; cursor: pointer;
+    letter-spacing: 0.04em; transition: opacity 0.15s;
+  }
+  .mc-modal-ok:hover { opacity: 0.82; }
+
+  /* ─── MY MAP RETURN BUTTON ─── */
+  .my-map-btn {
+    position: absolute; bottom: 24px; right: 24px;
+    z-index: 500; display: none;
+    align-items: center; gap: 5px;
+    font-family: 'Patrick Hand', cursive; font-size: 0.88rem;
+    padding: 7px 14px;
+    background: var(--paper); border: 1.5px solid var(--ink);
+    border-radius: 8px; box-shadow: 2px 3px 0 rgba(58,50,42,0.18);
+    color: var(--ink); text-decoration: none;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .my-map-btn:hover { transform: translate(1px,-1px); box-shadow: 1px 4px 0 rgba(58,50,42,0.26); }
+  .my-map-btn::before {
+    content: '';
+    position: absolute; top: -6px; right: 8px;
+    width: 22px; height: 8px;
+    background: var(--tape-blue); opacity: 0.85; transform: rotate(-2deg);
+  }
+  @media (max-width: 480px) { .my-map-btn { bottom: 96px; right: 8px; font-size: 0.82rem; padding: 6px 12px; } }
+
   /* ─── LANG TOGGLE ─── */
   .lang-toggle {
     font-family: 'Patrick Hand', cursive;
@@ -1707,6 +1847,7 @@
 
   <!-- ROW 1: TITLE -->
   <div class="titlebar">
+    <a class="home-link" href="index.html" data-i18n="homeLink">← Home</a>
     <div>
       <div class="title-main">Lily's Food Map<span class="ch" data-i18n="titleCh">· 美食地图</span></div>
       <div class="title-sub">A NOTEBOOK OF EATEN PLACES &nbsp;·&nbsp; <span class="vol">VOL. 01</span></div>
@@ -1716,6 +1857,20 @@
     <button class="lang-toggle" id="langToggle">EN</button>
     <div class="title-stat" id="titleStat">— places · — cities</div>
     <div class="signature">— by Lily ✿</div>
+    <!-- Viewer profile circle -->
+    <div class="viewer-profile" id="viewerProfile">
+      <button class="viewer-avatar-btn" id="viewerAvatarBtn" aria-label="profile">
+        <span id="viewerAvatarContent">👤</span>
+      </button>
+      <div class="viewer-dropdown" id="viewerDropdown" hidden>
+        <div class="vd-name" id="vdName">访客</div>
+        <div class="vd-handle" id="vdHandle"></div>
+        <hr class="vd-divider">
+        <a class="vd-link" id="vdMyMapLink" href="#" hidden>🗺 <span data-i18n="vdMyMap">我的地图 →</span></a>
+        <a class="vd-link" id="vdEditorLink" href="index.html" hidden>✏️ <span data-i18n="vdEditor">编辑地图</span></a>
+        <button class="vd-action" id="vdSigninBtn" data-i18n="vdSignin">登录 / 注册 →</button>
+      </div>
+    </div>
   </div>
 
   <!-- ROW 2: TOOLBAR -->
@@ -1799,6 +1954,9 @@
     <!-- Friend match card (bottom-left of map, shown when comparing) -->
     <div class="match-card" id="matchCard"></div>
 
+    <!-- Return to viewer's own map (bottom-right, shown when viewer has their own map) -->
+    <a class="my-map-btn" id="myMapBtn" href="#">← <span data-i18n="myMapBtn">我的地图</span></a>
+
     <!-- Make your own CTA (bottom-left, hidden when match card is visible) -->
     <a class="make-own-card" id="makeOwnCard" href="index.html" target="_blank">
       <div class="make-own-label">想要自己的地图？</div>
@@ -1812,6 +1970,13 @@
       <div class="row"><strong id="statN">—</strong><span data-i18n="statsPlaces"> places eaten</span></div>
       <div class="row"><strong id="statC">—</strong><span data-i18n="statsCities">cities visited</span></div>
     </div>
+  </div>
+</div>
+
+<!-- Match card featured modal (centered, appears first when friend stamps loaded) -->
+<div class="mc-modal-overlay" id="mcModalOverlay">
+  <div class="mc-modal-card" id="mcModalCard">
+    <!-- content filled by JS -->
   </div>
 </div>
 
@@ -1920,6 +2085,11 @@ const T = {
     promptCopy2: '复制链接：',
     portalBtn: '更新地图',
     docTitle: 'Lily 的美食地图 · Notebook',
+    homeLink: '← 主页',
+    myMapBtn: '我的地图',
+    vdMyMap: '我的地图 →', vdEditor: '编辑地图', vdSignin: '登录 / 注册 →',
+    mcModalOk: '查看地图 →',
+    vdGuest: '访客',
   },
   en: {
     searchPh: 'Search name / dish…',
@@ -1980,6 +2150,11 @@ const T = {
     promptCopy2: 'Copy link:',
     portalBtn: 'Edit Map',
     docTitle: "Lily's Food Map · Notebook",
+    homeLink: '← Home',
+    myMapBtn: 'My Map',
+    vdMyMap: 'My Map →', vdEditor: 'Edit My Map', vdSignin: 'Sign in / Sign up →',
+    mcModalOk: 'Explore the map →',
+    vdGuest: 'Guest',
   }
 };
 
@@ -2102,11 +2277,11 @@ auth.onAuthStateChanged(async user => {
   if (user) {
     await loadStampsFromFirestore();
     updateStampBadge();
-    // Hide upgrade banner if already linked to Google
     if (user.providerData && user.providerData.length > 0) {
       document.getElementById('upgradeBanner').classList.remove('show');
     }
   }
+  setupViewerProfile(user);
 });
 
 // Calendar state
@@ -2491,6 +2666,9 @@ function computeMatch(myStamps, friendArr) {
   return { pct, shared, topCuisines };
 }
 
+let _mcModalTimer = null;
+let _pendingMatch = null;
+
 function renderMatchCard(match) {
   const card = document.getElementById('matchCard');
   const t = T[lang];
@@ -2509,16 +2687,59 @@ function renderMatchCard(match) {
     ${match.shared.length ? '<hr class="mc-divider" />' : ''}
     <div class="mc-list">${listHTML}</div>
   `;
-
-  // Wire close
   card.querySelector('#matchClose').addEventListener('click', closeMatchCard);
-  // Wire clicks on shared places
   card.querySelectorAll('.mc-item').forEach(el => {
     el.addEventListener('click', () => focusPlace(el.dataset.name));
   });
 
-  card.classList.add('visible');
   document.getElementById('makeOwnCard').style.display = 'none';
+
+  // Show featured modal first, corner card appears after modal dismisses
+  _pendingMatch = { card, match };
+  _showMatchModal(match);
+}
+
+function _showMatchModal(match) {
+  const t = T[lang];
+  const listHTML = match.shared.length
+    ? match.shared.slice(0, 5).map(name => `<div class="mc-item" style="padding:2px 0">${name}</div>`).join('')
+    : `<div class="mc-empty">${t.mcEmpty}</div>`;
+
+  const modalCard = document.getElementById('mcModalCard');
+  modalCard.innerHTML = `
+    <div class="mc-label">${t.mcLabel}</div>
+    <div class="mc-pct">${match.pct}<span>%</span></div>
+    <div class="mc-shared">${t.mcShared(match.shared.length)}</div>
+    ${match.topCuisines.length ? `<div class="mc-cuisines">${match.topCuisines.join(' · ')}</div>` : ''}
+    ${match.shared.length ? '<hr class="mc-divider" />' : ''}
+    <div class="mc-list" style="max-height:120px;overflow-y:auto">${listHTML}</div>
+    <button class="mc-modal-ok" id="mcModalOk">${t.mcModalOk}</button>
+  `;
+
+  const overlay = document.getElementById('mcModalOverlay');
+  overlay.classList.add('open');
+
+  document.getElementById('mcModalOk').addEventListener('click', _dismissMatchModal);
+  overlay.addEventListener('click', e => { if (e.target === overlay) _dismissMatchModal(); });
+
+  // Auto-dismiss after 4 seconds
+  _mcModalTimer = setTimeout(_dismissMatchModal, 4000);
+}
+
+function _dismissMatchModal() {
+  clearTimeout(_mcModalTimer);
+  const overlay = document.getElementById('mcModalOverlay');
+  overlay.style.opacity = '0';
+  overlay.style.transition = 'opacity 0.3s';
+  setTimeout(() => {
+    overlay.classList.remove('open');
+    overlay.style.opacity = '';
+    overlay.style.transition = '';
+    if (_pendingMatch) {
+      _pendingMatch.card.classList.add('visible');
+      _pendingMatch = null;
+    }
+  }, 300);
 }
 
 function closeMatchCard() {
@@ -2526,6 +2747,65 @@ function closeMatchCard() {
   document.getElementById('makeOwnCard').style.display = '';
   friendStamps = null;
   render(); // Remove green rings from pins
+}
+
+// ─── VIEWER PROFILE ───
+function setupViewerProfile(user) {
+  const avatarBtn = document.getElementById('viewerAvatarBtn');
+  const dropdown = document.getElementById('viewerDropdown');
+  const avatarContent = document.getElementById('viewerAvatarContent');
+
+  if (user && !user.isAnonymous) {
+    const name = user.displayName || 'User';
+    const photo = user.photoURL;
+    avatarContent.innerHTML = photo
+      ? `<img src="${photo.replace(/"/g,'')}" alt="" />`
+      : name.charAt(0).toUpperCase();
+    document.getElementById('vdName').textContent = name;
+
+    db.collection('users').doc(user.uid).get().then(doc => {
+      const data = doc.data() || {};
+      const username = data.username;
+      if (username) {
+        document.getElementById('vdHandle').textContent = `@${username}`;
+        const myMapLink = document.getElementById('vdMyMapLink');
+        const editorLink = document.getElementById('vdEditorLink');
+        myMapLink.href = `foodmapA.html?user=${username}`;
+        myMapLink.removeAttribute('hidden');
+        editorLink.removeAttribute('hidden');
+        document.getElementById('vdSigninBtn').style.display = 'none';
+        // Show "My Map" return button when viewing someone else's map
+        const urlUser = new URLSearchParams(location.search).get('user');
+        if (urlUser && urlUser.toLowerCase() !== username.toLowerCase()) {
+          _showMyMapReturnBtn(username);
+        }
+      } else {
+        document.getElementById('vdSigninBtn').style.display = 'none';
+        const editorLink = document.getElementById('vdEditorLink');
+        editorLink.removeAttribute('hidden');
+      }
+    }).catch(() => {});
+  } else {
+    avatarContent.textContent = '👤';
+    document.getElementById('vdName').textContent = T[lang].vdGuest;
+    document.getElementById('vdHandle').textContent = '';
+  }
+
+  avatarBtn.onclick = e => {
+    e.stopPropagation();
+    dropdown.hidden = !dropdown.hidden;
+  };
+  document.addEventListener('click', () => { dropdown.hidden = true; }, { once: false });
+  dropdown.addEventListener('click', e => e.stopPropagation());
+
+  document.getElementById('vdSigninBtn').onclick = () => { location.href = 'index.html'; };
+}
+
+function _showMyMapReturnBtn(username) {
+  const btn = document.getElementById('myMapBtn');
+  if (!btn) return;
+  btn.href = `foodmapA.html?user=${encodeURIComponent(username)}`;
+  btn.style.display = 'flex';
 }
 
 function shareMyStamps() {
@@ -3013,6 +3293,12 @@ function setLang(l) {
   document.querySelectorAll('.splash-desc span').forEach((el, i) => {
     if (t.splashDesc[i]) el.textContent = t.splashDesc[i];
   });
+
+  // Update viewer guest label when switching lang
+  const vdNameEl = document.getElementById('vdName');
+  if (vdNameEl && [T.zh.vdGuest, T.en.vdGuest].includes(vdNameEl.textContent)) {
+    vdNameEl.textContent = t.vdGuest;
+  }
 
   // Update titleStat and re-render if data is already loaded
   if (DATA.length) {
