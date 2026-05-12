@@ -266,6 +266,13 @@ a { color: inherit; }
 }
 .btn-export { border: 1.5px dashed #b89f8a; color: #9b6e52; background: transparent; }
 .btn-export:hover { background: #f0e8dc; border-style: solid; }
+.btn-import-json {
+  display: block; width: 100%; text-align: center; cursor: pointer;
+  font-family: inherit; font-size: 12px; color: #7a6a5a;
+  padding: 5px 0; border: 1.5px dashed #c8b9a8; border-radius: 8px;
+  background: transparent; margin-top: 4px; transition: all .15s;
+}
+.btn-import-json:hover { background: #f0e8dc; border-color: #9b8070; color: #5a4a3a; }
 .btn-push { border: 1.5px solid #6e8c72; color: #6e8c72; background: transparent; }
 .btn-push:hover { background: #f0f7f2; }
 
@@ -508,6 +515,7 @@ a { color: inherit; }
         <input class="list-search" id="searchBox" placeholder="Search restaurants or city..." oninput="onSearch()">
       </div>
       <button class="btn-add-new" onclick="addNew()">＋ Add New Restaurant</button>
+      <label class="btn-import-json" title="Import from foodmap.json">↑ Import JSON<input type="file" accept=".json" style="display:none" onchange="importJSON(this)"></label>
       <div class="list-progress">
         <div class="prog-bar"><div class="prog-fill" id="pf"></div></div>
         <div class="prog-label" id="pl">0/0</div>
@@ -1266,6 +1274,49 @@ function exportJ() {
   a.download = "foodmap_backup.json";
   a.click();
   toast("JSON exported ↓");
+}
+
+function importJSON(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const incoming = JSON.parse(e.target.result);
+      if (!Array.isArray(incoming)) { toast("⚠️ Invalid JSON — expected an array"); return; }
+
+      // Merge: incoming entries update existing ones by name, new ones are appended
+      const byName = new Map(DATA.map(d => [d.name?.toLowerCase(), d]));
+      let added = 0, updated = 0;
+      for (const entry of incoming) {
+        if (!entry.name) continue;
+        const key = entry.name.toLowerCase();
+        if (byName.has(key)) {
+          // Update existing — overwrite all fields but keep _id
+          const existing = byName.get(key);
+          Object.assign(existing, entry);
+          updated++;
+        } else {
+          DATA.push({ ...entry, _isNew: true });
+          added++;
+        }
+      }
+
+      cur = -1;
+      renderList();
+      updateProgress();
+      document.getElementById("edEmpty").style.display = DATA.length ? "none" : "flex";
+      if (DATA.length) {
+        document.getElementById("edMain").style.display = "none";
+        document.getElementById("actionRow").style.display = "flex";
+      }
+      toast(`✓ Imported: ${added} added, ${updated} updated — click Save to Cloud`);
+    } catch {
+      toast("⚠️ Could not parse JSON file");
+    }
+    input.value = ""; // reset so same file can be re-imported
+  };
+  reader.readAsText(file);
 }
 
 async function saveToCloud() {
