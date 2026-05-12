@@ -1215,14 +1215,18 @@ function onCI() {
 // ── Save ──────────────────────────────────────────────────────────────────────
 function saveCurrent() {
   if (!DATA[cur]) return;
-  const gmUrl = (document.getElementById("gmUrlInput")?.value || "").trim();
+  const gmUrl  = (document.getElementById("gmUrlInput")?.value || "").trim();
+  const latVal = parseFloat(document.getElementById("coordLat")?.value);
+  const lngVal = parseFloat(document.getElementById("coordLng")?.value);
   DATA[cur] = Object.assign({}, DATA[cur], {
     name:    (document.getElementById("nameInput")?.value  || "").trim(),
     city:    (document.getElementById("cityInput")?.value  || "").trim(),
     dish:    (document.getElementById("di")?.value         || "").trim(),
     note:    (document.getElementById("ni")?.value         || "").trim(),
     rating:  curR, budget: curB, cuisine: curC, tier: curTier,
-    google_maps_url: gmUrl || undefined
+    google_maps_url: gmUrl || undefined,
+    ...(isNaN(latVal) ? {} : { lat: latVal }),
+    ...(isNaN(lngVal) ? {} : { lng: lngVal }),
   });
   if (!DATA[cur].google_maps_url) delete DATA[cur].google_maps_url;
   updateProgress();
