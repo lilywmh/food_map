@@ -2440,7 +2440,7 @@ function render() {
     const popMin = isMobile ? Math.min(260, vw - 48) : 270;
     const m = L.marker([item.lat, item.lng], { icon }).bindPopup(buildPopup(item), {
       maxWidth: popMax, minWidth: popMin, closeButton: true,
-      autoPanPadding: isMobile ? [20, 30] : [50, 50]
+      autoPan: false
     });
     m.addTo(layer);
     markerByName.set(item.name, m);
